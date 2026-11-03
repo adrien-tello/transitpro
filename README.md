@@ -25,6 +25,17 @@ One platform that runs the whole agency:
 - A **mobile app** for customers (book tickets, send and track parcels) and for field staff (drivers, couriers).
 - Both use **the same backend and the same central database**, so a change in one module is seen by all the others.
 
+### A SaaS platform for many agencies
+
+TransitPro does **not** own buses or employ staff. It is software that agencies subscribe to.
+
+1. An agency signs up on TransitPro.
+2. **The TransitPro team verifies it**: business registration (RCCM), taxpayer number (NIU), the owner's CNI and the agency's address.
+3. Once approved, the agency owner adds their own **branches, buses, routes, staff and couriers**.
+4. Each agency **only sees its own data**. Drivers, agents and couriers are the agency's employees; TransitPro gives them the tools and keeps the records.
+
+Because many agencies are on one platform, a passenger can **compare all agencies on a route** (times, prices, seats left) in one app.
+
 ## 3. Modules
 
 | # | Module | What it does |
@@ -57,7 +68,8 @@ One platform that runs the whole agency:
 | **Fleet Manager** | Web | Manages buses, maintenance and fuel |
 | **HR Officer** | Web | Manages staff, shifts, licences and payroll |
 | **Accountant** | Web | Payments, reconciliation, expenses, reports |
-| **Admin / Owner** | Web | Sees everything, sets prices and commissions, manages branches and users |
+| **Agency Owner** | Web | Sees everything in their agency, sets ticket and parcel prices, manages branches and staff |
+| **Platform Admin** (TransitPro team) | Web | Verifies new agencies, sets platform commissions, suspends agencies, sees platform-wide reports |
 
 ---
 
@@ -111,7 +123,20 @@ QR label + tracking code on every parcel. Every handover is a scan saved with ti
 
 ---
 
-## 7. Tech stack
+## 7. Scope: what we build first
+
+We build a working core first, then add the rest if time allows.
+
+| Version 1 (MVP) | Later |
+|---|---|
+| Agency sign-up + manual verification | Automatic document checks |
+| Trips, seats, ticket booking, QR ticket | Rebooking, multi-agency route comparison |
+| Bus list + maintenance status | Fuel analytics, live GPS map |
+| Parcel registration, QR label, scan updates, OTP delivery | Weight alarms, claims, insurance |
+| Staff list, roles, trip assignment | Payroll, shifts |
+| Payments (sandbox), daily cash report | Escrow, commissions dashboard |
+
+## 8. Tech stack
 
 | Layer | Technology |
 |---|---|
@@ -140,7 +165,7 @@ transitpro/
 
 ---
 
-## 8. UML deliverables (CA)
+## 9. UML deliverables (CA)
 
 Each member draws the four diagrams for their own module:
 
@@ -151,7 +176,7 @@ Each member draws the four diagrams for their own module:
 
 The group also agrees on **one shared class diagram for the central database**, so all five modules fit together.
 
-## 9. Team
+## 10. Team
 
 | Member | Module |
 |---|---|
