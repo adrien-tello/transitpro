@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* Design tokens from the TransitPro design canvas. Use these names, not raw hex. */
+@theme {
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-ink: #0e1726;        /* text, dark cards, navy */
+  --color-muted: #5b6576;      /* secondary text */
+  --color-primary: #1e4fd8;    /* main blue */
+  --color-primary-tint: #e8eefd;
+  --color-accent: #f59e0b;     /* orange stop / active tab */
+  --color-canvas: #e9ecf7;     /* dashboard background */
+  --color-line: #e4e8ef;       /* borders, dividers */
+  --color-success: #146c43;
+  --color-success-tint: #e3f5ec;
+  --color-warning: #8a5200;
+  --color-warning-tint: #fff3dc;
+  --color-danger: #b42318;
+  --color-danger-tint: #fdecea;
+}

@@ -140,28 +140,31 @@ We build a working core first, then add the rest if time allows.
 
 | Layer | Technology |
 |---|---|
-| Mobile | Expo + React Native |
-| Web dashboard | React (Vite or Next.js), Tailwind CSS, shadcn/ui |
-| Backend | NestJS (TypeScript) |
-| Database | PostgreSQL + Prisma |
-| Auth | JWT with roles |
+| Backend | Express 5 + TypeScript |
+| Database | PostgreSQL (cloud) + Prisma |
+| Auth | httpOnly session cookie (JWT inside) + role-based access control |
+| Web dashboard | React 19 + Vite + Tailwind CSS v4 + TanStack Query |
+| Mobile | Expo SDK 54 + Expo Router (customer and staff screens in one app, chosen by role) |
 | Payments | Notch Pay / CinetPay (MTN MoMo, Orange Money) |
-| Notifications | Push notifications + SMS |
-| Hosting | Railway / Render (API + database), Vercel (web) |
+| Notifications | SMS + push notifications |
 
-### Planned repository structure
+### Repository structure
 
 ```
 transitpro/
-  apps/
-    mobile/     Expo app (customers + field staff)
-    web/        Agency dashboard
-    api/        NestJS backend, one folder per module
-  packages/
-    types/      Shared TypeScript types (Trip, Ticket, Parcel...)
-  docs/
-    uml/        Use case, class, sequence and activity diagrams
+  server/     Express API, the only part that touches the database (one folder per module)
+  web/        Agency dashboard
+  mobile/     Expo app (customers + drivers and couriers)
+  docs/       Team plan, API contract, UML diagrams
+  AGENTS.md   Coding rules for the team and for AI agents (read first)
 ```
+
+### Getting started
+
+1. Read [AGENTS.md](AGENTS.md) and [docs/TEAM_PLAN.md](docs/TEAM_PLAN.md).
+2. Server: see [server/README.md](server/README.md).
+3. Web: see [web/README.md](web/README.md). Mobile: see [mobile/README.md](mobile/README.md).
+4. Endpoints: [docs/API.md](docs/API.md). Design: https://claude.ai/artifact/1NiJFaNhTtXLuCb5VuzRaw
 
 ---
 
@@ -174,14 +177,14 @@ Each member draws the four diagrams for their own module:
 - **Sequence diagram**: one or two key flows of the module
 - **Activity diagram**: one process of the module, with its decisions
 
-The group also agrees on **one shared class diagram for the central database**, so all five modules fit together.
+The group also agrees on **one shared class diagram for the central database**, so all five modules fit together. Details per member: [docs/TEAM_PLAN.md](docs/TEAM_PLAN.md).
 
 ## 10. Team
 
-| Member | Module |
-|---|---|
-| _TBD_ | Booking & Ticketing |
-| _TBD_ | Fleet & Maintenance |
-| _TBD_ | Parcel & Courier |
-| _TBD_ | Human Resources |
-| _TBD_ | Finance & Reporting |
+| Member | Module | Also builds |
+|---|---|---|
+| **Fanyi Charllson** (Project Lead) | Parcel & Courier | Auth, agencies, web dashboard core |
+| Adrien Tello | Booking & Ticketing | Customer mobile app |
+| Ngwese Fidel | Fleet & Maintenance | Staff mobile app (drivers, couriers) |
+| Joy | Human Resources | Web staff and fleet pages |
+| Sweet | Finance & Reporting | Web finance pages, dashboard numbers |

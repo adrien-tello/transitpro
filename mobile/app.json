@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "TransitPro",
+    "slug": "transitpro",
+    "scheme": "transitpro",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      ["expo-camera", { "cameraPermission": "TransitPro scans ticket and parcel QR codes." }],
+      ["expo-location", { "locationWhenInUsePermission": "TransitPro shares the bus position during a trip and proves where a parcel was delivered." }]
+    ],
+    "experiments": { "typedRoutes": true }
+  }
+}

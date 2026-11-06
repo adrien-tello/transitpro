@@ -1,0 +1,566 @@
+// TransitPro central database.
+// Every module reads and writes this ONE database. This file is also the
+// starting point for the group's shared UML class diagram.
+//
+// Module ownership (who changes which models) is listed in docs/TEAM_PLAN.md.
+// Money is stored as Int in FCFA (no decimals).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────── Enums ───────────────────────────
+
+enum Role {
+  CUSTOMER
+  COUNTER_AGENT
+  DRIVER
+  COURIER
+  BRANCH_MANAGER
+  FLEET_MANAGER
+  HR_OFFICER
+  ACCOUNTANT
+  AGENCY_OWNER
+  PLATFORM_ADMIN
+}
+
+enum AgencyStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum DocumentType {
+  RCCM
+  NIU
+  OWNER_CNI_FRONT
+  OWNER_CNI_BACK
+  TRANSPORT_LICENCE
+}
+
+enum BusClass {
+  CLASSIC
+  VIP
+}
+
+enum BusStatus {
+  ACTIVE
+  IN_MAINTENANCE
+  OUT_OF_SERVICE
+}
+
+enum MaintenanceType {
+  SCHEDULED_SERVICE
+  REPAIR
+  BREAKDOWN
+  INSPECTION
+}
+
+enum TripStatus {
+  SCHEDULED
+  BOARDING
+  DEPARTED
+  ARRIVED
+  CANCELLED
+}
+
+enum TicketStatus {
+  RESERVED
+  PAID
+  BOARDED
+  CANCELLED
+  REFUNDED
+}
+
+enum ParcelStatus {
+  REGISTERED
+  LOADED
+  IN_TRANSIT
+  ARRIVED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  ON_HOLD
+  REFUSED
+  RETURNED
+}
+
+enum ParcelEventType {
+  REGISTERED
+  LOADED
+  DEPARTED
+  ARRIVED
+  HANDED_TO_COURIER
+  DELIVERY_ATTEMPT
+  DELIVERED
+  REFUSED
+  HELD
+}
+
+enum ClaimStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED_PAID
+  RESOLVED_REJECTED
+}
+
+enum PaymentMethod {
+  MTN_MOMO
+  ORANGE_MONEY
+  CASH
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentPurpose {
+  TICKET
+  PARCEL_FEE
+  COD_COLLECTION
+  SUBSCRIPTION
+}
+
+enum EscrowStatus {
+  HELD
+  RELEASED
+  REFUNDED
+}
+
+enum ExpenseCategory {
+  FUEL
+  MAINTENANCE
+  SALARY
+  OTHER
+}
+
+enum RemittanceStatus {
+  OPEN
+  SETTLED
+  SHORT
+}
+
+// ──────────────── Shared: users and agencies (Lead) ────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  phone        String?  @unique
+  passwordHash String?
+  googleId     String?  @unique
+  fullName     String
+  role         Role     @default(CUSTOMER)
+  agencyId     String?
+  agency       Agency?  @relation(fields: [agencyId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  employee Employee?
+  tickets  Ticket[]
+  payments Payment[]
+  reviews  Review[]
+  claims   ParcelClaim[]
+}
+
+model Agency {
+  id              String       @id @default(cuid())
+  name            String
+  slug            String       @unique
+  status          AgencyStatus @default(PENDING)
+  rccmNumber      String?
+  niuNumber       String?
+  headOffice      String
+  phone           String
+  email           String
+  verifiedAt      DateTime?
+  rejectionReason String?
+  // Platform commission on parcel fees, in percent (e.g. 10 = 10%)
+  commissionRate  Int          @default(10)
+  ratingAvg       Float        @default(0)
+  ratingCount     Int          @default(0)
+  createdAt       DateTime     @default(now())
+
+  documents  AgencyDocument[]
+  users      User[]
+  branches   Branch[]
+  routes     Route[]
+  buses      Bus[]
+  trips      Trip[]
+  parcels    Parcel[]
+  employees  Employee[]
+  invites    StaffInvite[]
+  payments   Payment[]
+  expenses   Expense[]
+  reviews    Review[]
+}
+
+model AgencyDocument {
+  id         String       @id @default(cuid())
+  agencyId   String
+  agency     Agency       @relation(fields: [agencyId], references: [id])
+  type       DocumentType
+  fileUrl    String
+  verified   Boolean      @default(false)
+  uploadedAt DateTime     @default(now())
+}
+
+model Branch {
+  id       String @id @default(cuid())
+  agencyId String
+  agency   Agency @relation(fields: [agencyId], references: [id])
+  name     String
+  city     String
+  address  String
+
+  employees        Employee[]
+  tripsFrom        Trip[]           @relation("TripOrigin")
+  tripsTo          Trip[]           @relation("TripDestination")
+  parcelsFrom      Parcel[]         @relation("ParcelOrigin")
+  parcelsTo        Parcel[]         @relation("ParcelDestination")
+  parcelEvents     ParcelEvent[]
+  expenses         Expense[]
+  cashRemittances  CashRemittance[]
+}
+
+// ──────────────── Module 1: Booking & Ticketing ────────────────
+
+model Route {
+  id              String @id @default(cuid())
+  agencyId        String
+  agency          Agency @relation(fields: [agencyId], references: [id])
+  originCity      String
+  destinationCity String
+  durationMinutes Int
+  basePrice       Int
+
+  trips Trip[]
+}
+
+model Trip {
+  id                  String     @id @default(cuid())
+  agencyId            String
+  agency              Agency     @relation(fields: [agencyId], references: [id])
+  routeId             String
+  route               Route      @relation(fields: [routeId], references: [id])
+  busId               String
+  bus                 Bus        @relation(fields: [busId], references: [id])
+  driverId            String?
+  driver              Employee?  @relation("DriverTrips", fields: [driverId], references: [id])
+  originBranchId      String
+  originBranch        Branch     @relation("TripOrigin", fields: [originBranchId], references: [id])
+  destinationBranchId String
+  destinationBranch   Branch     @relation("TripDestination", fields: [destinationBranchId], references: [id])
+  departureAt         DateTime
+  arrivalEta          DateTime
+  status              TripStatus @default(SCHEDULED)
+  price               Int
+  // Live position, sent by the driver app (Fleet module reads it for the live map)
+  lastLat             Float?
+  lastLng             Float?
+  lastLocationAt      DateTime?
+
+  tickets Ticket[]
+  parcels Parcel[]
+  reviews Review[]
+}
+
+model Ticket {
+  id                String       @id @default(cuid())
+  code              String       @unique
+  tripId            String
+  trip              Trip         @relation(fields: [tripId], references: [id])
+  passengerId       String
+  passenger         User         @relation(fields: [passengerId], references: [id])
+  passengerName     String
+  passengerIdNumber String?
+  seatNumber        Int
+  status            TicketStatus @default(RESERVED)
+  price             Int
+  bookingFee        Int          @default(0)
+  paymentId         String?      @unique
+  payment           Payment?     @relation(fields: [paymentId], references: [id])
+  boardedAt         DateTime?
+  createdAt         DateTime     @default(now())
+
+  @@unique([tripId, seatNumber])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  agencyId  String
+  agency    Agency   @relation(fields: [agencyId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  // A review is only allowed after a completed trip or delivery
+  tripId    String?
+  trip      Trip?    @relation(fields: [tripId], references: [id])
+  parcelId  String?
+  parcel    Parcel?  @relation(fields: [parcelId], references: [id])
+  overall   Int
+  onTime    Int?
+  comfort   Int?
+  parcels   Int?
+  staff     Int?
+  comment   String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tripId])
+}
+
+// ──────────────── Module 2: Fleet & Maintenance ────────────────
+
+model Bus {
+  id             String    @id @default(cuid())
+  agencyId       String
+  agency         Agency    @relation(fields: [agencyId], references: [id])
+  plateNumber    String    @unique
+  model          String
+  capacity       Int
+  busClass       BusClass  @default(CLASSIC)
+  status         BusStatus @default(ACTIVE)
+  odometerKm     Int       @default(0)
+  nextServiceDue DateTime?
+
+  trips       Trip[]
+  maintenance MaintenanceRecord[]
+  fuelLogs    FuelLog[]
+  expenses    Expense[]
+}
+
+model MaintenanceRecord {
+  id           String          @id @default(cuid())
+  busId        String
+  bus          Bus             @relation(fields: [busId], references: [id])
+  type         MaintenanceType
+  description  String
+  cost         Int             @default(0)
+  reportedById String?
+  reportedBy   Employee?       @relation(fields: [reportedById], references: [id])
+  startedAt    DateTime        @default(now())
+  completedAt  DateTime?
+}
+
+model FuelLog {
+  id           String   @id @default(cuid())
+  busId        String
+  bus          Bus      @relation(fields: [busId], references: [id])
+  liters       Float
+  cost         Int
+  odometerKm   Int
+  recordedById String
+  recordedBy   Employee @relation(fields: [recordedById], references: [id])
+  filledAt     DateTime @default(now())
+}
+
+// ──────────────── Module 3: Parcel & Courier ────────────────
+
+model Parcel {
+  id                     String       @id @default(cuid())
+  trackingCode           String       @unique
+  agencyId               String
+  agency                 Agency       @relation(fields: [agencyId], references: [id])
+  originBranchId         String
+  originBranch           Branch       @relation("ParcelOrigin", fields: [originBranchId], references: [id])
+  destinationBranchId    String
+  destinationBranch      Branch       @relation("ParcelDestination", fields: [destinationBranchId], references: [id])
+  tripId                 String?
+  trip                   Trip?        @relation(fields: [tripId], references: [id])
+
+  senderName             String
+  senderPhone            String
+  receiverName           String
+  receiverPhone          String
+
+  // Anti-tampering: what was sent must be what is received
+  declaredContents       String
+  declaredValue          Int
+  weightAtRegistrationKg Float
+  weightAtArrivalKg      Float?
+  sealNumber             String
+  photoUrls              String[]
+
+  homeDelivery           Boolean      @default(false)
+  deliveryAddress        String?
+  insured                Boolean      @default(false)
+  fee                    Int
+  insuranceFee           Int          @default(0)
+  // Cash on delivery: amount the receiver pays, released to the sender through escrow
+  codAmount              Int?
+
+  status                 ParcelStatus @default(REGISTERED)
+
+  // Chain of custody: the employee who has the parcel right now is responsible for it
+  currentHolderId        String?
+  currentHolder          Employee?    @relation("ParcelHolder", fields: [currentHolderId], references: [id])
+  courierId              String?
+  courier                Employee?    @relation("ParcelCourier", fields: [courierId], references: [id])
+  registeredById         String
+  registeredBy           Employee     @relation("ParcelRegisteredBy", fields: [registeredById], references: [id])
+
+  // Delivery proof: only a hash of the receiver's code is stored
+  deliveryOtpHash        String?
+  deliveryOtpExpiresAt   DateTime?
+  deliveryAttempts       Int          @default(0)
+  deliveredAt            DateTime?
+  deliveryPhotoUrl       String?
+  deliveryLat            Float?
+  deliveryLng            Float?
+
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  events  ParcelEvent[]
+  claims  ParcelClaim[]
+  escrow  Escrow?
+  reviews Review[]
+}
+
+// Append-only log: one row per scan / handover. Never update or delete rows.
+model ParcelEvent {
+  id        String          @id @default(cuid())
+  parcelId  String
+  parcel    Parcel          @relation(fields: [parcelId], references: [id])
+  type      ParcelEventType
+  actorId   String
+  actor     Employee        @relation(fields: [actorId], references: [id])
+  branchId  String?
+  branch    Branch?         @relation(fields: [branchId], references: [id])
+  weightKg  Float?
+  lat       Float?
+  lng       Float?
+  note      String?
+  createdAt DateTime        @default(now())
+}
+
+model ParcelClaim {
+  id         String      @id @default(cuid())
+  parcelId   String
+  parcel     Parcel      @relation(fields: [parcelId], references: [id])
+  openedById String?
+  openedBy   User?       @relation(fields: [openedById], references: [id])
+  reason     String
+  status     ClaimStatus @default(OPEN)
+  amountPaid Int?
+  createdAt  DateTime    @default(now())
+  resolvedAt DateTime?
+}
+
+// ──────────────── Module 4: Human Resources ────────────────
+
+model Employee {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id])
+  agencyId         String
+  agency           Agency    @relation(fields: [agencyId], references: [id])
+  branchId         String?
+  branch           Branch?   @relation(fields: [branchId], references: [id])
+  jobTitle         String
+  licenceNumber    String?
+  licenceExpiresAt DateTime?
+  salary           Int?
+  hiredAt          DateTime  @default(now())
+  active           Boolean   @default(true)
+
+  drivenTrips       Trip[]              @relation("DriverTrips")
+  heldParcels       Parcel[]            @relation("ParcelHolder")
+  courierParcels    Parcel[]            @relation("ParcelCourier")
+  registeredParcels Parcel[]            @relation("ParcelRegisteredBy")
+  parcelEvents      ParcelEvent[]
+  maintenance       MaintenanceRecord[]
+  fuelLogs          FuelLog[]
+  cashRemittances   CashRemittance[]    @relation("RemittanceEmployee")
+  closedRemittances CashRemittance[]    @relation("RemittanceClosedBy")
+  expenses          Expense[]
+}
+
+model StaffInvite {
+  id          String    @id @default(cuid())
+  agencyId    String
+  agency      Agency    @relation(fields: [agencyId], references: [id])
+  email       String
+  phone       String
+  fullName    String
+  role        Role
+  branchId    String?
+  // Only a hash of the invite token is stored
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  invitedById String
+  createdAt   DateTime  @default(now())
+}
+
+// ──────────────── Module 5: Finance & Reporting ────────────────
+
+model Payment {
+  id          String         @id @default(cuid())
+  agencyId    String?
+  agency      Agency?        @relation(fields: [agencyId], references: [id])
+  payerId     String?
+  payer       User?          @relation(fields: [payerId], references: [id])
+  purpose     PaymentPurpose
+  method      PaymentMethod
+  status      PaymentStatus  @default(PENDING)
+  amount      Int
+  // TransitPro's share of this payment
+  platformFee Int            @default(0)
+  providerRef String?
+  createdAt   DateTime       @default(now())
+
+  ticket Ticket?
+  escrow Escrow?
+}
+
+// Money held by the platform until the receiver confirms delivery with their code
+model Escrow {
+  id               String       @id @default(cuid())
+  paymentId        String       @unique
+  payment          Payment      @relation(fields: [paymentId], references: [id])
+  parcelId         String       @unique
+  parcel           Parcel       @relation(fields: [parcelId], references: [id])
+  amount           Int
+  beneficiaryPhone String
+  status           EscrowStatus @default(HELD)
+  releasedAt       DateTime?
+}
+
+model Expense {
+  id           String          @id @default(cuid())
+  agencyId     String
+  agency       Agency          @relation(fields: [agencyId], references: [id])
+  branchId     String?
+  branch       Branch?         @relation(fields: [branchId], references: [id])
+  busId        String?
+  bus          Bus?            @relation(fields: [busId], references: [id])
+  category     ExpenseCategory
+  amount       Int
+  description  String
+  recordedById String
+  recordedBy   Employee        @relation(fields: [recordedById], references: [id])
+  incurredAt   DateTime        @default(now())
+}
+
+// Cash collected by a staff member during the day, closed by the branch manager
+model CashRemittance {
+  id             String           @id @default(cuid())
+  employeeId     String
+  employee       Employee         @relation("RemittanceEmployee", fields: [employeeId], references: [id])
+  branchId       String
+  branch         Branch           @relation(fields: [branchId], references: [id])
+  day            DateTime
+  amountDue      Int
+  amountRemitted Int              @default(0)
+  status         RemittanceStatus @default(OPEN)
+  closedById     String?
+  closedBy       Employee?        @relation("RemittanceClosedBy", fields: [closedById], references: [id])
+  closedAt       DateTime?
+}
