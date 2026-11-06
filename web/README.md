@@ -18,14 +18,17 @@ src/lib/api.ts          the only fetch wrapper (sends the session cookie)
 src/styles/index.css    design tokens (colors, fonts) from the design canvas
 src/modules/
   auth/           Sign in, agency sign-up                      Lead
-  dashboard/      Agency dashboard                             Lead (numbers from Sweet)
-  live-tracking/  Live map of buses and couriers               Lead (data from Fidel)
+  dashboard/      Agency dashboard                             Lead
+  live-tracking/  Live map of buses and couriers               Lead
   parcels/        Register parcel, parcel detail               Lead
-  booking/        Trips & booking, routes                      Lead (API from Adrien)
-  fleet/          Buses, maintenance, fuel                     Joy (API from Fidel)
-  hr/             Staff, invites, licences, payroll            Joy
-  finance/        Payments, expenses, cash reconciliation      Sweet
+  booking/        Trips & booking, routes                      Lead (or Adrien after mobile)
+  fleet/          Buses, maintenance, fuel                     Fidel after mobile (or Lead)
+  hr/             Staff, invites, licences, payroll            Adrien after mobile (or Lead)
+  finance/        Payments, expenses, cash reconciliation      Lead
   agencies/       Platform admin: verify agencies              Lead
+
+All web pages are built by the Lead, Adrien and Fidel. Joy and Sweet build the server
+endpoints these pages call (see docs/API.md).
 ```
 
 Design: page "Web dashboard" on https://claude.ai/artifact/1NiJFaNhTtXLuCb5VuzRaw

@@ -11,14 +11,16 @@ Read this file before writing any code. If you use an AI agent (Claude Code, Cur
 
 TransitPro is a SaaS for intercity bus agencies in Cameroon. Five modules share **one PostgreSQL database**:
 
-| # | Module | Server folder | Owner |
-|---|---|---|---|
-| 1 | Booking & Ticketing | `server/src/modules/booking` | Adrien Tello |
-| 2 | Fleet & Maintenance | `server/src/modules/fleet` | Ngwese Fidel |
-| 3 | Parcel & Courier | `server/src/modules/parcels` | Fanyi Charllson (Lead) |
-| 4 | Human Resources | `server/src/modules/hr` | Joy |
-| 5 | Finance & Reporting | `server/src/modules/finance` | Sweet |
-| – | Auth, agencies (SaaS), shared code | `server/src/modules/auth`, `agencies`, `lib`, `middleware` | Lead |
+| # | Module | Server folder | Writes the server code | Draws the UML |
+|---|---|---|---|---|
+| 1 | Booking & Ticketing | `server/src/modules/booking` | Joy | Adrien Tello |
+| 2 | Fleet & Maintenance | `server/src/modules/fleet` | Sweet | Ngwese Fidel |
+| 3 | Parcel & Courier | `server/src/modules/parcels` | Fanyi Charllson (Lead) | Fanyi Charllson |
+| 4 | Human Resources | `server/src/modules/hr` | Joy | Joy |
+| 5 | Finance & Reporting | `server/src/modules/finance` | Sweet | Sweet |
+| – | Auth, agencies (SaaS), shared code | `server/src/modules/auth`, `agencies`, `lib`, `middleware` | Lead | – |
+
+Interfaces: **web/** Lead (Adrien and Fidel join after mobile) · **mobile/** Adrien (customer screens) and Fidel (staff screens).
 
 ## 2. Repository layout
 

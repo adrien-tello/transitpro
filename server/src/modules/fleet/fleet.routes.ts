@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { requireAuth, requireRole } from '../../middleware/auth';
 import { notImplemented } from '../../lib/http-error';
 
-// Owner: Ngwese Fidel (Fleet & Maintenance)
+// Server owner: Sweet (Fleet & Maintenance). UML owner: Ngwese Fidel.
 // Screens: staff app Driver Today (Breakdown button, Start trip = live location);
 //          web Fleet page, dashboard "Bus needing attention", Live tracking map.
 // Contract: docs/API.md, section "Fleet". Follow modules/parcels for the style.

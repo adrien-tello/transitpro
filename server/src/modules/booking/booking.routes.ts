@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { requireAuth, requireRole } from '../../middleware/auth';
 import { notImplemented } from '../../lib/http-error';
 
-// Owner: Adrien Tello (Booking & Ticketing)
+// Server owner: Joy (Booking & Ticketing). UML owner: Adrien Tello.
 // Screens: customer app Search, Search results, Choose a seat, Pay, E-ticket;
 //          staff app "Scan tickets"; web "Trips & booking".
 // Contract: docs/API.md, section "Booking". Follow modules/parcels for the style:

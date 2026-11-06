@@ -181,10 +181,10 @@ The group also agrees on **one shared class diagram for the central database**, 
 
 ## 10. Team
 
-| Member | Module | Also builds |
+| Member | UML module (CA) | Builds |
 |---|---|---|
-| **Fanyi Charllson** (Project Lead) | Parcel & Courier | Auth, agencies, web dashboard core |
-| Adrien Tello | Booking & Ticketing | Customer mobile app |
-| Ngwese Fidel | Fleet & Maintenance | Staff mobile app (drivers, couriers) |
-| Joy | Human Resources | Web staff and fleet pages |
-| Sweet | Finance & Reporting | Web finance pages, dashboard numbers |
+| **Fanyi Charllson** (Project Lead) | Parcel & Courier | Web dashboard, Parcels server, auth, agencies, security |
+| Adrien Tello | Booking & Ticketing | Customer mobile app, then web pages |
+| Ngwese Fidel | Fleet & Maintenance | Staff mobile app (drivers, couriers), then web pages |
+| Joy | Human Resources | Server: HR + Booking |
+| Sweet | Finance & Reporting | Server: Finance + Fleet |

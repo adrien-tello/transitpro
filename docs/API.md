@@ -48,7 +48,7 @@ Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 | GET | `/agencies/admin/pending` | PLATFORM_ADMIN | Waiting for verification | Platform admin | 🧱 |
 | POST | `/agencies/admin/:id/approve` · `/reject` | PLATFORM_ADMIN | Verify / reject | Platform admin | 🧱 |
 
-## 1. Booking & Ticketing · Adrien Tello
+## 1. Booking & Ticketing · Joy
 
 | Method | Path | Who | Purpose | Screen | Status |
 |---|---|---|---|---|---|
@@ -63,7 +63,7 @@ Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 | GET/POST | `/booking/trips` | BRANCH_MANAGER | List / schedule trips. **Rejects** a bus not ACTIVE or a driver with an expired licence | Web · Trips, Dashboard departures | 🧱 |
 | PATCH | `/booking/trips/:id/status` | BRANCH_MANAGER, DRIVER | BOARDING → DEPARTED → ARRIVED | Driver Today "Start trip" | 🧱 |
 
-## 2. Fleet & Maintenance · Ngwese Fidel
+## 2. Fleet & Maintenance · Sweet
 
 | Method | Path | Who | Purpose | Screen | Status |
 |---|---|---|---|---|---|
