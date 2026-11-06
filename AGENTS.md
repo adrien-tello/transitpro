@@ -29,6 +29,7 @@ transitpro/
   server/   Express + TypeScript + Prisma. The ONLY thing that talks to the database.
   web/      Agency dashboard. React + Vite + Tailwind. Talks to server/ only.
   mobile/   Expo app. Customer screens + staff screens (role decides). Talks to server/ only.
+  contracts/ Shared response types + mock data (server and screens use the same shapes).
   docs/     Team plan, API contract, UML diagrams.
 ```
 
@@ -66,6 +67,12 @@ modules/<name>/
 - Money is an `Int` in FCFA. Never use floats for money.
 - IDs are `cuid()` strings. Never expose auto-increment numbers.
 - Append-only tables (`ParcelEvent`) are never updated or deleted.
+
+### Response shapes: `contracts/`
+
+- `contracts/api-types.d.ts` defines the exact fields of every response. Services return these types (`import type { ... } from '@contracts/api-types'`, type-only imports).
+- `contracts/mocks.ts` holds example values from the design. Screens use them until the endpoint exists, then swap to `api()`.
+- A screen needs a new field? Add it to the type in a Pull Request and tell the server owner. Never change the shape on one side only.
 
 ## 4. Security (non-negotiable)
 

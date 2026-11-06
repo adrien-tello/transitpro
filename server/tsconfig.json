@@ -10,7 +10,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "sourceMap": true
+    "sourceMap": true,
+    // Shared response types. Only use `import type` from it (types disappear at runtime).
+    "paths": { "@contracts/*": ["../contracts/*"] }
   },
   "include": ["src"]
 }

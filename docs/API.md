@@ -4,6 +4,9 @@ Base URL: `http://localhost:4000/api` (dev). Web dev server proxies `/api` to it
 
 This file is the agreement between the server, the web dashboard and the mobile app. **Change it before you change an endpoint**, and tell the people whose screens use it.
 
+**Exact response fields:** [contracts/api-types.d.ts](../contracts/api-types.d.ts) (one type per endpoint, with the screen that shows it).
+**Example values from the design:** [contracts/mocks.ts](../contracts/mocks.ts). The server must return exactly this shape; the screens use these mocks until the endpoint is ready.
+
 ## Conventions
 
 | Topic | Rule |

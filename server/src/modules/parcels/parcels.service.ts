@@ -1,3 +1,4 @@
+import type { ParcelTracking } from '@contracts/api-types';
 import { notImplemented } from '../../lib/http-error';
 import type { DeliverInput, RegisterParcelInput, ScanInput } from './parcels.schemas';
 
@@ -24,7 +25,7 @@ export async function registerParcel(_input: RegisterParcelInput, _ctx: StaffCon
   throw notImplemented('Register a parcel');
 }
 
-export async function track(_code: string): Promise<unknown> {
+export async function track(_code: string): Promise<ParcelTracking> {
   throw notImplemented('Public tracking');
 }
 

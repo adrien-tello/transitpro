@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import type { User } from '@prisma/client';
+import type { Me, PublicUser } from '@contracts/api-types';
 import { prisma } from '../../lib/prisma';
 import { conflict, forbidden, notFound, unauthorized } from '../../lib/http-error';
 import type { LoginInput, RegisterInput } from './auth.schemas';
@@ -10,10 +11,16 @@ import type { LoginInput, RegisterInput } from './auth.schemas';
 // "wrong password" take the same time (no account discovery by timing)
 const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', 12);
 
-// Never send secrets or security fields to a client
-export function publicUser(user: User) {
-  const { passwordHash: _p, googleId: _g, tokenVersion: _t, ...rest } = user;
-  return rest;
+// Only the fields of the contract leave the server (never passwordHash, tokenVersion...)
+export function publicUser(user: User): PublicUser {
+  return {
+    id: user.id,
+    fullName: user.fullName,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+    agencyId: user.agencyId,
+  };
 }
 
 // Customers sign themselves up. Staff accounts only come from an HR invite.
@@ -46,12 +53,14 @@ export async function revokeAllSessions(userId: string) {
   await prisma.user.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } });
 }
 
-export async function me(userId: string) {
+export async function me(userId: string): Promise<Me> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { agency: { select: { id: true, name: true, status: true } }, employee: true },
+    include: {
+      agency: { select: { id: true, name: true, status: true } },
+      employee: { select: { id: true, jobTitle: true, branchId: true, active: true } },
+    },
   });
   if (!user) throw notFound('User');
-  const { passwordHash: _p, googleId: _g, tokenVersion: _t, ...rest } = user;
-  return rest;
+  return { ...publicUser(user), agency: user.agency, employee: user.employee };
 }

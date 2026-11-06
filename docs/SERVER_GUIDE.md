@@ -29,6 +29,8 @@ Every module has 3 files. Look at `src/modules/auth/` to see a finished example.
 1. **Branch:** `git checkout -b feat/booking-search-trips`
 2. **Rules of the input** in `<module>.schemas.ts`: what fields are allowed (Zod).
 3. **The work** in `<module>.service.ts`: read or save in the database with `prisma`. Always filter by the agency of the logged-in user.
+   **What you return is already decided:** open `contracts/api-types.d.ts`, find your endpoint's type (e.g. `TripSearchResult`), and write it as the return type:
+   `export async function searchTrips(...): Promise<TripSearchResult[]>`. `contracts/mocks.ts` shows an example. If you forget a field, `npm run typecheck` tells you, before the screens break.
 4. **The door** in `<module>.routes.ts`: replace the `throw notImplemented(...)` line: check the role, validate, call your service, answer `{ data }`.
 5. **Test it** with Thunder Client (VS Code extension) or Postman: log in first with a demo account, then call your endpoint.
 6. **Save:** `npm run typecheck`, then commit, push your branch, open a Pull Request. Charllson reviews.
