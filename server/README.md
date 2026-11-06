@@ -8,6 +8,7 @@ Express 5 + TypeScript + Prisma (PostgreSQL). The only part of the project that 
 cd server
 npm install
 cp .env.example .env        # then put the DATABASE_URL the Lead shares in the group
+npm run db:check            # says if the database is reachable (never prints the URL)
 npm run db:generate
 npm run db:migrate          # creates the tables (only the Lead runs this on the shared cloud DB)
 npm run db:seed             # demo agency + one account per role, password: Password123

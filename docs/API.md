@@ -11,7 +11,8 @@ This file is the agreement between the server, the web dashboard and the mobile 
 | Auth | httpOnly cookie `tp_session`, set by `/auth/login`, `/auth/register`, `/hr/invites/:token/accept`. Clients send `credentials: 'include'`. |
 | Success | `200/201 { "data": <object or array> }` |
 | Error | `{ "error": { "code": "VALIDATION_ERROR", "message": "Some fields are invalid", "details": {...} } }` |
-| Codes | `400 BAD_REQUEST / VALIDATION_ERROR`, `401 UNAUTHORIZED`, `403 FORBIDDEN`, `404 NOT_FOUND`, `409 CONFLICT`, `501 NOT_IMPLEMENTED` |
+| Codes | `400 BAD_REQUEST / VALIDATION_ERROR / BAD_JSON`, `401 UNAUTHORIZED`, `403 FORBIDDEN / BAD_ORIGIN`, `404 NOT_FOUND`, `409 CONFLICT`, `413 TOO_LARGE`, `415 UNSUPPORTED_MEDIA_TYPE`, `429 TOO_MANY_REQUESTS`, `501 NOT_IMPLEMENTED` |
+| Writes | POST / PUT / PATCH / DELETE bodies must be `Content-Type: application/json`, max 100 kb |
 | Lists | `?page=1&limit=20` → `{ "data": { "items": [...], "page": 1, "limit": 20, "total": 134 } }` |
 | Money | Integer FCFA (`6000`, never `6000.00`) |
 | Dates | ISO 8601 UTC strings (`2026-11-03T07:00:00.000Z`) |
@@ -32,6 +33,7 @@ Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 | POST | `/auth/login` | public | `email, password` | `{ user }` + cookie | Mobile · Log in, Web · Sign in | ✅ |
 | POST | `/auth/google` | public | `idToken` | `{ user }` + cookie | Continue with Google | 🧱 |
 | POST | `/auth/logout` | any | – | clears cookie | Profile, sidebar Log out | ✅ |
+| POST | `/auth/logout-all` | logged in | – | ends every session of this user on all devices | Profile | ✅ |
 | GET | `/auth/me` | logged in | – | user + agency + employee (role decides customer vs staff app) | app start | ✅ |
 
 ## Agencies (SaaS) · Lead

@@ -18,6 +18,14 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
       .status(400)
       .json({ error: { code: 'VALIDATION_ERROR', message: 'Some fields are invalid', details: err.flatten().fieldErrors } });
   }
+  // express.json(): broken JSON or a body over the size limit
+  const bodyError = err as { type?: string };
+  if (bodyError?.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: { code: 'BAD_JSON', message: 'The request body is not valid JSON' } });
+  }
+  if (bodyError?.type === 'entity.too.large') {
+    return res.status(413).json({ error: { code: 'TOO_LARGE', message: 'The request body is too large' } });
+  }
   if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
     return res.status(409).json({ error: { code: 'CONFLICT', message: 'This record already exists', details: err.meta } });
   }

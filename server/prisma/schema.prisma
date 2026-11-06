@@ -158,6 +158,10 @@ model User {
   googleId     String?  @unique
   fullName     String
   role         Role     @default(CUSTOMER)
+  // Security: a disabled account is logged out everywhere on its next request
+  isActive     Boolean  @default(true)
+  // Security: +1 = every existing session of this user stops working (logout everywhere, password change)
+  tokenVersion Int      @default(0)
   agencyId     String?
   agency       Agency?  @relation(fields: [agencyId], references: [id])
   createdAt    DateTime @default(now())

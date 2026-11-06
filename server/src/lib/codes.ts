@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomInt } from 'crypto';
+import { createHash, randomBytes, randomInt, timingSafeEqual } from 'crypto';
 
 // Human-friendly codes printed on labels and tickets.
 // No 0/O/1/I so they are easy to read aloud.
@@ -34,4 +34,12 @@ export function inviteToken(): string {
 // We never store OTPs or invite tokens in clear text, only their hash.
 export function sha256(value: string): string {
   return createHash('sha256').update(value).digest('hex');
+}
+
+// Compare a code the user typed with a stored hash in constant time
+// (a normal === leaks, through timing, how many characters matched)
+export function matchesHash(value: string, storedHash: string): boolean {
+  const a = Buffer.from(sha256(value), 'hex');
+  const b = Buffer.from(storedHash, 'hex');
+  return a.length === b.length && timingSafeEqual(a, b);
 }

@@ -76,6 +76,8 @@ modules/<name>/
 5. Secrets (OTP codes, invite tokens) are stored **hashed** (`sha256` in `lib/codes.ts`). Passwords use bcrypt.
 6. Public endpoints (tracking, agency list) return **no names, phone numbers or photos**.
 7. Never commit `.env`. Never log passwords, codes or tokens.
+8. Already enforced in `middleware/security.ts` and `app.ts`, do not remove: rate limits (300 req / 15 min, 10 logins / 15 min), Origin check on writes (CSRF), JSON-only writes, 100 kb body limit, `Cache-Control: no-store`, helmet headers. Sessions are checked against the database on every request, so a deactivated account or `POST /auth/logout-all` ends sessions at once.
+9. Compare codes with `matchesHash()` from `lib/codes.ts`, never with `===`.
 
 ## 5. Web rules (`web/`)
 

@@ -1,22 +1,19 @@
 import bcrypt from 'bcryptjs';
 import type { User } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
-import { conflict, notFound, unauthorized } from '../../lib/http-error';
-import type { AuthUser } from '../../types/express';
+import { conflict, forbidden, notFound, unauthorized } from '../../lib/http-error';
 import type { LoginInput, RegisterInput } from './auth.schemas';
 
 // Owner: Lead (Fanyi Charllson)
 
-// Never send passwordHash or googleId to a client
-export function publicUser(user: User) {
-  const { passwordHash: _p, googleId: _g, ...rest } = user;
-  return rest;
-}
+// Compared against when the email does not exist, so "unknown email" and
+// "wrong password" take the same time (no account discovery by timing)
+const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', 12);
 
-// What goes inside the session cookie
-export async function sessionFor(user: User): Promise<AuthUser> {
-  const employee = await prisma.employee.findUnique({ where: { userId: user.id }, select: { id: true } });
-  return { id: user.id, role: user.role, agencyId: user.agencyId, employeeId: employee?.id ?? null };
+// Never send secrets or security fields to a client
+export function publicUser(user: User) {
+  const { passwordHash: _p, googleId: _g, tokenVersion: _t, ...rest } = user;
+  return rest;
 }
 
 // Customers sign themselves up. Staff accounts only come from an HR invite.
@@ -37,11 +34,16 @@ export async function register(input: RegisterInput) {
 
 export async function login(input: LoginInput) {
   const user = await prisma.user.findUnique({ where: { email: input.email } });
+  const ok = await bcrypt.compare(input.password, user?.passwordHash ?? DUMMY_HASH);
   // Same message for "no account" and "wrong password" so emails cannot be guessed
-  if (!user?.passwordHash || !(await bcrypt.compare(input.password, user.passwordHash))) {
-    throw unauthorized('Wrong email or password');
-  }
+  if (!user?.passwordHash || !ok) throw unauthorized('Wrong email or password');
+  if (!user.isActive) throw forbidden('This account is disabled');
   return user;
+}
+
+// "Log out on all my devices": every existing cookie stops working
+export async function revokeAllSessions(userId: string) {
+  await prisma.user.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } });
 }
 
 export async function me(userId: string) {
@@ -50,6 +52,6 @@ export async function me(userId: string) {
     include: { agency: { select: { id: true, name: true, status: true } }, employee: true },
   });
   if (!user) throw notFound('User');
-  const { passwordHash: _p, googleId: _g, ...rest } = user;
+  const { passwordHash: _p, googleId: _g, tokenVersion: _t, ...rest } = user;
   return rest;
 }
