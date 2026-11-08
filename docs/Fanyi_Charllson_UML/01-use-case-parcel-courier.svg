@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1230" viewBox="0 0 1500 1230" font-family="Inter, 'Segoe UI', Arial, sans-serif">
+<defs>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap');</style>
+  <marker id="open" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L11 6 L1 11" fill="none" stroke="#334155" stroke-width="1.5" stroke-linejoin="round"/></marker>
+  <marker id="openblue" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L11 6 L1 11" fill="none" stroke="#1E4FD8" stroke-width="1.5" stroke-linejoin="round"/></marker>
+  <marker id="tri" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#334155"/></marker>
+  <marker id="triblue" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#1E4FD8"/></marker>
+  <marker id="hollow" viewBox="0 0 16 16" refX="15" refY="8" markerWidth="16" markerHeight="16" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L15 8 L1 15 Z" fill="#fff" stroke="#334155" stroke-width="1.4"/></marker>
+  <marker id="diamond" viewBox="0 0 20 12" refX="1" refY="6" markerWidth="20" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 6 L10 1 L19 6 L10 11 Z" fill="#334155"/></marker>
+</defs>
+<rect width="1500" height="1230" fill="#FFFFFF"/>
+<rect x="0" y="0" width="1500" height="92" fill="#FFFFFF"/>
+<rect x="40" y="30" width="5" height="36" rx="2" fill="#1E4FD8"/>
+<text x="58.0" y="47.0" font-size="22" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Parcel &amp; Courier: Use Case Diagram</text>
+<text x="58.0" y="70.0" font-size="13.5" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Who uses the parcel service and what they can do with it</text>
+<text x="1460.0" y="40.0" font-size="13" font-weight="600" fill="#0F172A" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">TransitPro · Module 3</text>
+<text x="1460.0" y="58.0" font-size="12.5" font-weight="400" fill="#64748B" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">Fanyi Charllson, Project Lead</text>
+<text x="1460.0" y="76.0" font-size="12.5" font-weight="400" fill="#64748B" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">v1.0 · November 2026</text>
+<line x1="40" y1="92" x2="1460" y2="92" stroke="#E2E8F0" stroke-width="1"/>
+<rect x="330.0" y="130.0" width="870.0" height="905.0" rx="18" fill="#FCFDFE" stroke="#94A3B8" stroke-width="1.5"/>
+<text x="352.0" y="160.0" font-size="14" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">TransitPro: Parcel &amp; Courier service</text>
+<text x="352.0" y="179.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«system»</text>
+<ellipse cx="480" cy="250" rx="112" ry="33" fill="#EEF3FE" stroke="#5B7BE0" stroke-width="1.5"/>
+<text x="480.0" y="254.5" font-size="12.5" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Track a parcel</text>
+<ellipse cx="480" cy="520" rx="112" ry="33" fill="#EEF3FE" stroke="#5B7BE0" stroke-width="1.5"/>
+<text font-size="12.5" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="480.0" y="516.4">Give the delivery</tspan><tspan x="480.0" y="532.6">code</tspan></text>
+<ellipse cx="480" cy="740" rx="112" ry="33" fill="#EEF3FE" stroke="#5B7BE0" stroke-width="1.5"/>
+<text font-size="12.5" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="480.0" y="736.4">Refuse the parcel</tspan><tspan x="480.0" y="752.6">and open a claim</tspan></text>
+<ellipse cx="480" cy="960" rx="112" ry="33" fill="#FFFFFF" stroke="#334155" stroke-width="1.5"/>
+<text font-size="12.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="480.0" y="956.4">Send SMS</tspan><tspan x="480.0" y="972.6">notification</tspan></text>
+<ellipse cx="760" cy="200" rx="112" ry="33" fill="#FFFFFF" stroke="#334155" stroke-width="1.5"/>
+<text font-size="12.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="760.0" y="196.4">Weigh, photograph</tspan><tspan x="760.0" y="212.6">and seal</tspan></text>
+<ellipse cx="760" cy="305" rx="112" ry="33" fill="#FFFFFF" stroke="#334155" stroke-width="1.5"/>
+<text x="760.0" y="309.5" font-size="12.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Take payment</text>
+<ellipse cx="760" cy="410" rx="112" ry="33" fill="#FFFFFF" stroke="#334155" stroke-width="1.5"/>
+<text x="760.0" y="414.5" font-size="12.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Insure the parcel</text>
+<ellipse cx="760" cy="525" rx="112" ry="33" fill="#FFFFFF" stroke="#334155" stroke-width="1.5"/>
+<text x="760.0" y="529.5" font-size="12.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Re-weigh on arrival</text>
+<ellipse cx="760" cy="640" rx="112" ry="33" fill="#FFFFFF" stroke="#334155" stroke-width="1.5"/>
+<text font-size="12.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="760.0" y="636.4">Verify the</tspan><tspan x="760.0" y="652.6">delivery code</tspan></text>
+<ellipse cx="760" cy="750" rx="112" ry="33" fill="#FFFFFF" stroke="#334155" stroke-width="1.5"/>
+<text font-size="12.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="760.0" y="746.4">Capture photo</tspan><tspan x="760.0" y="762.6">and GPS position</tspan></text>
+<ellipse cx="760" cy="865" rx="112" ry="33" fill="#FFFFFF" stroke="#334155" stroke-width="1.5"/>
+<text font-size="12.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="760.0" y="861.4">Release escrow</tspan><tspan x="760.0" y="877.6">to the sender</tspan></text>
+<ellipse cx="1050" cy="230" rx="112" ry="33" fill="#EEF3FE" stroke="#5B7BE0" stroke-width="1.5"/>
+<text x="1050.0" y="234.5" font-size="12.5" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Register a parcel</text>
+<ellipse cx="1050" cy="430" rx="112" ry="33" fill="#EEF3FE" stroke="#5B7BE0" stroke-width="1.5"/>
+<text font-size="12.5" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1050.0" y="426.4">Scan a handover</tspan><tspan x="1050.0" y="442.6">(load, depart, arrive)</tspan></text>
+<ellipse cx="1050" cy="640" rx="112" ry="33" fill="#EEF3FE" stroke="#5B7BE0" stroke-width="1.5"/>
+<text font-size="12.5" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1050.0" y="636.4">Deliver with the</tspan><tspan x="1050.0" y="652.6">receiver&#x27;s code</tspan></text>
+<ellipse cx="1050" cy="870" rx="112" ry="33" fill="#EEF3FE" stroke="#5B7BE0" stroke-width="1.5"/>
+<text font-size="12.5" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1050.0" y="866.4">Review held parcels</tspan><tspan x="1050.0" y="882.6">and claims</tspan></text>
+<polyline points="944.3,219.1 865.7,210.9" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="873.5" y="205.8" width="62.9" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="905.0" y="219.0" font-size="11" font-weight="500" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">«include»</text>
+<polyline points="965.8,251.8 844.2,283.2" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="873.5" y="258.4" width="62.9" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="905.0" y="271.5" font-size="11" font-weight="500" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">«include»</text>
+<polyline points="808.0,380.2 1002.0,259.8" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="876.6" y="310.9" width="56.8" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="905.0" y="324.0" font-size="11" font-weight="500" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">«extend»</text>
+<polyline points="975.1,454.5 834.9,500.5" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="873.5" y="468.4" width="62.9" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="905.0" y="481.5" font-size="11" font-weight="500" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">«include»</text>
+<polyline points="938.0,640.0 872.0,640.0" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="873.5" y="630.9" width="62.9" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="905.0" y="644.0" font-size="11" font-weight="500" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">«include»</text>
+<polyline points="981.3,666.1 828.7,723.9" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="873.5" y="685.9" width="62.9" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="905.0" y="699.0" font-size="11" font-weight="500" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">«include»</text>
+<polyline points="799.8,834.1 1010.2,670.9" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="876.6" y="743.4" width="56.8" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="905.0" y="756.5" font-size="11" font-weight="500" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">«extend»</text>
+<circle cx="170" cy="232" r="10" fill="#fff" stroke="#334155" stroke-width="1.6"/>
+<line x1="170" y1="242" x2="170" y2="268" stroke="#334155" stroke-width="1.6"/>
+<line x1="153" y1="252" x2="187" y2="252" stroke="#334155" stroke-width="1.6"/>
+<line x1="170" y1="268" x2="156" y2="290" stroke="#334155" stroke-width="1.6"/>
+<line x1="170" y1="268" x2="184" y2="290" stroke="#334155" stroke-width="1.6"/>
+<text x="170.0" y="310.0" font-size="13" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Sender</text>
+<circle cx="170" cy="564" r="10" fill="#fff" stroke="#334155" stroke-width="1.6"/>
+<line x1="170" y1="574" x2="170" y2="600" stroke="#334155" stroke-width="1.6"/>
+<line x1="153" y1="584" x2="187" y2="584" stroke="#334155" stroke-width="1.6"/>
+<line x1="170" y1="600" x2="156" y2="622" stroke="#334155" stroke-width="1.6"/>
+<line x1="170" y1="600" x2="184" y2="622" stroke="#334155" stroke-width="1.6"/>
+<text x="170.0" y="642.0" font-size="13" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Receiver</text>
+<polyline points="190.0,252.0 368.0,250.8" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<polyline points="190.0,584.0 452.2,282.0" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<polyline points="190.0,584.0 390.4,539.8" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<polyline points="190.0,584.0 426.2,711.1" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<circle cx="1350" cy="202" r="10" fill="#fff" stroke="#334155" stroke-width="1.6"/>
+<line x1="1350" y1="212" x2="1350" y2="238" stroke="#334155" stroke-width="1.6"/>
+<line x1="1333" y1="222" x2="1367" y2="222" stroke="#334155" stroke-width="1.6"/>
+<line x1="1350" y1="238" x2="1336" y2="260" stroke="#334155" stroke-width="1.6"/>
+<line x1="1350" y1="238" x2="1364" y2="260" stroke="#334155" stroke-width="1.6"/>
+<text x="1350.0" y="280.0" font-size="13" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Counter agent</text>
+<circle cx="1350" cy="412" r="10" fill="#fff" stroke="#334155" stroke-width="1.6"/>
+<line x1="1350" y1="422" x2="1350" y2="448" stroke="#334155" stroke-width="1.6"/>
+<line x1="1333" y1="432" x2="1367" y2="432" stroke="#334155" stroke-width="1.6"/>
+<line x1="1350" y1="448" x2="1336" y2="470" stroke="#334155" stroke-width="1.6"/>
+<line x1="1350" y1="448" x2="1364" y2="470" stroke="#334155" stroke-width="1.6"/>
+<text x="1350.0" y="490.0" font-size="13" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Driver</text>
+<circle cx="1350" cy="622" r="10" fill="#fff" stroke="#334155" stroke-width="1.6"/>
+<line x1="1350" y1="632" x2="1350" y2="658" stroke="#334155" stroke-width="1.6"/>
+<line x1="1333" y1="642" x2="1367" y2="642" stroke="#334155" stroke-width="1.6"/>
+<line x1="1350" y1="658" x2="1336" y2="680" stroke="#334155" stroke-width="1.6"/>
+<line x1="1350" y1="658" x2="1364" y2="680" stroke="#334155" stroke-width="1.6"/>
+<text x="1350.0" y="700.0" font-size="13" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Courier</text>
+<circle cx="1350" cy="852" r="10" fill="#fff" stroke="#334155" stroke-width="1.6"/>
+<line x1="1350" y1="862" x2="1350" y2="888" stroke="#334155" stroke-width="1.6"/>
+<line x1="1333" y1="872" x2="1367" y2="872" stroke="#334155" stroke-width="1.6"/>
+<line x1="1350" y1="888" x2="1336" y2="910" stroke="#334155" stroke-width="1.6"/>
+<line x1="1350" y1="888" x2="1364" y2="910" stroke="#334155" stroke-width="1.6"/>
+<text x="1350.0" y="930.0" font-size="13" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Branch manager</text>
+<polyline points="1330.0,222.0 1161.5,226.8" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<polyline points="1330.0,222.0 1091.3,399.3" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<polyline points="1330.0,432.0 1162.0,430.8" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<polyline points="1330.0,642.0 1162.0,640.8" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<polyline points="1330.0,872.0 1162.0,870.8" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<rect x="400.0" y="1083.0" width="160.0" height="58.0" rx="8" fill="#F8FAFC" stroke="#334155" stroke-width="1.4"/>
+<text x="480.0" y="1104.0" font-size="10.5" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«system»</text>
+<text x="480.0" y="1123.0" font-size="13" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">SMS gateway</text>
+<rect x="670.0" y="1083.0" width="180.0" height="58.0" rx="8" fill="#F8FAFC" stroke="#334155" stroke-width="1.4"/>
+<text x="760.0" y="1104.0" font-size="10.5" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«system»</text>
+<text x="760.0" y="1123.0" font-size="13" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Payment provider</text>
+<polyline points="480.0,1083.0 480.0,993.0" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<polyline points="760.0,1083.0 760.0,898.0" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<path d="M350,812 H574 L586,824 V882 H350 Z" fill="#FFFBEB" stroke="#D9B76A" stroke-width="1.2"/>
+<path d="M574,812 V824 H586" fill="none" stroke="#D9B76A" stroke-width="1.2"/>
+<text font-size="11" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="362.0" y="836.6">Included by: Register a parcel,</tspan><tspan x="362.0" y="850.9">Scan a handover and Deliver</tspan><tspan x="362.0" y="865.2">with the receiver&#x27;s code</tspan></text>
+<polyline points="468.0,882.0 476.0,927.0" fill="none" stroke="#D9B76A" stroke-width="1.2" stroke-dasharray="3 3" stroke-linejoin="round"/>
+<rect x="846.1" y="780.9" width="117.9" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="905.0" y="794.0" font-size="11" font-weight="500" fill="#B45309" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">[cash on delivery]</text>
+<rect x="827.7" y="350.9" width="154.5" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="905.0" y="364.0" font-size="11" font-weight="500" fill="#B45309" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">[declared value insured]</text>
+<text x="40.0" y="1120.0" font-size="12" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Legend</text>
+<ellipse cx="62" cy="1144" rx="20" ry="10" fill="#EEF3FE" stroke="#5B7BE0" stroke-width="1.4"/>
+<text x="90.0" y="1148.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Main goal of an actor</text>
+<ellipse cx="62" cy="1170" rx="20" ry="10" fill="#fff" stroke="#334155" stroke-width="1.4"/>
+<text x="90.0" y="1174.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Supporting step</text>
+<line x1="40" y1="1192" x2="1460" y2="1192" stroke="#E2E8F0" stroke-width="1"/>
+<text x="40.0" y="1214.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">TransitPro · Large System Environment · CA UML deliverable</text>
+<text x="1460.0" y="1214.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">Notation: UML 2.5 use case diagram</text>
+</svg>

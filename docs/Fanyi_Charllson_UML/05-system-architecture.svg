@@ -1,0 +1,242 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1250" viewBox="0 0 1900 1250" font-family="Inter, 'Segoe UI', Arial, sans-serif">
+<defs>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap');</style>
+  <marker id="open" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L11 6 L1 11" fill="none" stroke="#334155" stroke-width="1.5" stroke-linejoin="round"/></marker>
+  <marker id="openblue" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L11 6 L1 11" fill="none" stroke="#1E4FD8" stroke-width="1.5" stroke-linejoin="round"/></marker>
+  <marker id="tri" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#334155"/></marker>
+  <marker id="triblue" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#1E4FD8"/></marker>
+  <marker id="hollow" viewBox="0 0 16 16" refX="15" refY="8" markerWidth="16" markerHeight="16" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L15 8 L1 15 Z" fill="#fff" stroke="#334155" stroke-width="1.4"/></marker>
+  <marker id="diamond" viewBox="0 0 20 12" refX="1" refY="6" markerWidth="20" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 6 L10 1 L19 6 L10 11 Z" fill="#334155"/></marker>
+</defs>
+<rect width="1900" height="1250" fill="#FFFFFF"/>
+<rect x="0" y="0" width="1900" height="92" fill="#FFFFFF"/>
+<rect x="40" y="30" width="5" height="36" rx="2" fill="#1E4FD8"/>
+<text x="58.0" y="47.0" font-size="22" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">TransitPro: System Architecture</text>
+<text x="58.0" y="70.0" font-size="13.5" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">One platform, three apps, six business modules, one central database</text>
+<text x="1860.0" y="40.0" font-size="13" font-weight="600" fill="#0F172A" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">TransitPro · whole system</text>
+<text x="1860.0" y="58.0" font-size="12.5" font-weight="400" fill="#64748B" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">Fanyi Charllson, Project Lead</text>
+<text x="1860.0" y="76.0" font-size="12.5" font-weight="400" fill="#64748B" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">v1.0 · November 2026</text>
+<line x1="40" y1="92" x2="1860" y2="92" stroke="#E2E8F0" stroke-width="1"/>
+<rect x="40.0" y="110.0" width="1820.0" height="180.0" rx="12" fill="#FAFBFD" stroke="#E2E8F0" stroke-width="1.2"/>
+<text x="60.0" y="136.0" font-size="13" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Clients</text>
+<text x="60.0" y="154.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">what people use</text>
+<rect x="220.0" y="130.0" width="324.5" height="140.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+<rect x="236.0" y="146.0" width="18.0" height="28.0" rx="4" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<line x1="242.0" y1="169" x2="248.0" y2="169" stroke="#334155" stroke-width="1.5"/>
+<text x="272.0" y="160.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Customer app</text>
+<text x="236.0" y="196.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Expo · React Native · iOS &amp; Android</text>
+<text x="236.0" y="213.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Passengers, senders, receivers</text>
+<text x="236.0" y="230.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Search, book, pay, track parcels</text>
+<rect x="568.5" y="130.0" width="324.5" height="140.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+<rect x="584.5" y="146.0" width="18.0" height="28.0" rx="4" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<line x1="590.5" y1="169" x2="596.5" y2="169" stroke="#334155" stroke-width="1.5"/>
+<text x="620.5" y="160.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Staff app</text>
+<text x="584.5" y="196.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Same Expo app, role DRIVER / COURIER</text>
+<text x="584.5" y="213.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Drivers and couriers</text>
+<text x="584.5" y="230.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">QR scan (camera), GPS, delivery code</text>
+<rect x="917.0" y="130.0" width="324.5" height="140.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+<rect x="933.0" y="146.0" width="28.0" height="19.0" rx="3" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M942.0,171 H952.0 M947.0,165 V171" stroke="#334155" stroke-width="1.5"/>
+<text x="969.0" y="160.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Agency dashboard</text>
+<text x="933.0" y="196.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">React 19 · Vite · Tailwind</text>
+<text x="933.0" y="213.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Counter agents, managers, HR,</text>
+<text x="933.0" y="230.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">accountant, agency owner</text>
+<rect x="1265.5" y="130.0" width="324.5" height="140.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+<rect x="1281.5" y="146.0" width="28.0" height="19.0" rx="3" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M1290.5,171 H1300.5 M1295.5,165 V171" stroke="#334155" stroke-width="1.5"/>
+<text x="1317.5" y="160.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Platform admin</text>
+<text x="1281.5" y="196.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Same web app, role PLATFORM_ADMIN</text>
+<text x="1281.5" y="213.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">TransitPro team</text>
+<text x="1281.5" y="230.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Verifies agencies, sets commissions</text>
+<rect x="1640.0" y="130.0" width="220.0" height="140.0" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.3"/>
+<text x="1656.0" y="160.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Google Sign-In</text>
+<text x="1656.0" y="182.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">OAuth identity provider</text>
+<text x="1656.0" y="199.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Used by: Auth</text>
+<text x="1656.0" y="216.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">&quot;Continue with Google&quot;</text>
+<polyline points="382.2,270.0 382.2,335.0" fill="none" stroke="#1E4FD8" stroke-width="1.6" marker-end="url(#triblue)" stroke-linejoin="round"/>
+<polyline points="730.8,270.0 730.8,335.0" fill="none" stroke="#1E4FD8" stroke-width="1.6" marker-end="url(#triblue)" stroke-linejoin="round"/>
+<polyline points="1079.2,270.0 1079.2,335.0" fill="none" stroke="#1E4FD8" stroke-width="1.6" marker-end="url(#triblue)" stroke-linejoin="round"/>
+<polyline points="1427.8,270.0 1427.8,335.0" fill="none" stroke="#1E4FD8" stroke-width="1.6" marker-end="url(#triblue)" stroke-linejoin="round"/>
+<rect x="725.0" y="293.5" width="359.9" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="905.0" y="307.1" font-size="11.5" font-weight="600" fill="#1E4FD8" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">HTTPS · JSON · httpOnly session cookie (tp_session)</text>
+<rect x="40.0" y="315.0" width="1820.0" height="175.0" rx="12" fill="#FAFBFD" stroke="#E2E8F0" stroke-width="1.2"/>
+<text x="60.0" y="341.0" font-size="13" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">API &amp; security</text>
+<text x="60.0" y="359.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">every request</text>
+<rect x="220.0" y="335.0" width="1370.0" height="135.0" rx="10" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text x="238.0" y="361.0" font-size="14" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Express 5 REST API</text>
+<text x="390.0" y="361.0" font-size="12" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Node.js · TypeScript · /api/*  ·  every request passes these checks in order</text>
+<rect x="238.0" y="385.0" width="147.5" height="64.0" rx="8" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.2"/>
+<text font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="311.8" y="409.5">Helmet</tspan><tspan x="311.8" y="424.5">security headers</tspan></text>
+<polyline points="388.5,417.0 404.5,417.0" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="407.5" y="385.0" width="147.5" height="64.0" rx="8" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.2"/>
+<text font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="481.2" y="409.5">CORS</tspan><tspan x="481.2" y="424.5">allowlist</tspan></text>
+<polyline points="558.0,417.0 574.0,417.0" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="577.0" y="385.0" width="147.5" height="64.0" rx="8" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.2"/>
+<text font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="650.8" y="409.5">Rate limits</tspan><tspan x="650.8" y="424.5">300 / 10 per 15 min</tspan></text>
+<polyline points="727.5,417.0 743.5,417.0" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="746.5" y="385.0" width="147.5" height="64.0" rx="8" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.2"/>
+<text font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="820.2" y="409.5">Origin check</tspan><tspan x="820.2" y="424.5">(CSRF)</tspan></text>
+<polyline points="897.0,417.0 913.0,417.0" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="916.0" y="385.0" width="147.5" height="64.0" rx="8" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.2"/>
+<text font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="989.8" y="409.5">JSON only</tspan><tspan x="989.8" y="424.5">max 100 kb</tspan></text>
+<polyline points="1066.5,417.0 1082.5,417.0" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="1085.5" y="385.0" width="147.5" height="64.0" rx="8" fill="#EEF3FE" stroke="#5B7BE0" stroke-width="1.2"/>
+<text font-size="11.5" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1159.2" y="409.5">requireAuth</tspan><tspan x="1159.2" y="424.5">cookie + DB session</tspan></text>
+<polyline points="1236.0,417.0 1252.0,417.0" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="1255.0" y="385.0" width="147.5" height="64.0" rx="8" fill="#EEF3FE" stroke="#5B7BE0" stroke-width="1.2"/>
+<text font-size="11.5" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1328.8" y="409.5">requireRole</tspan><tspan x="1328.8" y="424.5">(RBAC)</tspan></text>
+<polyline points="1405.5,417.0 1421.5,417.0" fill="none" stroke="#334155" stroke-width="1.3" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="1424.5" y="385.0" width="147.5" height="64.0" rx="8" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.2"/>
+<text font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1498.2" y="409.5">Zod</tspan><tspan x="1498.2" y="424.5">validation</tspan></text>
+<polyline points="905.0,470.0 905.0,536.0" fill="none" stroke="#334155" stroke-width="1.5" stroke-linejoin="round"/>
+<rect x="641.5" y="493.9" width="526.9" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="905.0" y="507.0" font-size="11" font-weight="500" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">routes  /api/auth · /api/hr · /api/booking · /api/fleet · /api/parcels · /api/finance</text>
+<rect x="40.0" y="515.0" width="1820.0" height="390.0" rx="12" fill="#FAFBFD" stroke="#E2E8F0" stroke-width="1.2"/>
+<text x="60.0" y="541.0" font-size="13" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Business modules</text>
+<text x="60.0" y="559.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">one folder each</text>
+<polyline points="317.5,536.0 1492.5,536.0" fill="none" stroke="#334155" stroke-width="1.5" stroke-linejoin="round"/>
+<rect x="220.0" y="575.0" width="195.0" height="245.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+<text x="234.0" y="603.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Auth &amp; Agencies</text>
+<text x="234.0" y="621.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Built by Charllson</text>
+<line x1="234" y1="634" x2="401" y2="634" stroke="#E2E8F0" stroke-width="1"/>
+<text x="234.0" y="655.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Login, sessions, roles</text>
+<text x="234.0" y="672.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Agency sign-up and</text>
+<text x="234.0" y="689.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">verification (SaaS)</text>
+<text x="234.0" y="726.0" font-size="10" font-weight="700" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Tables</text>
+<text x="234.0" y="742.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">User</text>
+<text x="234.0" y="756.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">Agency</text>
+<text x="234.0" y="770.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">Branch</text>
+<text x="234.0" y="806.0" font-size="10.5" font-weight="600" fill="#1E4FD8" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">→ every module</text>
+<polyline points="317.5,536.0 317.5,575.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="317.5,820.0 317.5,858.0" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<rect x="455.0" y="575.0" width="195.0" height="245.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+<text x="469.0" y="603.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Human Resources</text>
+<text x="469.0" y="621.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Built by Joy</text>
+<line x1="469" y1="634" x2="636" y2="634" stroke="#E2E8F0" stroke-width="1"/>
+<text x="469.0" y="655.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Staff and invites</text>
+<text x="469.0" y="672.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Driver licences</text>
+<text x="469.0" y="689.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Payroll</text>
+<text x="469.0" y="726.0" font-size="10" font-weight="700" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Tables</text>
+<text x="469.0" y="742.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">Employee</text>
+<text x="469.0" y="756.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">StaffInvite</text>
+<text x="469.0" y="806.0" font-size="10.5" font-weight="600" fill="#1E4FD8" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">→ Finance · → SMS</text>
+<polyline points="552.5,536.0 552.5,575.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="552.5,820.0 552.5,858.0" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<rect x="690.0" y="575.0" width="195.0" height="245.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+<text x="704.0" y="603.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Booking</text>
+<text x="704.0" y="621.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Built by Joy</text>
+<line x1="704" y1="634" x2="871" y2="634" stroke="#E2E8F0" stroke-width="1"/>
+<text x="704.0" y="655.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Trips and seats</text>
+<text x="704.0" y="672.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Tickets and boarding</text>
+<text x="704.0" y="689.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Ratings</text>
+<text x="704.0" y="726.0" font-size="10" font-weight="700" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Tables</text>
+<text x="704.0" y="742.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">Route</text>
+<text x="704.0" y="756.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">Trip</text>
+<text x="704.0" y="770.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">Ticket</text>
+<text x="704.0" y="784.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">Review</text>
+<text x="704.0" y="806.0" font-size="10.5" font-weight="600" fill="#1E4FD8" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">→ Finance · reads HR, Fleet</text>
+<polyline points="787.5,536.0 787.5,575.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="787.5,820.0 787.5,858.0" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<rect x="925.0" y="575.0" width="195.0" height="245.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+<text x="939.0" y="603.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Fleet</text>
+<text x="939.0" y="621.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Built by Sweet</text>
+<line x1="939" y1="634" x2="1106" y2="634" stroke="#E2E8F0" stroke-width="1"/>
+<text x="939.0" y="655.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Buses, maintenance</text>
+<text x="939.0" y="672.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Fuel, breakdowns</text>
+<text x="939.0" y="689.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Live GPS</text>
+<text x="939.0" y="726.0" font-size="10" font-weight="700" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Tables</text>
+<text x="939.0" y="742.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">Bus</text>
+<text x="939.0" y="756.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">Maintenance</text>
+<text x="939.0" y="770.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">FuelLog</text>
+<text x="939.0" y="806.0" font-size="10.5" font-weight="600" fill="#1E4FD8" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">→ Finance</text>
+<polyline points="1022.5,536.0 1022.5,575.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="1022.5,820.0 1022.5,858.0" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<rect x="1160.0" y="575.0" width="195.0" height="245.0" rx="10" fill="#EEF3FE" stroke="#5B7BE0" stroke-width="1.4"/>
+<text x="1174.0" y="603.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Parcels</text>
+<text x="1174.0" y="621.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Built by Charllson</text>
+<line x1="1174" y1="634" x2="1341" y2="634" stroke="#E2E8F0" stroke-width="1"/>
+<text x="1174.0" y="655.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Register, seal, scan</text>
+<text x="1174.0" y="672.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Delivery code</text>
+<text x="1174.0" y="689.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Claims</text>
+<text x="1174.0" y="726.0" font-size="10" font-weight="700" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Tables</text>
+<text x="1174.0" y="742.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">Parcel</text>
+<text x="1174.0" y="756.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">ParcelEvent</text>
+<text x="1174.0" y="770.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">ParcelClaim</text>
+<text x="1174.0" y="806.0" font-size="10.5" font-weight="600" fill="#1E4FD8" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">→ Finance · → SMS</text>
+<polyline points="1257.5,536.0 1257.5,575.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="1257.5,820.0 1257.5,858.0" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<rect x="1395.0" y="575.0" width="195.0" height="245.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+<text x="1409.0" y="603.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Finance</text>
+<text x="1409.0" y="621.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Built by Sweet</text>
+<line x1="1409" y1="634" x2="1576" y2="634" stroke="#E2E8F0" stroke-width="1"/>
+<text x="1409.0" y="655.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Payments, escrow</text>
+<text x="1409.0" y="672.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Expenses</text>
+<text x="1409.0" y="689.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Daily cash, reports</text>
+<text x="1409.0" y="726.0" font-size="10" font-weight="700" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Tables</text>
+<text x="1409.0" y="742.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">Payment</text>
+<text x="1409.0" y="756.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">Escrow</text>
+<text x="1409.0" y="770.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">Expense</text>
+<text x="1409.0" y="784.0" font-size="10.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">CashRemittance</text>
+<text x="1409.0" y="806.0" font-size="10.5" font-weight="600" fill="#1E4FD8" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">→ Payment providers</text>
+<polyline points="1492.5,536.0 1492.5,575.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="1492.5,820.0 1492.5,858.0" fill="none" stroke="#334155" stroke-width="1.4" stroke-linejoin="round"/>
+<polyline points="317.5,858.0 1492.5,858.0" fill="none" stroke="#334155" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="1640.0" y="556.0" font-size="12" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">External services</text>
+<rect x="1640.0" y="575.0" width="220.0" height="115.0" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.3"/>
+<text x="1656.0" y="605.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Payment providers</text>
+<text x="1656.0" y="627.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">MTN MoMo · Orange Money</text>
+<text x="1656.0" y="644.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">via Notch Pay / CinetPay</text>
+<text x="1656.0" y="661.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Webhook confirms payments</text>
+<rect x="1640.0" y="705.0" width="220.0" height="115.0" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.3"/>
+<text x="1656.0" y="735.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">SMS gateway</text>
+<text x="1656.0" y="757.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Tracking updates,</text>
+<text x="1656.0" y="774.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">delivery codes, staff invites</text>
+<text x="1656.0" y="791.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Used by: Parcels, HR</text>
+<polyline points="1594.0,632.0 1636.0,632.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" marker-start="url(#tri)" stroke-linejoin="round"/>
+<rect x="40.0" y="925.0" width="1820.0" height="165.0" rx="12" fill="#FAFBFD" stroke="#E2E8F0" stroke-width="1.2"/>
+<text x="60.0" y="951.0" font-size="13" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Data</text>
+<text x="60.0" y="969.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">single source of truth</text>
+<polyline points="905.0,858.0 905.0,965.0" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="766.7" y="885.9" width="276.6" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="905.0" y="899.0" font-size="11" font-weight="500" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">one database transaction per business action</text>
+<rect x="715.0" y="965.0" width="260.0" height="92.0" rx="10" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text x="733.0" y="993.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Prisma ORM</text>
+<text x="733.0" y="1013.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Typed queries, migrations,</text>
+<text x="733.0" y="1030.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">seed data, db:check</text>
+<polyline points="979.0,1011.0 1055.0,1011.0" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#tri)" stroke-linejoin="round"/>
+<path d="M1061.0,972 V1054 A135.0,14 0 0 0 1331.0,1054 V972" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<ellipse cx="1196.0" cy="972" rx="135.0" ry="14" fill="#F8FAFC" stroke="#334155" stroke-width="1.4"/>
+<text x="1196.0" y="1010.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">PostgreSQL</text>
+<text x="1196.0" y="1029.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Prisma Postgres (cloud)</text>
+<text x="1196.0" y="1046.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">1 central database · 21 tables</text>
+<rect x="220.0" y="965.0" width="380.0" height="92.0" rx="10" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.3" stroke-dasharray="6 4"/>
+<text x="238.0" y="993.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Shared contract</text>
+<text x="238.0" y="1013.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">contracts/api-types.d.ts: the same response</text>
+<text x="238.0" y="1030.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">types in the server, the web app and the mobile app</text>
+<rect x="1340.0" y="965.0" width="520.0" height="92.0" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+<text x="1358.0" y="993.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Data protection</text>
+<text x="1358.0" y="1013.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Passwords: bcrypt · codes and invite tokens: SHA-256 hash only</text>
+<text x="1358.0" y="1030.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Every query scoped to the user&#x27;s agency · no personal data on public pages</text>
+<rect x="40.0" y="1110.0" width="1820.0" height="70.0" rx="12" fill="#FAFBFD" stroke="#E2E8F0" stroke-width="1.2"/>
+<text x="60.0" y="1136.0" font-size="13" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Deployment</text>
+<text x="60.0" y="1154.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">where it runs</text>
+<rect x="220.0" y="1128.0" width="168.4" height="34.0" rx="17" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="234.0" y="1150.0" font-size="11.5" font-weight="500" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Web dashboard → Vercel</text>
+<rect x="402.4" y="1128.0" width="168.4" height="34.0" rx="17" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="416.4" y="1150.0" font-size="11.5" font-weight="500" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">API → Railway / Render</text>
+<rect x="584.8" y="1128.0" width="232.2" height="34.0" rx="17" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="598.8" y="1150.0" font-size="11.5" font-weight="500" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Mobile → Expo EAS (Android, iOS)</text>
+<rect x="831.1" y="1128.0" width="232.2" height="34.0" rx="17" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="845.1" y="1150.0" font-size="11.5" font-weight="500" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Database → Prisma Postgres cloud</text>
+<rect x="1077.3" y="1128.0" width="264.2" height="34.0" rx="17" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="1091.3" y="1150.0" font-size="11.5" font-weight="500" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Code → GitHub (Pull Requests to main)</text>
+<line x1="40" y1="1212" x2="1860" y2="1212" stroke="#E2E8F0" stroke-width="1"/>
+<text x="40.0" y="1234.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">TransitPro · Large System Environment · CA deliverable</text>
+<text x="1860.0" y="1234.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">Layered architecture: clients → API &amp; security → business modules → data</text>
+</svg>

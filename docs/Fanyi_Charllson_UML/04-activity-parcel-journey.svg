@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1960" height="1250" viewBox="0 0 1960 1250" font-family="Inter, 'Segoe UI', Arial, sans-serif">
+<defs>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap');</style>
+  <marker id="open" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L11 6 L1 11" fill="none" stroke="#334155" stroke-width="1.5" stroke-linejoin="round"/></marker>
+  <marker id="openblue" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L11 6 L1 11" fill="none" stroke="#1E4FD8" stroke-width="1.5" stroke-linejoin="round"/></marker>
+  <marker id="tri" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#334155"/></marker>
+  <marker id="triblue" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#1E4FD8"/></marker>
+  <marker id="hollow" viewBox="0 0 16 16" refX="15" refY="8" markerWidth="16" markerHeight="16" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L15 8 L1 15 Z" fill="#fff" stroke="#334155" stroke-width="1.4"/></marker>
+  <marker id="diamond" viewBox="0 0 20 12" refX="1" refY="6" markerWidth="20" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 6 L10 1 L19 6 L10 11 Z" fill="#334155"/></marker>
+</defs>
+<rect width="1960" height="1250" fill="#FFFFFF"/>
+<rect x="0" y="0" width="1960" height="92" fill="#FFFFFF"/>
+<rect x="40" y="30" width="5" height="36" rx="2" fill="#1E4FD8"/>
+<text x="58.0" y="47.0" font-size="22" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Parcel &amp; Courier: Activity Diagram</text>
+<text x="58.0" y="70.0" font-size="13.5" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">The journey of one parcel, from the origin counter to the receiver, with every control point</text>
+<text x="1920.0" y="40.0" font-size="13" font-weight="600" fill="#0F172A" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">TransitPro · Module 3</text>
+<text x="1920.0" y="58.0" font-size="12.5" font-weight="400" fill="#64748B" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">Fanyi Charllson, Project Lead</text>
+<text x="1920.0" y="76.0" font-size="12.5" font-weight="400" fill="#64748B" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">v1.0 · November 2026</text>
+<line x1="40" y1="92" x2="1920" y2="92" stroke="#E2E8F0" stroke-width="1"/>
+<rect x="40.0" y="110.0" width="1880.0" height="220.0" rx="0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+<rect x="40.0" y="110.0" width="150.0" height="220.0" rx="0" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="115.0" y="214.0" font-size="13" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Counter agent</text>
+<text x="115.0" y="234.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">origin branch</text>
+<rect x="40.0" y="330.0" width="1880.0" height="130.0" rx="0" fill="#FAFBFD" stroke="#CBD5E1" stroke-width="1.2"/>
+<rect x="40.0" y="330.0" width="150.0" height="130.0" rx="0" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="115.0" y="389.0" font-size="13" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Driver</text>
+<text x="115.0" y="409.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">on the bus</text>
+<rect x="40.0" y="460.0" width="1880.0" height="230.0" rx="0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+<rect x="40.0" y="460.0" width="150.0" height="230.0" rx="0" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="115.0" y="569.0" font-size="13" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Counter agent</text>
+<text x="115.0" y="589.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">destination branch</text>
+<rect x="40.0" y="690.0" width="1880.0" height="190.0" rx="0" fill="#FAFBFD" stroke="#CBD5E1" stroke-width="1.2"/>
+<rect x="40.0" y="690.0" width="150.0" height="190.0" rx="0" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="115.0" y="779.0" font-size="13" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Courier</text>
+<text x="115.0" y="799.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">home delivery</text>
+<rect x="40.0" y="880.0" width="1880.0" height="240.0" rx="0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+<rect x="40.0" y="880.0" width="150.0" height="240.0" rx="0" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="115.0" y="1005.0" font-size="13" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Receiver</text>
+<circle cx="250" cy="220" r="10" fill="#0F172A"/>
+<rect x="302.0" y="193.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="390.0" y="216.7">Receive parcel and</tspan><tspan x="390.0" y="232.3">sender details</tspan></text>
+<rect x="512.0" y="193.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="600.0" y="216.7">Weigh and photograph</tspan><tspan x="600.0" y="232.3">the contents</tspan></text>
+<rect x="722.0" y="193.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="810.0" y="216.7">Close with a</tspan><tspan x="810.0" y="232.3">numbered seal</tspan></text>
+<rect x="932.0" y="193.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1020.0" y="216.7">Take payment</tspan><tspan x="1020.0" y="232.3">(MoMo, OM or cash)</tspan></text>
+<path d="M1190,198 L1212,220 L1190,242 L1168,220 Z" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<rect x="1272.0" y="133.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1360.0" y="156.7">Hold the amount</tspan><tspan x="1360.0" y="172.3">in escrow</tspan></text>
+<path d="M1530,198 L1552,220 L1530,242 L1508,220 Z" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<rect x="1632.0" y="193.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1720.0" y="216.7">Print QR label, SMS</tspan><tspan x="1720.0" y="232.3">sender and receiver</tspan></text>
+<rect x="1632.0" y="368.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1720.0" y="391.7">Scan parcel onto</tspan><tspan x="1720.0" y="407.3">the bus (LOADED)</tspan></text>
+<rect x="1392.0" y="368.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1480.0" y="391.7">Travel to the</tspan><tspan x="1480.0" y="407.3">destination</tspan></text>
+<rect x="1392.0" y="533.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1480.0" y="556.7">Scan arrival and</tspan><tspan x="1480.0" y="572.3">re-weigh the parcel</tspan></text>
+<path d="M1270,538 L1292,560 L1270,582 L1248,560 Z" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<rect x="1182.0" y="618.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1270.0" y="641.7">Put ON HOLD and</tspan><tspan x="1270.0" y="657.3">alert the manager</tspan></text>
+<circle cx="1480" cy="645" r="13" fill="#fff" stroke="#0F172A" stroke-width="1.6"/>
+<circle cx="1480" cy="645" r="7.5" fill="#0F172A"/>
+<path d="M1060,538 L1082,560 L1060,582 L1038,560 Z" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<rect x="762.0" y="533.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="850.0" y="556.7">SMS the code: receiver</tspan><tspan x="850.0" y="572.3">collects at the branch</tspan></text>
+<circle cx="670" cy="560" r="15" fill="#fff" stroke="#334155" stroke-width="1.4"/>
+<text x="670.0" y="565.0" font-size="13" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">A</text>
+<rect x="972.0" y="718.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1060.0" y="741.7">Hand over to the</tspan><tspan x="1060.0" y="757.3">courier (scan)</tspan></text>
+<rect x="762.0" y="718.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="850.0" y="741.7">Ride to the</tspan><tspan x="850.0" y="757.3">receiver&#x27;s address</tspan></text>
+<rect x="212.0" y="712.0" width="176.0" height="66.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="300.0" y="733.9">Mark DELIVERED,</tspan><tspan x="300.0" y="749.5">release escrow,</tspan><tspan x="300.0" y="765.1">SMS the sender</tspan></text>
+<circle cx="470" cy="745" r="13" fill="#fff" stroke="#0F172A" stroke-width="1.6"/>
+<circle cx="470" cy="745" r="7.5" fill="#0F172A"/>
+<rect x="372.0" y="808.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="460.0" y="831.7">Enter code, take</tspan><tspan x="460.0" y="847.3">photo and GPS</tspan></text>
+<path d="M290,813 L312,835 L290,857 L268,835 Z" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<circle cx="1060" cy="970" r="15" fill="#fff" stroke="#334155" stroke-width="1.4"/>
+<text x="1060.0" y="975.0" font-size="13" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">A</text>
+<rect x="762.0" y="943.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="850.0" y="966.7">Check seal number</tspan><tspan x="850.0" y="982.3">and contents</tspan></text>
+<path d="M640,948 L662,970 L640,992 L618,970 Z" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<rect x="372.0" y="943.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="460.0" y="966.7">Give the 4-digit</tspan><tspan x="460.0" y="982.3">code</tspan></text>
+<rect x="552.0" y="1035.0" width="176.0" height="54.0" rx="14" fill="#FFFFFF" stroke="#334155" stroke-width="1.4"/>
+<text font-size="12" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="640.0" y="1058.7">Refuse the parcel;</tspan><tspan x="640.0" y="1074.3">a claim is opened</tspan></text>
+<circle cx="850" cy="1062" r="13" fill="#fff" stroke="#0F172A" stroke-width="1.6"/>
+<circle cx="850" cy="1062" r="7.5" fill="#0F172A"/>
+<polyline points="260.0,220.0 302.0,220.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="478.0,220.0 512.0,220.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="688.0,220.0 722.0,220.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="898.0,220.0 932.0,220.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="1108.0,220.0 1168.0,220.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="1190.0,198.0 1190.0,160.0 1272.0,160.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="1141.6" y="118.8" width="126.8" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="1205.0" y="132.0" font-size="11" font-weight="600" fill="#B45309" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">[cash on delivery]</text>
+<polyline points="1190.0,242.0 1190.0,280.0 1530.0,280.0 1530.0,242.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="1323.0" y="270.9" width="74.0" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="1360.0" y="284.0" font-size="11" font-weight="600" fill="#B45309" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">[paid now]</text>
+<polyline points="1448.0,160.0 1530.0,160.0 1530.0,198.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="1552.0,220.0 1632.0,220.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="1720.0,247.0 1720.0,368.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="1632.0,395.0 1568.0,395.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="1480.0,422.0 1480.0,533.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="1392.0,560.0 1292.0,560.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="1270.0,582.0 1270.0,618.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="1283.2" y="587.9" width="113.6" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="1340.0" y="601.0" font-size="11" font-weight="600" fill="#B45309" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">[weight differs]</text>
+<polyline points="1358.0,645.0 1467.0,645.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="1248.0,560.0 1082.0,560.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="1081.8" y="520.9" width="166.4" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="1165.0" y="534.0" font-size="11" font-weight="600" fill="#B45309" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">[weight matches ±0.1 kg]</text>
+<polyline points="1060.0,582.0 1060.0,718.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="1066.5" y="630.9" width="107.0" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="1120.0" y="644.0" font-size="11" font-weight="600" fill="#B45309" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">[home delivery]</text>
+<polyline points="1038.0,560.0 938.0,560.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="921.6" y="520.9" width="126.8" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="985.0" y="534.0" font-size="11" font-weight="600" fill="#B45309" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">[pickup at branch]</text>
+<polyline points="762.0,560.0 685.0,560.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="972.0,745.0 938.0,745.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="850.0,772.0 850.0,943.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="1045.0,970.0 938.0,970.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="762.0,970.0 662.0,970.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="618.0,970.0 548.0,970.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="473.4" y="930.9" width="153.2" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="550.0" y="944.0" font-size="11" font-weight="600" fill="#B45309" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">[seal and contents OK]</text>
+<polyline points="640.0,992.0 640.0,1035.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="645.4" y="1008.9" width="219.2" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="755.0" y="1022.0" font-size="11" font-weight="600" fill="#B45309" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">[seal broken or contents differ]</text>
+<polyline points="728.0,1062.0 837.0,1062.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="460.0,943.0 460.0,862.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="372.0,835.0 312.0,835.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<polyline points="290.0,813.0 300.0,778.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="291.8" y="786.9" width="100.4" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="342.0" y="800.0" font-size="11" font-weight="600" fill="#B45309" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">[code correct]</text>
+<polyline points="290.0,857.0 290.0,970.0 372.0,970.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="206.8" y="895.9" width="166.4" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="290.0" y="909.0" font-size="11" font-weight="600" fill="#B45309" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">[wrong code, tries left]</text>
+<polyline points="388.0,745.0 457.0,745.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<path d="M1150,930 H1468 L1480,942 V1010 H1150 Z" fill="#FFFBEB" stroke="#D9B76A" stroke-width="1.2"/>
+<path d="M1468,930 V942 H1480" fill="none" stroke="#D9B76A" stroke-width="1.2"/>
+<text font-size="11" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1162.0" y="959.6">Pickup at the branch: the counter agent</tspan><tspan x="1162.0" y="973.9">enters the code instead of the courier.</tspan><tspan x="1162.0" y="988.2">The same checks apply.</tspan></text>
+<path d="M1600,520 H1888 L1900,532 V600 H1600 Z" fill="#FFFBEB" stroke="#D9B76A" stroke-width="1.2"/>
+<path d="M1888,520 V532 H1900" fill="none" stroke="#D9B76A" stroke-width="1.2"/>
+<text font-size="11" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="1612.0" y="549.6">Re-weighing is the anti-tampering</tspan><tspan x="1612.0" y="563.9">check. More than 0.1 kg of difference</tspan><tspan x="1612.0" y="578.2">stops the parcel before delivery.</tspan></text>
+<path d="M980,1040 H1308 L1320,1052 V1102 H980 Z" fill="#FFFBEB" stroke="#D9B76A" stroke-width="1.2"/>
+<path d="M1308,1040 V1052 H1320" fill="none" stroke="#D9B76A" stroke-width="1.2"/>
+<text font-size="11" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="992.0" y="1067.7">After 5 wrong codes the parcel is blocked</tspan><tspan x="992.0" y="1082.0">until the branch manager checks it.</tspan></text>
+<circle cx="52" cy="1150" r="8" fill="#0F172A"/>
+<text x="68.0" y="1154.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Start</text>
+<circle cx="130" cy="1150" r="10" fill="#fff" stroke="#0F172A" stroke-width="1.5"/><circle cx="130" cy="1150" r="5.5" fill="#0F172A"/>
+<text x="148.0" y="1154.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">End</text>
+<path d="M208,1139 L219,1150 L208,1161 L197,1150 Z" fill="#fff" stroke="#334155" stroke-width="1.3"/>
+<text x="228.0" y="1154.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Decision / merge</text>
+<circle cx="350" cy="1150" r="10" fill="#fff" stroke="#334155" stroke-width="1.3"/>
+<text x="350.0" y="1154.0" font-size="10" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">A</text>
+<text x="368.0" y="1154.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Connector (flow continues at the same letter)</text>
+<rect x="672.9" y="1140.8" width="54.2" height="18.3" rx="3" fill="#FFFFFF"/>
+<text x="700.0" y="1154.0" font-size="11" font-weight="600" fill="#B45309" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">[guard]</text>
+<text x="730.0" y="1154.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Condition to take that path</text>
+<line x1="40" y1="1212" x2="1920" y2="1212" stroke="#E2E8F0" stroke-width="1"/>
+<text x="40.0" y="1234.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">TransitPro · Large System Environment · CA UML deliverable</text>
+<text x="1920.0" y="1234.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">Notation: UML 2.5 activity diagram with swimlanes</text>
+</svg>

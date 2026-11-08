@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1540" height="1500" viewBox="0 0 1540 1500" font-family="Inter, 'Segoe UI', Arial, sans-serif">
+<defs>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap');</style>
+  <marker id="open" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L11 6 L1 11" fill="none" stroke="#334155" stroke-width="1.5" stroke-linejoin="round"/></marker>
+  <marker id="openblue" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L11 6 L1 11" fill="none" stroke="#1E4FD8" stroke-width="1.5" stroke-linejoin="round"/></marker>
+  <marker id="tri" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#334155"/></marker>
+  <marker id="triblue" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#1E4FD8"/></marker>
+  <marker id="hollow" viewBox="0 0 16 16" refX="15" refY="8" markerWidth="16" markerHeight="16" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L15 8 L1 15 Z" fill="#fff" stroke="#334155" stroke-width="1.4"/></marker>
+  <marker id="diamond" viewBox="0 0 20 12" refX="1" refY="6" markerWidth="20" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 6 L10 1 L19 6 L10 11 Z" fill="#334155"/></marker>
+</defs>
+<rect width="1540" height="1500" fill="#FFFFFF"/>
+<rect x="0" y="0" width="1540" height="92" fill="#FFFFFF"/>
+<rect x="40" y="30" width="5" height="36" rx="2" fill="#1E4FD8"/>
+<text x="58.0" y="47.0" font-size="22" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Parcel &amp; Courier: Sequence Diagram</text>
+<text x="58.0" y="70.0" font-size="13.5" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Courier delivers a parcel with the receiver&#x27;s code: proof of delivery, escrow release, sender notified</text>
+<text x="1500.0" y="40.0" font-size="13" font-weight="600" fill="#0F172A" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">TransitPro · Module 3</text>
+<text x="1500.0" y="58.0" font-size="12.5" font-weight="400" fill="#64748B" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">Fanyi Charllson, Project Lead</text>
+<text x="1500.0" y="76.0" font-size="12.5" font-weight="400" fill="#64748B" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">v1.0 · November 2026</text>
+<line x1="40" y1="92" x2="1500" y2="92" stroke="#E2E8F0" stroke-width="1"/>
+<circle cx="90" cy="129" r="10" fill="#fff" stroke="#334155" stroke-width="1.6"/>
+<line x1="90" y1="139" x2="90" y2="165" stroke="#334155" stroke-width="1.6"/>
+<line x1="73" y1="149" x2="107" y2="149" stroke="#334155" stroke-width="1.6"/>
+<line x1="90" y1="165" x2="76" y2="187" stroke="#334155" stroke-width="1.6"/>
+<line x1="90" y1="165" x2="104" y2="187" stroke="#334155" stroke-width="1.6"/>
+<text x="90.0" y="207.0" font-size="13" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Receiver</text>
+<line x1="90" y1="222" x2="90" y2="1420" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="6 5"/>
+<circle cx="235" cy="129" r="10" fill="#fff" stroke="#334155" stroke-width="1.6"/>
+<line x1="235" y1="139" x2="235" y2="165" stroke="#334155" stroke-width="1.6"/>
+<line x1="218" y1="149" x2="252" y2="149" stroke="#334155" stroke-width="1.6"/>
+<line x1="235" y1="165" x2="221" y2="187" stroke="#334155" stroke-width="1.6"/>
+<line x1="235" y1="165" x2="249" y2="187" stroke="#334155" stroke-width="1.6"/>
+<text x="235.0" y="207.0" font-size="13" font-weight="600" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Courier</text>
+<line x1="235" y1="222" x2="235" y2="1420" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="6 5"/>
+<rect x="327.0" y="126.0" width="156.0" height="56.0" rx="8" fill="#F8FAFC" stroke="#334155" stroke-width="1.4"/>
+<text x="405.0" y="148.0" font-size="10.5" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«Expo mobile»</text>
+<text x="405.0" y="169.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Staff app</text>
+<line x1="405" y1="222" x2="405" y2="1420" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="6 5"/>
+<rect x="522.0" y="126.0" width="156.0" height="56.0" rx="8" fill="#F8FAFC" stroke="#334155" stroke-width="1.4"/>
+<text x="600.0" y="148.0" font-size="10.5" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«Express route»</text>
+<text x="600.0" y="169.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Parcels API</text>
+<line x1="600" y1="222" x2="600" y2="1420" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="6 5"/>
+<rect x="722.0" y="126.0" width="156.0" height="56.0" rx="8" fill="#EEF3FE" stroke="#334155" stroke-width="1.4"/>
+<text x="800.0" y="148.0" font-size="10.5" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«Parcel module»</text>
+<text x="800.0" y="169.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">ParcelService</text>
+<line x1="800" y1="222" x2="800" y2="1420" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="6 5"/>
+<rect x="922.0" y="126.0" width="156.0" height="56.0" rx="8" fill="#F8FAFC" stroke="#334155" stroke-width="1.4"/>
+<text x="1000.0" y="148.0" font-size="10.5" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«central database»</text>
+<text x="1000.0" y="169.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">PostgreSQL</text>
+<line x1="1000" y1="222" x2="1000" y2="1420" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="6 5"/>
+<rect x="1122.0" y="126.0" width="156.0" height="56.0" rx="8" fill="#F8FAFC" stroke="#334155" stroke-width="1.4"/>
+<text x="1200.0" y="148.0" font-size="10.5" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«Finance module»</text>
+<text x="1200.0" y="169.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">FinanceService</text>
+<line x1="1200" y1="222" x2="1200" y2="1420" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="6 5"/>
+<rect x="1322.0" y="126.0" width="156.0" height="56.0" rx="8" fill="#F8FAFC" stroke="#334155" stroke-width="1.4"/>
+<text x="1400.0" y="148.0" font-size="10.5" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«external»</text>
+<text x="1400.0" y="169.0" font-size="13.5" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">SMS gateway</text>
+<line x1="1400" y1="222" x2="1400" y2="1420" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="6 5"/>
+<rect x="165.0" y="690.0" width="1125.0" height="698.0" rx="4" fill="none" stroke="#475569" stroke-width="1.3"/>
+<path d="M165,690 H208.6 V704 L199.6,714 H165 Z" fill="#F1F5F9" stroke="#475569" stroke-width="1.3"/>
+<text x="174.0" y="707.0" font-size="12" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">alt</text>
+<text x="218.6" y="708.0" font-size="12" font-weight="600" fill="#B45309" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">[code does not match]</text>
+<line x1="165" y1="890" x2="1290" y2="890" stroke="#475569" stroke-width="1.3" stroke-dasharray="7 5"/>
+<text x="175.0" y="910.0" font-size="12" font-weight="600" fill="#B45309" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">[code matches]</text>
+<rect x="925.0" y="1050.0" width="345.0" height="80.0" rx="4" fill="none" stroke="#475569" stroke-width="1.3"/>
+<path d="M925,1050 H968.6 V1064 L959.6,1074 H925 Z" fill="#F1F5F9" stroke="#475569" stroke-width="1.3"/>
+<text x="934.0" y="1067.0" font-size="12" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">opt</text>
+<text x="978.6" y="1068.0" font-size="12" font-weight="600" fill="#B45309" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">[cash on delivery]</text>
+<rect x="399.0" y="330.0" width="12.0" height="1038.0" rx="2" fill="#FFFFFF" stroke="#334155" stroke-width="1.3"/>
+<rect x="594.0" y="430.0" width="12.0" height="898.0" rx="2" fill="#FFFFFF" stroke="#334155" stroke-width="1.3"/>
+<rect x="794.0" y="525.0" width="12.0" height="763.0" rx="2" fill="#EEF3FE" stroke="#334155" stroke-width="1.3"/>
+<rect x="1194.0" y="1022.0" width="12.0" height="146.0" rx="2" fill="#FFFFFF" stroke="#334155" stroke-width="1.3"/>
+<rect x="994.0" y="567.0" width="12.0" height="47.0" rx="2" fill="#FFFFFF" stroke="#334155" stroke-width="1.3"/>
+<rect x="994.0" y="737.0" width="12.0" height="23.0" rx="2" fill="#FFFFFF" stroke="#334155" stroke-width="1.3"/>
+<rect x="994.0" y="937.0" width="12.0" height="63.0" rx="2" fill="#FFFFFF" stroke="#334155" stroke-width="1.3"/>
+<rect x="994.0" y="1092.0" width="12.0" height="20.0" rx="2" fill="#FFFFFF" stroke="#334155" stroke-width="1.3"/>
+<rect x="994.0" y="1192.0" width="12.0" height="20.0" rx="2" fill="#FFFFFF" stroke="#334155" stroke-width="1.3"/>
+<rect x="1394.0" y="1232.0" width="12.0" height="20.0" rx="2" fill="#FFFFFF" stroke="#334155" stroke-width="1.3"/>
+<polyline points="235.0,250.0 90.0,250.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="34.0" y="229.5" width="256.9" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="162.5" y="243.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">1: show the sealed parcel (seal S-0061)</text>
+<polyline points="90.0,298.0 235.0,298.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="88.3" y="277.5" width="148.4" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="162.5" y="291.1" font-size="11.5" font-weight="400" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">gives the 4-digit code</text>
+<rect x="69.1" y="262.5" width="186.7" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="162.5" y="276.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">2: checks seal and contents,</text>
+<polyline points="235.0,340.0 399.0,340.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="233.2" y="319.5" width="167.6" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="317.0" y="333.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">3: enter code, take photo</text>
+<polyline points="411.0,372.0 445.0,372.0 445.0,396.0 413.0,396.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="451.0" y="374.5" width="135.7" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="455.0" y="388.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">4: read GPS position</text>
+<polyline points="411.0,440.0 594.0,440.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="383.6" y="419.5" width="237.8" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="502.5" y="433.1" font-size="11.5" font-weight="400" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">{ otp, photoUrl, lat, lng } + cookie</text>
+<rect x="406.0" y="404.5" width="193.1" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="502.5" y="418.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">5: POST /parcels/{id}/deliver</text>
+<polyline points="606.0,470.0 640.0,470.0 640.0,494.0 608.0,494.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="646.0" y="472.5" width="346.3" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="650.0" y="486.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">6: requireAuth · requireRole(COURIER) · validate body</text>
+<polyline points="606.0,535.0 794.0,535.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="606.6" y="514.5" width="186.7" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="700.0" y="528.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">7: deliver(id, input, staff)</text>
+<polyline points="806.0,575.0 994.0,575.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="806.6" y="554.5" width="186.7" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="900.0" y="568.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">8: find parcel (same agency)</text>
+<polyline points="994.0,610.0 806.0,610.0" fill="none" stroke="#475569" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="867.3" y="589.5" width="65.4" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="900.0" y="603.1" font-size="11.5" font-weight="500" fill="#475569" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">9: parcel</text>
+<polyline points="806.0,638.0 840.0,638.0 840.0,668.0 808.0,668.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="846.0" y="636.0" width="256.9" height="33.9" rx="3" fill="#FFFFFF"/>
+<text font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif"><tspan x="850.0" y="649.7">10: holder = courier? out for delivery?</tspan><tspan x="850.0" y="664.6">      code not expired? attempts &lt; 5?</tspan></text>
+<polyline points="806.0,745.0 994.0,745.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="768.4" y="724.5" width="263.3" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="900.0" y="738.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">11: attempts + 1, event DELIVERY_ATTEMPT</text>
+<polyline points="794.0,785.0 606.0,785.0" fill="none" stroke="#475569" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="600.3" y="764.5" width="199.5" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="700.0" y="778.1" font-size="11.5" font-weight="500" fill="#475569" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">12: HttpError 400 &quot;Wrong code&quot;</text>
+<polyline points="594.0,825.0 411.0,825.0" fill="none" stroke="#475569" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="441.1" y="804.5" width="122.9" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="502.5" y="818.1" font-size="11.5" font-weight="500" fill="#475569" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">13: 400 Wrong code</text>
+<polyline points="399.0,865.0 235.0,865.0" fill="none" stroke="#475569" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="230.0" y="844.5" width="173.9" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="317.0" y="858.1" font-size="11.5" font-weight="500" fill="#475569" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">14: ask the receiver again</text>
+<polyline points="806.0,945.0 994.0,945.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="829.0" y="924.5" width="142.0" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="900.0" y="938.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">15: BEGIN transaction</text>
+<polyline points="806.0,990.0 994.0,990.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="848.1" y="969.5" width="103.7" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="900.0" y="983.1" font-size="11.5" font-weight="400" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">event DELIVERED</text>
+<rect x="790.7" y="954.5" width="218.6" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="900.0" y="968.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">16: status DELIVERED, photo, GPS,</text>
+<polyline points="806.0,1030.0 1194.0,1030.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="887.5" y="1009.5" width="225.0" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="1000.0" y="1023.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">17: releaseEscrowForParcel(tx, id)</text>
+<polyline points="1194.0,1100.0 1006.0,1100.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="1013.0" y="1079.5" width="173.9" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="1100.0" y="1093.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">18: escrow HELD → RELEASED</text>
+<polyline points="1194.0,1160.0 806.0,1160.0" fill="none" stroke="#475569" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="970.5" y="1139.5" width="59.1" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="1000.0" y="1153.1" font-size="11.5" font-weight="500" fill="#475569" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">19: done</text>
+<polyline points="806.0,1200.0 994.0,1200.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<rect x="864.1" y="1179.5" width="71.8" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="900.0" y="1193.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">20: COMMIT</text>
+<polyline points="806.0,1240.0 1394.0,1240.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="968.4" y="1219.5" width="263.3" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="1100.0" y="1233.1" font-size="11.5" font-weight="500" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">21: &quot;Parcel delivered&quot; SMS to the sender</text>
+<polyline points="794.0,1280.0 606.0,1280.0" fill="none" stroke="#475569" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="632.2" y="1259.5" width="135.7" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="700.0" y="1273.1" font-size="11.5" font-weight="500" fill="#475569" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">22: delivered parcel</text>
+<polyline points="594.0,1320.0 411.0,1320.0" fill="none" stroke="#475569" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="447.4" y="1299.5" width="110.1" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="502.5" y="1313.1" font-size="11.5" font-weight="500" fill="#475569" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">23: 200 { data }</text>
+<polyline points="399.0,1360.0 235.0,1360.0" fill="none" stroke="#475569" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<rect x="242.8" y="1339.5" width="148.4" height="19.0" rx="3" fill="#FFFFFF"/>
+<text x="317.0" y="1353.1" font-size="11.5" font-weight="500" fill="#475569" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">24: show &quot;Delivered ✓&quot;</text>
+<polyline points="40.0,1438.0 90.0,1438.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#tri)" stroke-linejoin="round"/>
+<text x="100.0" y="1442.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Synchronous call</text>
+<polyline points="240.0,1438.0 290.0,1438.0" fill="none" stroke="#475569" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#open)" stroke-linejoin="round"/>
+<text x="300.0" y="1442.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Reply</text>
+<polyline points="370.0,1438.0 420.0,1438.0" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#open)" stroke-linejoin="round"/>
+<text x="430.0" y="1442.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Asynchronous message</text>
+<rect x="600.0" y="1429.0" width="12.0" height="18.0" rx="2" fill="#EEF3FE" stroke="#334155" stroke-width="1.2"/>
+<text x="622.0" y="1442.0" font-size="11.5" font-weight="400" fill="#1E293B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Activation (Parcel module highlighted)</text>
+<line x1="40" y1="1462" x2="1500" y2="1462" stroke="#E2E8F0" stroke-width="1"/>
+<text x="40.0" y="1484.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">TransitPro · Large System Environment · CA UML deliverable</text>
+<text x="1500.0" y="1484.0" font-size="11" font-weight="400" fill="#64748B" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">Notation: UML 2.5 sequence diagram · Endpoint: POST /api/parcels/{id}/deliver</text>
+</svg>
