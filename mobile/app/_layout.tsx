@@ -40,9 +40,10 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     const inStaff = segments[0] === '(staff)';
 
     if (me === null) {
-      // Not logged in → go to login (unless already there)
+      // Not logged in (null = 401 returned) → go to login
       if (!inAuth) router.replace('/(auth)/login');
-    } else if (me !== null) {
+    } else if (me !== null && me !== undefined) {
+      // me === undefined means query still loading, handled by isLoading above
       if (me.role === 'CUSTOMER') {
         if (!inCustomer) router.replace('/(customer)/(tabs)/');
       } else {

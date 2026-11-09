@@ -27,9 +27,10 @@ interface SeatButtonProps {
 }
 
 function SeatButton({ number, taken, front, selected, onPress }: SeatButtonProps) {
-  let bg = Colors.surface;
-  let borderColor = Colors.border;
-  let textColor = Colors.ink;
+  // Typed as string so TS allows reassignment to different colour literals
+  let bg: string = Colors.surface;
+  let borderColor: string = Colors.border;
+  let textColor: string = Colors.ink;
 
   if (taken) {
     bg = Colors.surfaceAlt;

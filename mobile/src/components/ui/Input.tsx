@@ -121,4 +121,7 @@ const styles = StyleSheet.create({
     color: Colors.inkDisabled,
     marginTop: 4,
   },
+  eyeIcon: {
+    fontSize: 16,
+  },
 });

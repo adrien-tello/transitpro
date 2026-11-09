@@ -123,7 +123,7 @@ export default function AgencyProfileScreen() {
                   key={cls}
                   style={[styles.classPill, cls === 'VIP' ? styles.classPillVip : styles.classPillClassic]}
                 >
-                  <Text style={[styles.classPillText, cls === 'VIP' ? styles.classPillVipText : styles.classPillClassicText]}>
+                  <Text style={cls === 'VIP' ? styles.classPillVipText : styles.classPillClassicText}>
                     {cls}
                   </Text>
                 </View>
