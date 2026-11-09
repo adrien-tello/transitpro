@@ -8,167 +8,49 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AgencyAvatar } from '@/components/ui/AgencyAvatar';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Colors, FontSize, FontWeight, Typography } from '@/theme';
+import { Colors } from '@/theme/colors';
 import { useMyTickets } from '@/modules/booking/booking.queries';
 import { ticket as mockTicket } from '@contracts/mocks';
-import type { Ticket } from '@contracts/api-types';
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-}
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
-function formatPrice(n: number) {
-  return n.toLocaleString('fr-FR') + ' FCFA';
+function formatDateShort(iso: string) {
+  return new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '');
 }
 
-/** QR code placeholder rendered with SVG-like dashes */
-function QRPlaceholder({ value }: { value: string }) {
+/** QR code visual (pixel-art style using nested Views) */
+function QRCode({ size = 160 }: { size?: number }) {
+  const cell = size / 10;
+  // Simplified QR pattern
+  const pattern = [
+    [1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,0,0,0],
+    [1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,1,0,1,0],
+    [1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1],
+    [1,0,1,1,1,0,1,0,0,1,1,0,1,1,1,0,1,0,1,0],
+    [1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,0],
+    [1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,1],
+    [1,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,0,1,0],
+    [0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,0,0,1,1,0,0,1,0,1,0,1,1,0,1,0,0],
+    [0,1,0,0,1,0,0,1,1,0,0,1,0,0,1,0,0,1,1,0],
+  ];
   return (
-    <View style={qrStyles.container}>
-      {/* Simple grid pattern to suggest QR */}
-      <View style={qrStyles.grid}>
-        {Array.from({ length: 6 }).map((_, r) => (
-          <View key={r} style={qrStyles.row}>
-            {Array.from({ length: 6 }).map((__, c) => {
-              const filled = (r + c) % 2 === 0 || r === 0 || c === 0 || r === 5 || c === 5;
-              return (
-                <View
-                  key={c}
-                  style={[qrStyles.cell, filled && qrStyles.cellFilled]}
-                />
-              );
-            })}
-          </View>
-        ))}
-      </View>
-      <Text style={qrStyles.code}>{value}</Text>
-    </View>
-  );
-}
-
-const qrStyles = StyleSheet.create({
-  container: { alignItems: 'center', padding: 12 },
-  grid: { width: 120, height: 120, flexDirection: 'column' },
-  row: { flex: 1, flexDirection: 'row' },
-  cell: { flex: 1, margin: 1, backgroundColor: 'transparent' },
-  cellFilled: { backgroundColor: Colors.ink },
-  code: {
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.semibold,
-    color: Colors.inkSecondary,
-    marginTop: 8,
-    letterSpacing: 1.5,
-  },
-});
-
-function TicketCard({ ticket }: { ticket: Ticket }) {
-  return (
-    <View style={styles.ticketCard}>
-      {/* TOP HALF */}
-      <View style={styles.topHalf}>
-        <View style={styles.agencyRow}>
-          <AgencyAvatar agency={ticket.agency} size={52} />
-          <View style={{ marginLeft: 14 }}>
-            <Text style={styles.agencyName}>{ticket.agency.name}</Text>
-            {ticket.agency.verified ? (
-              <Text style={styles.verifiedText}>✓ Verified agency</Text>
-            ) : null}
-          </View>
+    <View style={{ width: size, height: size / 2 }}>
+      {pattern.map((row, r) => (
+        <View key={r} style={{ flexDirection: 'row', height: cell }}>
+          {row.map((v, c) => (
+            <View
+              key={c}
+              style={{
+                width: cell,
+                height: cell,
+                backgroundColor: v ? Colors.white : 'transparent',
+              }}
+            />
+          ))}
         </View>
-
-        <View style={styles.routeRow}>
-          <View style={styles.routeCity}>
-            <Text style={styles.cityName}>{ticket.originCity}</Text>
-            <Text style={styles.branchName}>{ticket.originBranch}</Text>
-          </View>
-          <View style={styles.routeArrow}>
-            <Text style={styles.arrowEmoji}>✈️</Text>
-          </View>
-          <View style={[styles.routeCity, { alignItems: 'flex-end' }]}>
-            <Text style={styles.cityName}>{ticket.destinationCity}</Text>
-            <Text style={styles.branchName}>{ticket.destinationBranch}</Text>
-          </View>
-        </View>
-
-        <View style={styles.timeRow}>
-          <View>
-            <Text style={styles.timeLabel}>Departure</Text>
-            <Text style={styles.timeValue}>
-              {formatDate(ticket.departureAt)} · {formatTime(ticket.departureAt)}
-            </Text>
-          </View>
-          <View style={{ alignItems: 'flex-end' }}>
-            <Text style={styles.timeLabel}>Arrival ETA</Text>
-            <Text style={styles.timeValue}>{formatTime(ticket.arrivalEta)}</Text>
-          </View>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Boarding closes</Text>
-          <Text style={styles.infoValue}>{formatTime(ticket.boardingClosesAt)}</Text>
-        </View>
-      </View>
-
-      {/* Dashed separator with notches */}
-      <View style={styles.separator}>
-        <View style={styles.notchLeft} />
-        <View style={styles.dashedLine} />
-        <View style={styles.notchRight} />
-      </View>
-
-      {/* BOTTOM HALF */}
-      <View style={styles.bottomHalf}>
-        <View style={styles.bottomDetails}>
-          <View style={styles.detailBlock}>
-            <Text style={styles.detailLabel}>Seat</Text>
-            <Text style={styles.seatNumber}>{ticket.seatNumber}</Text>
-          </View>
-          <View style={styles.detailBlock}>
-            <Text style={styles.detailLabel}>Class</Text>
-            <Badge label={ticket.busClass} variant={ticket.busClass === 'VIP' ? 'vip' : 'classic'} />
-          </View>
-          {ticket.gate ? (
-            <View style={styles.detailBlock}>
-              <Text style={styles.detailLabel}>Gate</Text>
-              <Text style={styles.seatNumber}>{ticket.gate}</Text>
-            </View>
-          ) : null}
-        </View>
-
-        <View style={styles.passengerRow}>
-          <Text style={styles.detailLabel}>Passenger</Text>
-          <Text style={styles.passengerName}>{ticket.passengerName}</Text>
-        </View>
-
-        <View style={styles.passengerRow}>
-          <Text style={styles.detailLabel}>Bus</Text>
-          <Text style={styles.infoValue}>{ticket.busPlate}</Text>
-        </View>
-
-        {/* QR */}
-        <View style={styles.qrSection}>
-          <View style={styles.qrBox}>
-            <QRPlaceholder value={ticket.code} />
-          </View>
-          <Text style={styles.qrHint}>Show this at the boarding gate</Text>
-        </View>
-
-        {/* Price */}
-        <View style={styles.priceRow}>
-          <Text style={styles.detailLabel}>
-            {formatPrice(ticket.price)} + {formatPrice(ticket.bookingFee)} fee
-          </Text>
-          <Badge
-            label={ticket.payment.status}
-            variant={ticket.payment.status === 'SUCCEEDED' ? 'success' : 'warning'}
-          />
-        </View>
-      </View>
+      ))}
     </View>
   );
 }
@@ -177,197 +59,209 @@ export default function ETicketScreen() {
   const router = useRouter();
   const { code } = useLocalSearchParams<{ code: string }>();
   const { data: tickets } = useMyTickets();
-
-  // Find ticket by code, fall back to mock
   const ticket = tickets?.find(t => t.code === code) ?? mockTicket;
 
+  const infoChips = [
+    { label: 'Date', value: 'Tue 3' },
+    { label: 'Seat', value: String(ticket.seatNumber) },
+    { label: 'Bus', value: ticket.busPlate.replace(' ', '\u00A0') },
+    { label: 'Gate', value: ticket.gate ?? '–' },
+  ];
+
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backArrow}>←</Text>
-        </TouchableOpacity>
-        <Text style={[Typography.h4, { flex: 1 }]}>E-Ticket</Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-
-        {/* Success banner */}
-        <View style={styles.successBanner}>
-          <Text style={styles.successIcon}>✅</Text>
-          <Text style={styles.successTitle}>Booking confirmed!</Text>
-          <Text style={styles.successSubtitle}>
-            Your e-ticket is ready. Keep it handy for boarding.
-          </Text>
+        {/* ── SUCCESS HEADER ── */}
+        <View style={styles.successRow}>
+          <View style={styles.successIcon}>
+            <Text style={styles.successCheck}>✓</Text>
+          </View>
+          <View>
+            <Text style={styles.successTitle}>You're booked</Text>
+            <Text style={styles.successSub}>
+              Paid {(ticket.price + ticket.bookingFee).toLocaleString('fr-FR')} FCFA with MTN MoMo
+            </Text>
+          </View>
         </View>
 
-        <TicketCard ticket={ticket} />
+        {/* ── DARK TICKET CARD ── */}
+        <View style={styles.ticketCard}>
+          {/* Top: agency + VIP */}
+          <View style={styles.ticketTopRow}>
+            <View style={styles.ticketAgencyRow}>
+              <View style={[styles.ticketAgencyAvatar, { backgroundColor: Colors.agencyEV }]}>
+                <Text style={styles.ticketAgencyInitials}>{ticket.agency.initials}</Text>
+              </View>
+              <Text style={styles.ticketAgencyName}>{ticket.agency.name}</Text>
+            </View>
+            <View style={styles.vipBadge}>
+              <Text style={styles.vipBadgeText}>{ticket.busClass}</Text>
+            </View>
+          </View>
 
-        <Button
-          title="Done"
-          onPress={() => router.replace('/(customer)/(tabs)/')}
-          style={styles.doneBtn}
-        />
+          {/* Times + route */}
+          <View style={styles.ticketTimesRow}>
+            <View style={styles.ticketTimeBlock}>
+              <Text style={styles.ticketTime}>{formatTime(ticket.departureAt)}</Text>
+              <Text style={styles.ticketCity}>{ticket.originCity}, {ticket.originBranch}</Text>
+            </View>
+            {/* Dashed line with bus icon */}
+            <View style={styles.ticketRouteLine}>
+              <View style={styles.dashedLineLeft} />
+              <Text style={styles.busEmoji}>🚌</Text>
+              <View style={styles.dashedLineRight} />
+            </View>
+            <View style={[styles.ticketTimeBlock, { alignItems: 'flex-end' }]}>
+              <Text style={[styles.ticketTime, styles.ticketTimeArrival]}>
+                {formatTime(ticket.arrivalEta)}
+              </Text>
+              <Text style={styles.ticketCity}>{ticket.destinationCity}, {ticket.destinationBranch}</Text>
+            </View>
+          </View>
 
-        <View style={styles.bottomPad} />
+          {/* Info chips */}
+          <View style={styles.infoChips}>
+            {infoChips.map(chip => (
+              <View key={chip.label} style={styles.chip}>
+                <Text style={styles.chipLabel}>{chip.label}</Text>
+                <Text style={styles.chipValue}>{chip.value}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Dashed separator with notches */}
+          <View style={styles.ticketSeparator}>
+            <View style={styles.notchLeft} />
+            <View style={styles.dashedSep} />
+            <View style={styles.notchRight} />
+          </View>
+
+          {/* QR + passenger info */}
+          <View style={styles.ticketBottom}>
+            <View style={styles.qrBox}>
+              <QRCode size={160} />
+            </View>
+            <View style={styles.ticketPassengerInfo}>
+              <Text style={styles.passengerLabel}>Passenger</Text>
+              <Text style={styles.passengerName}>{ticket.passengerName}</Text>
+              <Text style={[styles.passengerLabel, { marginTop: 12 }]}>Ticket</Text>
+              <Text style={styles.ticketCode}>{ticket.code}</Text>
+              <Text style={styles.boardingWarning}>
+                Boarding closes {formatTime(ticket.boardingClosesAt)}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* ── ACTION BUTTONS ── */}
+        <View style={styles.actionRow}>
+          <TouchableOpacity style={styles.actionBtn}>
+            <Text style={styles.actionBtnIcon}>📅</Text>
+            <Text style={styles.actionBtnText}>Add to calendar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn}>
+            <Text style={styles.actionBtnIcon}>⬆</Text>
+            <Text style={styles.actionBtnText}>Share ticket</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.offlineHint}>
+          Show this QR to the conductor. It works offline. On the day you can follow your bus live.
+        </Text>
+
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* ── DARK FLOATING TAB BAR ── */}
+      <View style={styles.tabBar}>
+        {[
+          { icon: '⌂', label: 'Home', route: '/(customer)/(tabs)/' },
+          { icon: '🎫', label: 'Trips', route: '/(customer)/(tabs)/trips', active: true },
+          { icon: '⬡', label: 'Parcels', route: '/(customer)/(tabs)/parcels' },
+          { icon: '👤', label: 'Profile', route: '/(customer)/(tabs)/profile' },
+        ].map(tab => (
+          <TouchableOpacity
+            key={tab.label}
+            style={[styles.tabItem, tab.active && styles.tabItemActive]}
+            onPress={() => router.replace(tab.route as Parameters<typeof router.replace>[0])}
+          >
+            <Text style={[styles.tabIcon, tab.active && styles.tabIconActive]}>{tab.icon}</Text>
+            {tab.active && <Text style={styles.tabLabel}>{tab.label}</Text>}
+          </TouchableOpacity>
+        ))}
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
+  scroll: { padding: 20 },
 
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  backBtn: { padding: 4, marginRight: 12 },
-  backArrow: { fontSize: FontSize.lg, color: Colors.ink },
+  successRow: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 20 },
+  successIcon: { width: 52, height: 52, borderRadius: 26, backgroundColor: Colors.successBg, alignItems: 'center', justifyContent: 'center' },
+  successCheck: { fontSize: 22, color: Colors.success, fontWeight: '900' },
+  successTitle: { fontSize: 24, fontWeight: '800', color: Colors.ink },
+  successSub: { fontSize: 14, color: Colors.inkSecondary, marginTop: 2 },
 
-  scroll: { padding: 20, paddingBottom: 40 },
+  ticketCard: { backgroundColor: Colors.navy, borderRadius: 20, padding: 20, marginBottom: 16 },
 
-  successBanner: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  successIcon: { fontSize: 48, marginBottom: 10 },
-  successTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.bold, color: Colors.success },
-  successSubtitle: {
-    fontSize: FontSize.sm,
-    color: Colors.inkSecondary,
-    marginTop: 4,
-    textAlign: 'center',
-  },
+  ticketTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  ticketAgencyRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  ticketAgencyAvatar: { width: 36, height: 36, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  ticketAgencyInitials: { fontSize: 13, fontWeight: '800', color: Colors.navy },
+  ticketAgencyName: { fontSize: 16, fontWeight: '700', color: Colors.white },
+  vipBadge: { backgroundColor: Colors.orange, paddingHorizontal: 14, paddingVertical: 5, borderRadius: 20 },
+  vipBadgeText: { fontSize: 13, fontWeight: '800', color: Colors.navy },
 
-  ticketCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: Colors.ink,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 5,
-    marginBottom: 24,
-  },
+  ticketTimesRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  ticketTimeBlock: { flex: 1 },
+  ticketTime: { fontSize: 36, fontWeight: '900', color: Colors.white, letterSpacing: -1 },
+  ticketTimeArrival: { color: 'rgba(255,255,255,0.5)' },
+  ticketCity: { fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 4 },
+  ticketRouteLine: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 },
+  dashedLineLeft: { flex: 1, height: 1, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.2)', borderStyle: 'dashed' },
+  busEmoji: { fontSize: 18, marginHorizontal: 4 },
+  dashedLineRight: { flex: 1, height: 1, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.2)', borderStyle: 'dashed' },
 
-  topHalf: { padding: 20 },
-  agencyRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  agencyName: { fontSize: FontSize.md, fontWeight: FontWeight.bold, color: Colors.ink },
-  verifiedText: {
-    fontSize: FontSize.xs,
-    color: Colors.primary,
-    fontWeight: FontWeight.semibold,
-    marginTop: 2,
-  },
+  infoChips: { flexDirection: 'row', gap: 8, marginBottom: 20 },
+  chip: { flex: 1, backgroundColor: Colors.navyCard, borderRadius: 10, padding: 10 },
+  chipLabel: { fontSize: 11, color: 'rgba(255,255,255,0.5)', marginBottom: 4 },
+  chipValue: { fontSize: 15, fontWeight: '700', color: Colors.white },
 
-  routeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  routeCity: { flex: 1 },
-  cityName: { fontSize: FontSize.lg, fontWeight: FontWeight.bold, color: Colors.ink },
-  branchName: { fontSize: FontSize.sm, color: Colors.inkSecondary },
-  routeArrow: { paddingHorizontal: 12 },
-  arrowEmoji: { fontSize: 22 },
+  ticketSeparator: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, marginHorizontal: -20 },
+  notchLeft: { width: 16, height: 16, borderRadius: 8, backgroundColor: Colors.background },
+  dashedSep: { flex: 1, borderTopWidth: 1.5, borderTopColor: 'rgba(255,255,255,0.15)', borderStyle: 'dashed' },
+  notchRight: { width: 16, height: 16, borderRadius: 8, backgroundColor: Colors.background },
 
-  timeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  timeLabel: { fontSize: FontSize.xs, color: Colors.inkSecondary },
-  timeValue: { fontSize: FontSize.sm, fontWeight: FontWeight.semibold, color: Colors.ink, marginTop: 2 },
+  ticketBottom: { flexDirection: 'row', gap: 16, alignItems: 'center' },
+  qrBox: { backgroundColor: Colors.navy, padding: 8, borderRadius: 12, borderWidth: 2, borderColor: 'rgba(255,255,255,0.15)' },
+  ticketPassengerInfo: { flex: 1 },
+  passengerLabel: { fontSize: 12, color: 'rgba(255,255,255,0.5)' },
+  passengerName: { fontSize: 18, fontWeight: '800', color: Colors.white, marginTop: 2 },
+  ticketCode: { fontSize: 18, fontWeight: '800', color: Colors.white, marginTop: 2 },
+  boardingWarning: { fontSize: 13, color: Colors.orange, fontWeight: '600', marginTop: 8 },
 
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
+  actionRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  actionBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: Colors.surface, borderRadius: 14, paddingVertical: 16,
   },
-  infoLabel: { fontSize: FontSize.xs, color: Colors.inkSecondary },
-  infoValue: { fontSize: FontSize.sm, fontWeight: FontWeight.medium, color: Colors.ink },
+  actionBtnIcon: { fontSize: 18 },
+  actionBtnText: { fontSize: 14, fontWeight: '600', color: Colors.ink },
 
-  // Dashed separator
-  separator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    position: 'relative',
-    height: 24,
-  },
-  notchLeft: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: Colors.background,
-    marginLeft: -10,
-  },
-  notchRight: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: Colors.background,
-    marginRight: -10,
-  },
-  dashedLine: {
-    flex: 1,
-    borderTopWidth: 1.5,
-    borderTopColor: Colors.border,
-    borderStyle: 'dashed',
-  },
+  offlineHint: { fontSize: 13, color: Colors.inkSecondary, textAlign: 'center', lineHeight: 20 },
 
-  bottomHalf: { padding: 20 },
-  bottomDetails: { flexDirection: 'row', gap: 20, marginBottom: 16 },
-  detailBlock: { alignItems: 'center' },
-  detailLabel: {
-    fontSize: FontSize.xs,
-    color: Colors.inkSecondary,
-    marginBottom: 4,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  // Inline tab bar (matches the dark pill design)
+  tabBar: {
+    position: 'absolute', bottom: 24, left: 16, right: 16,
+    backgroundColor: Colors.navy, borderRadius: 36, height: 68,
+    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8,
   },
-  seatNumber: { fontSize: FontSize.xl, fontWeight: FontWeight.extrabold, color: Colors.ink },
-
-  passengerRow: {
-    marginBottom: 10,
-  },
-  passengerName: { fontSize: FontSize.md, fontWeight: FontWeight.semibold, color: Colors.ink },
-
-  qrSection: { alignItems: 'center', marginVertical: 8 },
-  qrBox: {
-    borderWidth: 2,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  qrHint: {
-    fontSize: FontSize.xs,
-    color: Colors.inkSecondary,
-    marginTop: 8,
-    textAlign: 'center',
-  },
-
-  priceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-  },
-
-  doneBtn: { marginBottom: 16 },
-  bottomPad: { height: 20 },
+  tabItem: { flex: 1, alignItems: 'center', justifyContent: 'center', height: 52, borderRadius: 26 },
+  tabItemActive: { backgroundColor: Colors.orange, flexDirection: 'row', gap: 6, paddingHorizontal: 12 },
+  tabIcon: { fontSize: 22, color: Colors.white },
+  tabIconActive: { color: Colors.navy, fontSize: 20 },
+  tabLabel: { fontSize: 14, fontWeight: '700', color: Colors.navy },
 });

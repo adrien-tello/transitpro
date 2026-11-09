@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,293 +8,282 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AgencyAvatar } from '@/components/ui/AgencyAvatar';
-import { Card } from '@/components/ui/Card';
-import { Colors, FontSize, FontWeight, Typography } from '@/theme';
+import { Colors } from '@/theme/colors';
 import { useAgencyProfile } from '@/modules/agencies/agencies.queries';
 
-function formatPrice(n: number) {
-  return n.toLocaleString('fr-FR') + ' FCFA';
-}
+function formatPrice(n: number) { return n.toLocaleString('fr-FR') + ' FCFA'; }
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 function formatVerifiedDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(iso).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
 }
 
-function RatingRow({ label, value }: { label: string; value: number }) {
-  const filled = Math.round(value);
+/** Horizontal rating bar exactly as in design */
+function RatingBar({ label, value }: { label: string; value: number }) {
+  const pct = (value / 5) * 100;
   return (
-    <View style={styles.ratingRowItem}>
-      <Text style={styles.ratingRowLabel}>{label}</Text>
-      <View style={styles.ratingRowRight}>
-        <Text style={styles.ratingStars}>{'⭐'.repeat(filled)}</Text>
-        <Text style={styles.ratingValue}>{value.toFixed(1)}</Text>
+    <View style={ratingStyles.row}>
+      <Text style={ratingStyles.label}>{label}</Text>
+      <View style={ratingStyles.track}>
+        <View style={[ratingStyles.fill, { width: `${pct}%` as unknown as number }]} />
       </View>
+      <Text style={ratingStyles.value}>{value.toFixed(1)}</Text>
     </View>
   );
 }
+const ratingStyles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  label: { width: 72, fontSize: 15, color: Colors.inkSecondary },
+  track: { flex: 1, height: 8, backgroundColor: Colors.ratingBarBg, borderRadius: 4, marginHorizontal: 12, overflow: 'hidden' },
+  fill: { height: 8, backgroundColor: Colors.ratingBar, borderRadius: 4 },
+  value: { fontSize: 15, fontWeight: '700', color: Colors.ink, width: 28, textAlign: 'right' },
+});
+
+/** Wave shape for header background */
+function WaveHeader({ color }: { color: string }) {
+  return (
+    <View style={[waveStyles.container, { backgroundColor: color }]}>
+      {/* Simple wave simulation with rounded views */}
+      <View style={[waveStyles.wave1, { backgroundColor: color }]} />
+      <View style={[waveStyles.wave2, { backgroundColor: color }]} />
+    </View>
+  );
+}
+const waveStyles = StyleSheet.create({
+  container: { height: 160, overflow: 'hidden' },
+  wave1: {
+    position: 'absolute', top: 80, left: -40, right: -40, height: 80,
+    borderRadius: 40, opacity: 0.5,
+    transform: [{ scaleX: 1.4 }],
+  },
+  wave2: {
+    position: 'absolute', top: 100, left: -80, right: -60, height: 80,
+    borderRadius: 40, opacity: 0.3,
+    transform: [{ scaleX: 1.6 }],
+  },
+});
 
 export default function AgencyProfileScreen() {
   const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
-  const { data: profile, isLoading } = useAgencyProfile(slug ?? '');
+  const { data: profile } = useAgencyProfile(slug ?? 'etoile-voyages');
 
-  if (isLoading || !profile) {
-    return (
-      <SafeAreaView style={styles.safe} edges={['top']}>
-        <ActivityIndicator color={Colors.primary} style={styles.loader} size="large" />
-      </SafeAreaView>
-    );
-  }
+  if (!profile) return null;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <SafeAreaView style={styles.safe} edges={[]}>
+      {/* ── GOLDEN WAVE HEADER ── */}
+      <View style={[styles.heroContainer, { backgroundColor: profile.color }]}>
+        {/* Wavy background shapes */}
+        <View style={[styles.waveBg1, { backgroundColor: profile.color }]} />
+        <View style={[styles.waveBg2, { backgroundColor: profile.color }]} />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backArrow}>←</Text>
-        </TouchableOpacity>
-        <Text style={[Typography.h4, { flex: 1 }]} numberOfLines={1}>{profile.name}</Text>
+        {/* Back + bookmark buttons */}
+        <SafeAreaView edges={['top']} style={styles.heroButtons}>
+          <TouchableOpacity style={styles.heroBtn} onPress={() => router.back()}>
+            <Text style={styles.heroBtnText}>‹</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.heroBtn}>
+            <Text style={styles.heroBtnText}>🔖</Text>
+          </TouchableOpacity>
+        </SafeAreaView>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-
-        {/* Hero */}
-        <View style={styles.hero}>
-          <AgencyAvatar agency={profile} size={80} />
-          <View style={styles.heroNameRow}>
-            <Text style={styles.heroName}>{profile.name}</Text>
-            {profile.verified ? (
-              <View style={styles.verifiedChip}>
-                <Text style={styles.verifiedChipText}>✓ Verified</Text>
-              </View>
-            ) : null}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        {/* ── AVATAR (overlaps header) ── */}
+        <View style={styles.avatarContainer}>
+          <View style={[styles.avatar, { backgroundColor: profile.color }]}>
+            <Text style={styles.avatarText}>{profile.initials}</Text>
           </View>
-          <View style={styles.heroRating}>
-            <Text style={styles.starEmoji}>⭐</Text>
-            <Text style={styles.heroRatingText}>{profile.rating.toFixed(1)}</Text>
-            <Text style={styles.heroReviewCount}>
-              ({profile.reviewCount.toLocaleString('fr-FR')} reviews)
+        </View>
+
+        {/* ── NAME + META ── */}
+        <View style={styles.nameMeta}>
+          <View style={styles.verifiedRow}>
+            <Text style={styles.verifiedIcon}>✅</Text>
+            <Text style={styles.verifiedText}>Verified · {formatVerifiedDate(profile.verifiedAt)}</Text>
+          </View>
+          <Text style={styles.agencyName}>{profile.name}</Text>
+          <Text style={styles.agencyMeta}>
+            Since {profile.since} · {profile.branchCount} branches · {profile.busCount} buses · {profile.classes.join(' and ')}
+          </Text>
+        </View>
+
+        <View style={styles.divider} />
+
+        {/* ── RATINGS ── */}
+        <View style={styles.ratingsSection}>
+          <View style={styles.ratingsBig}>
+            <Text style={styles.ratingsBigNum}>{profile.rating.toFixed(1)}</Text>
+            <Text style={styles.ratingsBigSub}>{profile.reviewCount.toLocaleString('fr-FR')} rated trips</Text>
+          </View>
+          <View style={styles.ratingsBars}>
+            <RatingBar label="On time" value={profile.ratings.onTime} />
+            <RatingBar label="Comfort" value={profile.ratings.comfort} />
+            <RatingBar label="Parcels" value={profile.ratings.parcels} />
+            <RatingBar label="Staff" value={profile.ratings.staff} />
+          </View>
+        </View>
+
+        <View style={styles.divider} />
+
+        {/* ── LEAVING TODAY ── */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionLabel}>LEAVING TODAY</Text>
+            <TouchableOpacity>
+              <Text style={styles.sectionAction}>All routes</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.departureList}>
+            {profile.departuresToday.map((dep, i) => (
+              <TouchableOpacity
+                key={dep.tripId}
+                style={[styles.departureCard, i === 0 && styles.departureCardActive]}
+                onPress={() => router.push(`/(customer)/booking/seats?tripId=${dep.tripId}`)}
+                activeOpacity={0.85}
+              >
+                <Text style={[styles.depTime, i === 0 && styles.depTimeActive]}>
+                  {formatTime(dep.departureAt).replace(':', ' : ')}
+                </Text>
+                <Text style={[styles.depDest, i === 0 && styles.depDestActive]}>to {dep.destinationCity}</Text>
+                <Text style={[styles.depPrice, i === 0 && styles.depPriceActive]}>{formatPrice(dep.price)}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* ── LATEST REVIEW QUOTE ── */}
+        {profile.latestReview ? (
+          <View style={styles.quoteSection}>
+            <Text style={styles.quoteMarks}>"</Text>
+            <Text style={styles.quoteText}>{profile.latestReview.comment}</Text>
+            <Text style={styles.quoteAuthor}>
+              {profile.latestReview.authorName} · <Text style={styles.quoteTrip}>rated after trip {profile.latestReview.tripCode}</Text>
             </Text>
           </View>
-
-          {/* Stats row */}
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>Since {profile.since}</Text>
-              <Text style={styles.statLabel}>Founded</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{profile.busCount}</Text>
-              <Text style={styles.statLabel}>Buses</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{profile.branchCount}</Text>
-              <Text style={styles.statLabel}>Branches</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Ratings breakdown */}
-        <View style={styles.section}>
-          <Text style={[Typography.h4, styles.sectionTitle]}>Ratings</Text>
-          <Card>
-            <RatingRow label="On time" value={profile.ratings.onTime} />
-            <RatingRow label="Comfort" value={profile.ratings.comfort} />
-            <RatingRow label="Parcels" value={profile.ratings.parcels} />
-            <RatingRow label="Staff" value={profile.ratings.staff} />
-          </Card>
-        </View>
-
-        {/* Cities served */}
-        <View style={styles.section}>
-          <Text style={[Typography.h4, styles.sectionTitle]}>Routes</Text>
-          <Card>
-            <Text style={styles.citiesText}>📍 {profile.cities.join('  ·  ')}</Text>
-            <View style={styles.classesPillRow}>
-              {profile.classes.map(cls => (
-                <View
-                  key={cls}
-                  style={[styles.classPill, cls === 'VIP' ? styles.classPillVip : styles.classPillClassic]}
-                >
-                  <Text style={cls === 'VIP' ? styles.classPillVipText : styles.classPillClassicText}>
-                    {cls}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </Card>
-        </View>
-
-        {/* Today's departures */}
-        {profile.departuresToday.length > 0 ? (
-          <View style={styles.section}>
-            <Text style={[Typography.h4, styles.sectionTitle]}>Today's departures</Text>
-            <Card noPadding>
-              {profile.departuresToday.map((dep, i) => (
-                <TouchableOpacity
-                  key={dep.tripId}
-                  style={[
-                    styles.departureRow,
-                    i < profile.departuresToday.length - 1 && styles.departureRowBorder,
-                  ]}
-                  onPress={() => router.push(`/(customer)/booking/seats?tripId=${dep.tripId}`)}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.depTime}>{formatTime(dep.departureAt)}</Text>
-                  <Text style={styles.depDest}>→ {dep.destinationCity}</Text>
-                  <Text style={styles.depPrice}>{formatPrice(dep.price)}</Text>
-                  <Text style={styles.depChevron}>›</Text>
-                </TouchableOpacity>
-              ))}
-            </Card>
-          </View>
         ) : null}
 
-        {/* Latest review */}
-        {profile.latestReview ? (
-          <View style={styles.section}>
-            <Text style={[Typography.h4, styles.sectionTitle]}>Latest review</Text>
-            <Card>
-              <Text style={styles.reviewQuote}>"{profile.latestReview.comment}"</Text>
-              <Text style={styles.reviewAuthor}>
-                — {profile.latestReview.authorName} · {profile.latestReview.tripCode}
-              </Text>
-            </Card>
-          </View>
-        ) : null}
-
-        {/* Verified notice */}
-        <View style={styles.section}>
-          <Card style={styles.verifiedCard}>
-            <Text style={styles.verifiedCardIcon}>🛡️</Text>
-            <View>
-              <Text style={styles.verifiedCardTitle}>Verified by TransitPro</Text>
-              <Text style={styles.verifiedCardSubtitle}>
-                On {formatVerifiedDate(profile.verifiedAt)}
-              </Text>
-            </View>
-          </Card>
-        </View>
-
-        <View style={styles.bottomPad} />
+        <View style={{ height: 120 }} />
       </ScrollView>
+
+      {/* ── DUAL CTA FOOTER ── */}
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.footerBtnOutline}>
+          <Text style={styles.footerBtnOutlineText}>Send parcel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.footerBtnFilled}
+          onPress={() => router.push('/(customer)/search/' as never)}
+          activeOpacity={0.9}
+        >
+          <Text style={styles.footerBtnFilledText}>Book a trip  →</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
-  loader: { flex: 1, marginTop: 60 },
+  safe: { flex: 1, backgroundColor: Colors.surface },
 
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+  // Wave header
+  heroContainer: { height: 160, position: 'relative', overflow: 'hidden' },
+  waveBg1: {
+    position: 'absolute', bottom: -30, left: -60, right: -40,
+    height: 120, borderRadius: 60, opacity: 0.6,
+    transform: [{ scaleX: 1.3 }],
   },
-  backBtn: { padding: 4, marginRight: 12 },
-  backArrow: { fontSize: FontSize.lg, color: Colors.ink },
+  waveBg2: {
+    position: 'absolute', bottom: -50, left: -20, right: -80,
+    height: 120, borderRadius: 60, opacity: 0.35,
+    transform: [{ scaleX: 1.5 }],
+  },
+  heroButtons: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingTop: 4,
+  },
+  heroBtn: {
+    width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.7)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  heroBtnText: { fontSize: 22, color: Colors.ink },
 
-  hero: {
-    alignItems: 'center',
-    paddingVertical: 28,
-    paddingHorizontal: 20,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  heroNameRow: { flexDirection: 'row', alignItems: 'center', marginTop: 14, gap: 8 },
-  heroName: { fontSize: FontSize.lg, fontWeight: FontWeight.bold, color: Colors.ink },
-  verifiedChip: {
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 12,
-  },
-  verifiedChipText: { fontSize: FontSize.xs, color: Colors.primary, fontWeight: FontWeight.semibold },
-  heroRating: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
-  starEmoji: { fontSize: 16 },
-  heroRatingText: {
-    fontSize: FontSize.base,
-    fontWeight: FontWeight.bold,
-    color: Colors.ink,
-    marginLeft: 4,
-  },
-  heroReviewCount: { fontSize: FontSize.sm, color: Colors.inkSecondary, marginLeft: 4 },
+  scroll: { backgroundColor: Colors.surface },
 
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
+  // Avatar overlapping header
+  avatarContainer: { alignItems: 'flex-start', paddingHorizontal: 20, marginTop: -40 },
+  avatar: {
+    width: 88, height: 88, borderRadius: 44,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 4, borderColor: Colors.surface,
+  },
+  avatarText: { fontSize: 26, fontWeight: '900', color: Colors.navy },
+
+  // Name area
+  nameMeta: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 },
+  verifiedRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
+  verifiedIcon: { fontSize: 16 },
+  verifiedText: { fontSize: 14, color: Colors.primary, fontWeight: '600' },
+  agencyName: { fontSize: 26, fontWeight: '900', color: Colors.ink, marginBottom: 6 },
+  agencyMeta: { fontSize: 14, color: Colors.inkSecondary, lineHeight: 20 },
+
+  divider: { height: 1, backgroundColor: Colors.border, marginHorizontal: 20 },
+
+  // Ratings section
+  ratingsSection: {
+    flexDirection: 'row', padding: 20, gap: 20, alignItems: 'flex-start',
+  },
+  ratingsBig: { alignItems: 'center', width: 100 },
+  ratingsBigNum: { fontSize: 52, fontWeight: '900', color: Colors.ink, lineHeight: 58 },
+  ratingsBigSub: { fontSize: 13, color: Colors.inkSecondary, textAlign: 'center', lineHeight: 18 },
+  ratingsBars: { flex: 1, paddingTop: 6 },
+
+  section: { padding: 20, paddingBottom: 0 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  sectionLabel: { fontSize: 12, fontWeight: '700', color: Colors.inkSecondary, letterSpacing: 0.8 },
+  sectionAction: { fontSize: 14, color: Colors.primary, fontWeight: '600' },
+
+  departureList: { gap: 10, paddingBottom: 20, paddingRight: 20 },
+  departureCard: {
+    width: 160, borderRadius: 16, padding: 16,
     backgroundColor: Colors.surfaceAlt,
-    borderRadius: 12,
-    padding: 16,
-    width: '100%',
   },
-  statItem: { flex: 1, alignItems: 'center' },
-  statValue: { fontSize: FontSize.base, fontWeight: FontWeight.bold, color: Colors.ink },
-  statLabel: { fontSize: FontSize.xs, color: Colors.inkSecondary, marginTop: 2 },
-  statDivider: { width: 1, height: 30, backgroundColor: Colors.border },
+  departureCardActive: { backgroundColor: Colors.navy },
+  depTime: { fontSize: 28, fontWeight: '900', color: Colors.ink, marginBottom: 6 },
+  depTimeActive: { color: Colors.white },
+  depDest: { fontSize: 14, color: Colors.inkSecondary, marginBottom: 4 },
+  depDestActive: { color: 'rgba(255,255,255,0.7)' },
+  depPrice: { fontSize: 14, fontWeight: '600', color: Colors.inkSecondary },
+  depPriceActive: { color: Colors.white },
 
-  section: { paddingHorizontal: 20, marginTop: 24 },
-  sectionTitle: { marginBottom: 12 },
+  // Quote
+  quoteSection: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24 },
+  quoteMarks: { fontSize: 40, color: Colors.orange, lineHeight: 40, marginBottom: -8 },
+  quoteText: { fontSize: 16, color: Colors.ink, lineHeight: 24, marginBottom: 10 },
+  quoteAuthor: { fontSize: 14, fontWeight: '700', color: Colors.ink },
+  quoteTrip: { fontWeight: '400', color: Colors.inkSecondary },
 
-  ratingRowItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+  // Footer CTAs
+  footer: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    flexDirection: 'row', gap: 12,
+    paddingHorizontal: 20, paddingTop: 14, paddingBottom: 32,
+    backgroundColor: Colors.surface,
+    borderTopWidth: 1, borderTopColor: Colors.border,
   },
-  ratingRowLabel: { fontSize: FontSize.base, color: Colors.ink },
-  ratingRowRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  ratingStars: { fontSize: 13 },
-  ratingValue: { fontSize: FontSize.sm, fontWeight: FontWeight.semibold, color: Colors.ink },
-
-  citiesText: { fontSize: FontSize.sm, color: Colors.inkSecondary, marginBottom: 12 },
-  classesPillRow: { flexDirection: 'row', gap: 8 },
-  classPill: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20 },
-  classPillVip: { backgroundColor: '#FEF3C7' },
-  classPillVipText: { color: '#B45309', fontWeight: FontWeight.semibold, fontSize: FontSize.sm },
-  classPillClassic: { backgroundColor: Colors.surfaceAlt },
-  classPillClassicText: { color: Colors.inkSecondary, fontSize: FontSize.sm },
-
-  departureRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    gap: 8,
+  footerBtnOutline: {
+    flex: 1, height: 52, borderRadius: 28,
+    borderWidth: 1.5, borderColor: Colors.border,
+    alignItems: 'center', justifyContent: 'center',
   },
-  departureRowBorder: { borderBottomWidth: 1, borderBottomColor: Colors.border },
-  depTime: { fontSize: FontSize.base, fontWeight: FontWeight.bold, color: Colors.ink, width: 52 },
-  depDest: { flex: 1, fontSize: FontSize.sm, color: Colors.inkSecondary },
-  depPrice: { fontSize: FontSize.sm, fontWeight: FontWeight.semibold, color: Colors.primary },
-  depChevron: { fontSize: 20, color: Colors.inkDisabled },
-
-  reviewQuote: {
-    fontSize: FontSize.base,
-    color: Colors.ink,
-    fontStyle: 'italic',
-    lineHeight: 22,
-    marginBottom: 10,
+  footerBtnOutlineText: { fontSize: 15, fontWeight: '700', color: Colors.ink },
+  footerBtnFilled: {
+    flex: 1, height: 52, borderRadius: 28,
+    backgroundColor: Colors.navy,
+    alignItems: 'center', justifyContent: 'center',
+    flexDirection: 'row', gap: 8,
   },
-  reviewAuthor: { fontSize: FontSize.sm, color: Colors.inkSecondary },
-
-  verifiedCard: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  verifiedCardIcon: { fontSize: 28 },
-  verifiedCardTitle: { fontSize: FontSize.base, fontWeight: FontWeight.semibold, color: Colors.ink },
-  verifiedCardSubtitle: { fontSize: FontSize.sm, color: Colors.inkSecondary, marginTop: 2 },
-
-  bottomPad: { height: 32 },
+  footerBtnFilledText: { fontSize: 15, fontWeight: '700', color: Colors.white },
 });

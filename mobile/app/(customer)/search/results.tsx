@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -9,86 +9,76 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AgencyAvatar } from '@/components/ui/AgencyAvatar';
-import { Badge, tripTagVariant } from '@/components/ui/Badge';
-import { Colors, FontSize, FontWeight, Typography } from '@/theme';
+import { Colors } from '@/theme/colors';
 import { useTripSearch } from '@/modules/booking/booking.queries';
 import type { TripSearchResult } from '@contracts/api-types';
 
-type SortOption = 'earliest' | 'cheapest' | 'rating';
+type SortKey = 'earliest' | 'cheapest' | 'rating';
 
-function formatPrice(n: number) {
-  return n.toLocaleString('fr-FR') + ' FCFA';
-}
-function formatDuration(min: number) {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return m ? `${h}h ${m}m` : `${h}h`;
-}
+// Date tabs: Mon 2, Tue 3*, Wed 4, Thu 5, Fri 6
+const DATE_TABS = [
+  { label: 'Mon 2', offset: -1 },
+  { label: 'Tue 3', offset: 0 },
+  { label: 'Wed 4', offset: 1 },
+  { label: 'Thu 5', offset: 2 },
+  { label: 'Fri 6', offset: 3 },
+];
+
+function formatPrice(n: number) { return n.toLocaleString('fr-FR'); }
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
+function formatDuration(min: number) {
+  const h = Math.floor(min / 60), m = min % 60;
+  return m ? `${h} h ${m}` : `${h} h`;
+}
 
-function TripCard({ trip }: { trip: TripSearchResult }) {
-  const router = useRouter();
-
+function TagChip({ tag }: { tag: string }) {
+  const label = tag === 'CHEAPEST' ? 'Cheapest' : tag === 'BEST_RATED' ? 'Best rated' : 'Fastest';
   return (
-    <TouchableOpacity
-      style={styles.tripCard}
-      activeOpacity={0.88}
-      onPress={() => router.push(`/(customer)/booking/seats?tripId=${trip.tripId}`)}
-    >
-      {/* Top row: agency + tag */}
-      <View style={styles.tripTop}>
-        <View style={styles.agencyRow}>
-          <AgencyAvatar agency={trip.agency} size={36} />
-          <View style={{ marginLeft: 10 }}>
-            <View style={styles.agencyNameRow}>
-              <Text style={styles.agencyName}>{trip.agency.name}</Text>
-              {trip.agency.verified ? (
-                <Text style={styles.verifiedMark}> ✓</Text>
-              ) : null}
+    <View style={styles.tagChip}>
+      <Text style={styles.tagChipText}>{label}</Text>
+    </View>
+  );
+}
+
+function TripRow({ trip, onPress }: { trip: TripSearchResult; onPress: () => void }) {
+  const low = trip.seatsLeft <= 5;
+  return (
+    <TouchableOpacity style={styles.tripRow} onPress={onPress} activeOpacity={0.75}>
+      {/* Left: times */}
+      <View style={styles.tripTimes}>
+        <Text style={styles.tripDep}>{formatTime(trip.departureAt)}</Text>
+        <Text style={styles.tripArr}>{formatTime(trip.arrivalEta)}</Text>
+      </View>
+
+      {/* Center timeline dot */}
+      <View style={styles.tripDotCol}>
+        <View style={[styles.tripDot, { borderColor: trip.agency.color }]} />
+        <View style={styles.tripDotLine} />
+      </View>
+
+      {/* Right: agency info + tag */}
+      <View style={styles.tripInfo}>
+        <View style={styles.tripAgencyRow}>
+          <Text style={styles.tripAgencyName}>{trip.agency.name}</Text>
+          {trip.agency.verified ? (
+            <View style={styles.verifiedBadge}>
+              <Text style={styles.verifiedBadgeText}>✓</Text>
             </View>
-            <Badge
-              label={trip.busClass}
-              variant={trip.busClass === 'VIP' ? 'vip' : 'classic'}
-            />
-          </View>
+          ) : null}
         </View>
-        {trip.tag ? (
-          <Badge label={trip.tag.replace('_', ' ')} variant={tripTagVariant(trip.tag)} />
-        ) : null}
+        <Text style={styles.tripMeta}>
+          ★ {trip.agency.rating.toFixed(1)} · {trip.busClass} · {formatDuration(trip.durationMinutes)}
+        </Text>
+        {trip.tag ? <TagChip tag={trip.tag} /> : null}
       </View>
 
-      {/* Times + duration */}
-      <View style={styles.timeRow}>
-        <View style={styles.timeBlock}>
-          <Text style={styles.timeText}>{formatTime(trip.departureAt)}</Text>
-          <Text style={styles.cityText}>{trip.originCity}</Text>
-        </View>
-
-        <View style={styles.durationBlock}>
-          <View style={styles.durationLine} />
-          <Text style={styles.durationText}>{formatDuration(trip.durationMinutes)}</Text>
-          <View style={styles.durationLine} />
-        </View>
-
-        <View style={[styles.timeBlock, { alignItems: 'flex-end' }]}>
-          <Text style={styles.timeText}>{formatTime(trip.arrivalEta)}</Text>
-          <Text style={styles.cityText}>{trip.destinationCity}</Text>
-        </View>
-      </View>
-
-      {/* Price + seats */}
-      <View style={styles.priceRow}>
-        <Text style={styles.price}>{formatPrice(trip.price)}</Text>
-        <Text
-          style={[
-            styles.seatsLeft,
-            trip.seatsLeft <= 5 && styles.seatsLeftRed,
-          ]}
-        >
-          {trip.seatsLeft} seat{trip.seatsLeft !== 1 ? 's' : ''} left
+      {/* Far right: price + seats */}
+      <View style={styles.tripRight}>
+        <Text style={styles.tripPrice}>{formatPrice(trip.price)}</Text>
+        <Text style={[styles.tripSeats, low && styles.tripSeatsLow]}>
+          {low ? `${trip.seatsLeft} seats left` : `${trip.seatsLeft} seats`}
         </Text>
       </View>
     </TouchableOpacity>
@@ -98,200 +88,198 @@ function TripCard({ trip }: { trip: TripSearchResult }) {
 export default function SearchResultsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ from: string; to: string; date: string; sort: string }>();
+  const [sort, setSort] = useState<SortKey>((params.sort as SortKey) ?? 'earliest');
+  const [activeDateIdx, setActiveDateIdx] = useState(1);
 
-  const [sort, setSort] = useState<SortOption>(
-    (params.sort as SortOption) ?? 'earliest',
+  const { data: trips } = useTripSearch(
+    { from: params.from ?? 'Douala', to: params.to ?? 'Yaoundé', date: params.date ?? '', sort },
+    true,
   );
 
-  const { data: trips, isLoading, isError } = useTripSearch(
-    {
-      from: params.from ?? '',
-      to: params.to ?? '',
-      date: params.date ?? '',
-      sort,
-    },
-    !!(params.from && params.to && params.date),
-  );
-
-  const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-    { value: 'earliest', label: 'Earliest' },
-    { value: 'cheapest', label: 'Cheapest' },
-    { value: 'rating', label: 'Best rated' },
+  const SORT_TABS: { key: SortKey; label: string }[] = [
+    { key: 'earliest', label: 'Earliest' },
+    { key: 'cheapest', label: 'Cheapest' },
+    { key: 'rating', label: 'Best rated' },
   ];
-
-  function formatDateHeader(s: string) {
-    if (!s) return '';
-    return new Date(s).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-  }
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-
-      {/* Header */}
+      {/* ── DARK HEADER ── */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backArrow}>←</Text>
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[Typography.h4]}>
-            {params.from} → {params.to}
-          </Text>
-          <Text style={styles.dateLabel}>{formatDateHeader(params.date)}</Text>
+        {/* Back + title */}
+        <View style={styles.headerTop}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Text style={styles.backArrow}>‹</Text>
+          </TouchableOpacity>
+          <View style={styles.headerTitle}>
+            <Text style={styles.headerRoute}>
+              {params.from ?? 'Douala'} → {params.to ?? 'Yaoundé'}
+            </Text>
+            <Text style={styles.headerMeta}>
+              {trips?.length ?? 0} departures · 1 passenger
+            </Text>
+          </View>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Text style={styles.editBtn}>Edit</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.editBtn}
-        >
-          <Text style={styles.editBtnText}>✏️ Edit</Text>
-        </TouchableOpacity>
+
+        {/* Date tabs */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateTabs}>
+          {DATE_TABS.map((t, i) => (
+            <TouchableOpacity
+              key={t.label}
+              style={styles.dateTab}
+              onPress={() => setActiveDateIdx(i)}
+            >
+              <Text style={[styles.dateTabText, activeDateIdx === i && styles.dateTabTextActive]}>
+                {t.label}
+              </Text>
+              {activeDateIdx === i ? <View style={styles.dateTabUnderline} /> : null}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
-      {/* Sort pills */}
+      {/* ── SORT TABS ── */}
       <View style={styles.sortBar}>
-        {SORT_OPTIONS.map(opt => (
-          <TouchableOpacity
-            key={opt.value}
-            style={[styles.sortChip, sort === opt.value && styles.sortChipActive]}
-            onPress={() => setSort(opt.value)}
-          >
-            <Text style={[styles.sortChipText, sort === opt.value && styles.sortChipTextActive]}>
-              {opt.label}
+        <Text style={styles.sortLabel}>Sort</Text>
+        {SORT_TABS.map(s => (
+          <TouchableOpacity key={s.key} style={styles.sortTab} onPress={() => setSort(s.key)}>
+            <Text style={[styles.sortTabText, sort === s.key && styles.sortTabTextActive]}>
+              {s.label}
             </Text>
+            {sort === s.key ? <View style={styles.sortTabUnderline} /> : null}
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Results */}
-      {isLoading ? (
-        <ActivityIndicator color={Colors.primary} style={styles.loader} size="large" />
-      ) : isError ? (
-        <View style={styles.center}>
-          <Text style={styles.errorText}>Failed to load trips. Please try again.</Text>
-        </View>
-      ) : !trips?.length ? (
-        <View style={styles.center}>
-          <Text style={styles.emptyIcon}>🚍</Text>
-          <Text style={styles.emptyTitle}>No trips found</Text>
-          <Text style={styles.emptySubtitle}>
-            No trips found for this route on {formatDateHeader(params.date)}.
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={trips}
-          keyExtractor={(t) => t.tripId}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <TripCard trip={item} />}
-        />
-      )}
+      {/* ── TRIP LIST ── */}
+      <FlatList
+        data={trips ?? []}
+        keyExtractor={t => t.tripId}
+        renderItem={({ item }) => (
+          <TripRow
+            trip={item}
+            onPress={() => router.push(`/(customer)/booking/seats?tripId=${item.tripId}`)}
+          />
+        )}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: Colors.surface },
 
-  header: {
+  // ── Header ──
+  header: { backgroundColor: Colors.navy, paddingBottom: 0 },
+  headerTop: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 12,
     paddingBottom: 12,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    gap: 12,
   },
-  backBtn: { padding: 4, marginRight: 12, marginTop: 2 },
-  backArrow: { fontSize: FontSize.lg, color: Colors.ink },
-  dateLabel: { fontSize: FontSize.sm, color: Colors.inkSecondary, marginTop: 2 },
-  editBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: Colors.surfaceAlt,
-  },
-  editBtnText: { fontSize: FontSize.sm, color: Colors.primary, fontWeight: FontWeight.medium },
+  backBtn: { width: 32, alignItems: 'center' },
+  backArrow: { fontSize: 28, color: Colors.white, marginTop: -4 },
+  headerTitle: { flex: 1 },
+  headerRoute: { fontSize: 20, fontWeight: '800', color: Colors.white },
+  headerMeta: { fontSize: 13, color: 'rgba(255,255,255,0.6)', marginTop: 2 },
+  editBtn: { fontSize: 15, color: Colors.white, fontWeight: '600', textDecorationLine: 'underline' },
 
+  dateTabs: { paddingLeft: 16 },
+  dateTab: { paddingRight: 28, paddingVertical: 12, position: 'relative', alignItems: 'center' },
+  dateTabText: { fontSize: 15, color: 'rgba(255,255,255,0.5)', fontWeight: '500' },
+  dateTabTextActive: { color: Colors.white, fontWeight: '700' },
+  dateTabUnderline: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 28,
+    height: 3,
+    backgroundColor: Colors.orange,
+    borderRadius: 2,
+  },
+
+  // ── Sort bar ──
   sortBar: {
     flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 12,
-    gap: 8,
-    backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
-  },
-  sortChip: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    alignItems: 'center',
     backgroundColor: Colors.surface,
   },
-  sortChipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  sortChipText: { fontSize: FontSize.sm, color: Colors.inkSecondary },
-  sortChipTextActive: { color: Colors.white, fontWeight: FontWeight.semibold },
-
-  loader: { flex: 1, marginTop: 60 },
-  list: { padding: 20, paddingBottom: 32 },
-
-  tripCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: Colors.ink,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+  sortLabel: { fontSize: 14, color: Colors.inkSecondary, marginRight: 16 },
+  sortTab: { paddingVertical: 14, marginRight: 24, position: 'relative' },
+  sortTabText: { fontSize: 14, color: Colors.inkSecondary, fontWeight: '500' },
+  sortTabTextActive: { color: Colors.ink, fontWeight: '700' },
+  sortTabUnderline: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: Colors.ink,
+    borderRadius: 1,
   },
-  tripTop: {
+
+  // ── Trip rows ──
+  listContent: { paddingVertical: 8 },
+  separator: { height: 1, backgroundColor: Colors.border, marginLeft: 20 },
+
+  tripRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: Colors.surface,
   },
-  agencyRow: { flexDirection: 'row', alignItems: 'center' },
-  agencyNameRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
-  agencyName: { fontSize: FontSize.sm, fontWeight: FontWeight.semibold, color: Colors.ink },
-  verifiedMark: { fontSize: FontSize.sm, color: Colors.primary, fontWeight: FontWeight.bold },
+  tripTimes: { width: 52, marginRight: 4 },
+  tripDep: { fontSize: 18, fontWeight: '800', color: Colors.ink },
+  tripArr: { fontSize: 13, color: Colors.inkSecondary, marginTop: 4 },
 
-  timeRow: {
-    flexDirection: 'row',
+  tripDotCol: { alignItems: 'center', width: 24, paddingTop: 6, marginRight: 10 },
+  tripDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 3,
+    backgroundColor: Colors.surface,
+  },
+  tripDotLine: { flex: 1, width: 1, backgroundColor: Colors.border, marginTop: 2 },
+
+  tripInfo: { flex: 1, marginRight: 8 },
+  tripAgencyRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 },
+  tripAgencyName: { fontSize: 15, fontWeight: '700', color: Colors.ink },
+  verifiedBadge: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: Colors.primary,
     alignItems: 'center',
-    marginBottom: 14,
+    justifyContent: 'center',
   },
-  timeBlock: { flex: 1 },
-  timeText: { fontSize: FontSize.lg, fontWeight: FontWeight.bold, color: Colors.ink },
-  cityText: { fontSize: FontSize.xs, color: Colors.inkSecondary, marginTop: 2 },
-  durationBlock: { flex: 1, flexDirection: 'row', alignItems: 'center' },
-  durationLine: { flex: 1, height: 1, backgroundColor: Colors.border },
-  durationText: {
-    fontSize: FontSize.xs,
-    color: Colors.inkSecondary,
-    marginHorizontal: 6,
-    textAlign: 'center',
-  },
+  verifiedBadgeText: { fontSize: 9, color: Colors.white, fontWeight: '700' },
+  tripMeta: { fontSize: 13, color: Colors.inkSecondary },
 
-  priceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    paddingTop: 12,
+  tagChip: {
+    marginTop: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 10,
   },
-  price: { fontSize: FontSize.md, fontWeight: FontWeight.bold, color: Colors.primary },
-  seatsLeft: { fontSize: FontSize.sm, color: Colors.inkSecondary },
-  seatsLeftRed: { color: Colors.error, fontWeight: FontWeight.semibold },
+  tagChipText: { fontSize: 12, fontWeight: '700', color: Colors.orangeDark },
 
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
-  errorText: { color: Colors.error, fontSize: FontSize.base, textAlign: 'center' },
-  emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyTitle: { fontSize: FontSize.md, fontWeight: FontWeight.semibold, color: Colors.ink },
-  emptySubtitle: { fontSize: FontSize.sm, color: Colors.inkSecondary, marginTop: 4, textAlign: 'center' },
+  tripRight: { alignItems: 'flex-end', minWidth: 70 },
+  tripPrice: { fontSize: 16, fontWeight: '800', color: Colors.ink },
+  tripSeats: { fontSize: 13, color: Colors.success, marginTop: 4 },
+  tripSeatsLow: { color: Colors.error, fontWeight: '700' },
 });

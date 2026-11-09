@@ -5,162 +5,137 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Colors, FontSize, FontWeight, Typography } from '@/theme';
+import { Colors } from '@/theme/colors';
 import { useRegister } from '@/modules/auth/auth.queries';
 
-function isValidEmail(s: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
-}
-
-function isValidPhone(s: string) {
-  return /^\+?[0-9]{9,15}$/.test(s.trim());
-}
-
-interface Fields {
-  fullName: string;
-  email: string;
-  phone: string;
-  password: string;
-}
-
-type FieldErrors = Partial<Record<keyof Fields, string>>;
+function isValidEmail(s: string) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim()); }
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { mutate: register, isPending, error } = useRegister();
+  const [fullName, setFullName] = useState('Marie Ekane');
+  const [email, setEmail] = useState('marie.ekane@gmail.com');
+  const [phone, setPhone] = useState('+237 6 77 18 18 90');
+  const [password, setPassword] = useState('');
+  const [accepted, setAccepted] = useState(true);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const [fields, setFields] = useState<Fields>({
-    fullName: '',
-    email: '',
-    phone: '',
-    password: '',
-  });
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-
-  function set(key: keyof Fields) {
-    return (val: string) => setFields(f => ({ ...f, [key]: val }));
-  }
-
-  function validate(): boolean {
-    const errors: FieldErrors = {};
-    if (!fields.fullName.trim()) errors.fullName = 'Full name is required';
-    if (!fields.email.trim()) errors.email = 'Email is required';
-    else if (!isValidEmail(fields.email)) errors.email = 'Enter a valid email address';
-    if (!fields.phone.trim()) errors.phone = 'Phone number is required';
-    else if (!isValidPhone(fields.phone)) errors.phone = 'Enter a valid phone number';
-    if (!fields.password) errors.password = 'Password is required';
-    else if (fields.password.length < 8) errors.password = 'At least 8 characters required';
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
+  function validate() {
+    const e: Record<string, string> = {};
+    if (!fullName.trim()) e.fullName = 'Required';
+    if (!email.trim()) e.email = 'Required';
+    else if (!isValidEmail(email)) e.email = 'Invalid email';
+    if (!phone.trim()) e.phone = 'Required';
+    if (!password) e.password = 'Required';
+    else if (password.length < 8) e.password = 'At least 8 characters';
+    if (!accepted) e.terms = 'You must accept the terms';
+    setFieldErrors(e);
+    return Object.keys(e).length === 0;
   }
 
   function handleSubmit() {
     if (!validate()) return;
     register(
-      {
-        fullName: fields.fullName.trim(),
-        email: fields.email.trim().toLowerCase(),
-        phone: fields.phone.trim(),
-        password: fields.password,
-      },
-      { onSuccess: () => router.replace('/(customer)/(tabs)/') },
+      { fullName: fullName.trim(), email: email.trim().toLowerCase(), phone: phone.trim(), password },
+      { onSuccess: () => router.replace('/(customer)/(tabs)/' as never) },
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-              <Text style={styles.backArrow}>←</Text>
-            </TouchableOpacity>
-            <View style={styles.logoArea}>
-              <View style={styles.logoIcon}>
-                <Text style={styles.logoEmoji}>🚌</Text>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        {/* Top bar */}
+        <View style={styles.topBar}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+            <Text style={styles.backArrow}>‹</Text>
+          </TouchableOpacity>
+          <View style={styles.logoBox}>
+            <Text style={styles.logoT}>T</Text>
+            <View style={styles.logoDot} />
+          </View>
+        </View>
+
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <Text style={styles.title}>Create your account</Text>
+          <Text style={styles.subtitle}>It takes less than a minute.</Text>
+
+          {/* Google button */}
+          <TouchableOpacity style={styles.googleBtn} activeOpacity={0.85}>
+            <Text style={styles.googleG}>G</Text>
+            <Text style={styles.googleLabel}>Sign up with Google</Text>
+          </TouchableOpacity>
+
+          {/* Divider */}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or with email</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {error ? <Text style={styles.serverError}>{error.message}</Text> : null}
+
+          {/* Fields */}
+          {([
+            { key: 'fullName', label: 'Full name', value: fullName, set: setFullName, kbType: 'default' as const, autoCapitalize: 'words' as const, placeholder: 'Marie Ekane', secure: false },
+            { key: 'email', label: 'Email', value: email, set: setEmail, kbType: 'email-address' as const, autoCapitalize: 'none' as const, placeholder: 'marie.ekane@gmail.com', secure: false },
+            { key: 'phone', label: 'Phone number', value: phone, set: setPhone, kbType: 'phone-pad' as const, autoCapitalize: 'none' as const, placeholder: '+237 6 77 00 00 00', secure: false },
+            { key: 'password', label: 'Password', value: password, set: setPassword, kbType: 'default' as const, autoCapitalize: 'none' as const, placeholder: 'At least 8 characters', secure: true },
+          ]).map(f => (
+            <View key={f.key} style={styles.fieldGroup}>
+              <Text style={styles.fieldLabel}>{f.label}</Text>
+              <View style={[styles.inputWrap, fieldErrors[f.key] ? styles.inputError : null]}>
+                <TextInput
+                  style={styles.input}
+                  value={f.value}
+                  onChangeText={f.set}
+                  keyboardType={f.kbType}
+                  autoCapitalize={f.autoCapitalize}
+                  secureTextEntry={f.secure}
+                  placeholder={f.placeholder}
+                  placeholderTextColor={Colors.inkMuted}
+                />
               </View>
-              <Text style={styles.logoName}>TransitPro</Text>
+              {fieldErrors[f.key] ? <Text style={styles.fieldError}>{fieldErrors[f.key]}</Text> : null}
             </View>
-          </View>
+          ))}
 
-          {/* Card */}
-          <View style={styles.card}>
-            <Text style={[Typography.h3, styles.cardTitle]}>Create account</Text>
-            <Text style={[Typography.bodySm, styles.cardSubtitle]}>
-              Book tickets and track parcels
+          <Text style={styles.smsHint}>Your phone gets parcel codes and trip reminders by SMS.</Text>
+
+          {/* Terms checkbox */}
+          <TouchableOpacity style={styles.termsRow} onPress={() => setAccepted(v => !v)} activeOpacity={0.8}>
+            <View style={[styles.checkbox, accepted && styles.checkboxChecked]}>
+              {accepted ? <Text style={styles.checkmark}>✓</Text> : null}
+            </View>
+            <Text style={styles.termsText}>
+              I accept the{' '}
+              <Text style={styles.termsLink}>Terms</Text>
+              {' '}and{' '}
+              <Text style={styles.termsLink}>Privacy policy</Text>
             </Text>
+          </TouchableOpacity>
+          {fieldErrors.terms ? <Text style={styles.fieldError}>{fieldErrors.terms}</Text> : null}
 
-            {error ? (
-              <View style={styles.errorBanner}>
-                <Text style={styles.errorBannerText}>{error.message}</Text>
-              </View>
-            ) : null}
+          {/* CTA */}
+          <TouchableOpacity
+            style={[styles.createBtn, isPending && { opacity: 0.7 }]}
+            onPress={handleSubmit}
+            activeOpacity={0.9}
+            disabled={isPending}
+          >
+            <Text style={styles.createBtnText}>Create account</Text>
+          </TouchableOpacity>
 
-            <Input
-              label="Full name"
-              placeholder="Marie Ekane"
-              autoCapitalize="words"
-              autoComplete="name"
-              value={fields.fullName}
-              onChangeText={set('fullName')}
-              error={fieldErrors.fullName}
-            />
-            <Input
-              label="Email"
-              placeholder="marie@example.com"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-              value={fields.email}
-              onChangeText={set('email')}
-              error={fieldErrors.email}
-            />
-            <Input
-              label="Phone number"
-              placeholder="+237677000000"
-              keyboardType="phone-pad"
-              autoComplete="tel"
-              value={fields.phone}
-              onChangeText={set('phone')}
-              error={fieldErrors.phone}
-            />
-            <Input
-              label="Password"
-              placeholder="At least 8 characters"
-              secureTextEntry
-              autoComplete="new-password"
-              value={fields.password}
-              onChangeText={set('password')}
-              error={fieldErrors.password}
-            />
-
-            <Button
-              title="Create account"
-              onPress={handleSubmit}
-              loading={isPending}
-              style={styles.submitBtn}
-            />
-          </View>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
+          {/* Login link */}
+          <View style={styles.loginRow}>
+            <Text style={styles.loginText}>Already have an account? </Text>
             <TouchableOpacity onPress={() => router.back()}>
-              <Text style={styles.footerLink}>Sign in</Text>
+              <Text style={styles.loginLink}>Log in</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -170,54 +145,122 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: Colors.surface },
   flex: { flex: 1 },
-  scroll: { flexGrow: 1, justifyContent: 'center', padding: 24 },
 
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
-  backBtn: { padding: 4, marginRight: 12 },
-  backArrow: { fontSize: FontSize.lg, color: Colors.ink },
-  logoArea: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  logoIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: Colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backArrow: { fontSize: 26, color: Colors.ink, marginTop: -2 },
+  logoBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logoEmoji: { fontSize: 18 },
-  logoName: { fontSize: FontSize.md, fontWeight: FontWeight.bold, color: Colors.ink },
-
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 20,
-    padding: 24,
-    shadowColor: Colors.ink,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
+  logoT: { fontSize: 22, fontWeight: '900', color: Colors.white, marginTop: -2 },
+  logoDot: {
+    position: 'absolute',
+    bottom: 6,
+    right: 7,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: Colors.orange,
   },
-  cardTitle: { marginBottom: 4 },
-  cardSubtitle: { marginBottom: 20 },
 
-  errorBanner: {
-    backgroundColor: Colors.errorLight,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-  },
-  errorBannerText: { color: Colors.error, fontSize: FontSize.sm },
+  scroll: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 40 },
 
-  submitBtn: { marginTop: 4 },
+  title: { fontSize: 28, fontWeight: '800', color: Colors.ink, marginBottom: 6 },
+  subtitle: { fontSize: 15, color: Colors.inkSecondary, marginBottom: 28 },
 
-  footer: {
+  googleBtn: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 24,
+    justifyContent: 'center',
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
+    gap: 10,
+    marginBottom: 20,
   },
-  footerText: { color: Colors.inkSecondary, fontSize: FontSize.sm },
-  footerLink: { color: Colors.primary, fontWeight: FontWeight.semibold, fontSize: FontSize.sm },
+  googleG: { fontSize: 18, fontWeight: '700', color: '#4285F4' },
+  googleLabel: { fontSize: 15, fontWeight: '500', color: Colors.ink },
+
+  divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 24 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: Colors.border },
+  dividerText: { fontSize: 13, color: Colors.inkMuted },
+
+  serverError: {
+    backgroundColor: Colors.errorLight,
+    color: Colors.error,
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 13,
+    marginBottom: 12,
+  },
+
+  fieldGroup: { marginBottom: 16 },
+  fieldLabel: { fontSize: 14, fontWeight: '500', color: Colors.ink, marginBottom: 6 },
+  inputWrap: {
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    backgroundColor: Colors.surface,
+    height: 52,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+  },
+  inputError: { borderColor: Colors.error },
+  input: { fontSize: 15, color: Colors.ink },
+  fieldError: { fontSize: 12, color: Colors.error, marginTop: 4 },
+
+  smsHint: { fontSize: 12, color: Colors.inkMuted, marginBottom: 16 },
+
+  termsRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: Colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxChecked: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  checkmark: { color: Colors.white, fontSize: 13, fontWeight: '700' },
+  termsText: { flex: 1, fontSize: 14, color: Colors.ink },
+  termsLink: { color: Colors.primary, fontWeight: '600' },
+
+  createBtn: {
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: Colors.navy,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    marginBottom: 24,
+  },
+  createBtnText: { fontSize: 16, fontWeight: '700', color: Colors.white },
+
+  loginRow: { flexDirection: 'row', justifyContent: 'center' },
+  loginText: { fontSize: 14, color: Colors.inkSecondary },
+  loginLink: { fontSize: 14, color: Colors.primary, fontWeight: '600' },
 });

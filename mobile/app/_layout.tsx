@@ -45,10 +45,10 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     } else if (me !== null && me !== undefined) {
       // me === undefined means query still loading, handled by isLoading above
       if (me.role === 'CUSTOMER') {
-        if (!inCustomer) router.replace('/(customer)/(tabs)/');
+        if (!inCustomer) router.replace('/(customer)/(tabs)/' as never);
       } else {
         // Driver, Courier, Counter Agent, Manager, etc. → staff app
-        if (!inStaff) router.replace('/(staff)/(tabs)/');
+        if (!inStaff) router.replace('/(staff)/(tabs)/' as never);
       }
     }
   }, [me, isLoading, segments]);

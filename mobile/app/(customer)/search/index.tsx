@@ -3,316 +3,315 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Colors, FontSize, FontWeight, Typography } from '@/theme';
+import { Colors } from '@/theme/colors';
 
-type SortOption = 'earliest' | 'cheapest' | 'rating';
+const DATE_TABS = ['Today', 'Tue 3', 'Wed 4', 'Thu 5', 'Pick date'];
 
-const CITIES = [
-  'Douala', 'Yaoundé', 'Bafoussam', 'Bamenda', 'Kribi',
-  'Bertoua', 'Ngaoundéré', 'Buea', 'Limbe', 'Kumba',
+const AUTOCOMPLETE = [
+  { main: 'Yaoundé', sub: 'Centre · 9 verified agencies · from 4,000' },
+  { main: 'Yaoundé, Mvan station', sub: 'Bus station · 6 agencies stop here' },
 ];
 
-const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: 'earliest', label: 'Earliest' },
-  { value: 'cheapest', label: 'Cheapest' },
-  { value: 'rating', label: 'Best rated' },
+const RECENT = [
+  { route: 'Douala → Bafoussam', when: 'Last week' },
+  { route: 'Douala → Kribi', when: 'Aug' },
 ];
 
-/** Format a Date to YYYY-MM-DD */
-function toDateString(d: Date) {
-  return d.toISOString().slice(0, 10);
-}
+const OTHER_CITIES = ['Bamenda', 'Buea', 'Limbé', 'Bertoua', 'Garoua', 'Ebolowa'];
 
-/** Format a date string nicely */
-function formatDateLabel(s: string) {
-  if (!s) return 'Select date';
-  return new Date(s).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-}
+function toDateString(d: Date) { return d.toISOString().slice(0, 10); }
 
 export default function SearchScreen() {
   const router = useRouter();
-  const today = toDateString(new Date());
+  const [from] = useState('Douala');
+  const [to, setTo] = useState('Yao');
+  const [dateTabIdx, setDateTabIdx] = useState(1); // 'Tue 3' selected
+  const [showAutocomplete, setShowAutocomplete] = useState(true);
 
-  const [from, setFrom] = useState('Douala');
-  const [to, setTo] = useState('');
-  const [date, setDate] = useState(today);
-  const [sort, setSort] = useState<SortOption>('earliest');
-  const [errors, setErrors] = useState<{ from?: string; to?: string; date?: string }>({});
+  const selectedDate = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + dateTabIdx);
+    return toDateString(d);
+  })();
 
-  function swapCities() {
-    setFrom(to);
-    setTo(from);
-  }
-
-  function validate() {
-    const e: typeof errors = {};
-    if (!from.trim()) e.from = 'Departure city is required';
-    if (!to.trim()) e.to = 'Destination city is required';
-    if (from.trim().toLowerCase() === to.trim().toLowerCase())
-      e.to = 'Departure and destination cannot be the same';
-    if (!date) e.date = 'Please choose a travel date';
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  }
-
-  function handleSearch() {
-    if (!validate()) return;
+  function handleSearch(dest?: string) {
+    const destination = dest ?? to;
+    if (!destination.trim()) return;
+    setShowAutocomplete(false);
     router.push(
-      `/(customer)/search/results?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&date=${date}&sort=${sort}`,
+      `/(customer)/search/results?from=${encodeURIComponent(from)}&to=${encodeURIComponent(destination)}&date=${selectedDate}&sort=earliest`
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      {/* ── TOP: From/To input area ── */}
+      <View style={styles.topArea}>
+        {/* Close button */}
+        <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+          <Text style={styles.closeBtnText}>✕</Text>
+        </TouchableOpacity>
+        <Text style={styles.passengerHint}>1 passenger</Text>
 
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Text style={styles.backArrow}>←</Text>
-          </TouchableOpacity>
-          <Text style={[Typography.h3, styles.headerTitle]}>Where to?</Text>
-        </View>
+        {/* From / To with vertical line */}
+        <View style={styles.routeBox}>
+          {/* Vertical connector */}
+          <View style={styles.connector}>
+            <View style={styles.connectorDotBlue} />
+            <View style={styles.connectorLine} />
+            <View style={styles.connectorDotOrange} />
+          </View>
 
-        {/* From / To with swap */}
-        <View style={styles.routeCard}>
-          {/* FROM */}
-          <View style={styles.routeRow}>
-            <View style={styles.dotWrapper}>
-              <View style={[styles.dot, { backgroundColor: Colors.primary }]} />
-              <View style={styles.dottedLine} />
+          {/* Fields */}
+          <View style={styles.routeFields}>
+            {/* From (static) */}
+            <View style={styles.routeFieldRow}>
+              <Text style={styles.routeFieldLabel}>From</Text>
+              <Text style={styles.routeFieldValue}>{from}</Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.routeFieldLabel}>FROM</Text>
-              <Input
-                placeholder="Departure city"
-                value={from}
-                onChangeText={setFrom}
-                containerStyle={styles.routeInput}
-                error={errors.from}
+            {/* Divider line */}
+            <View style={styles.routeFieldDivider} />
+            {/* To (editable) */}
+            <View style={styles.routeFieldRow}>
+              <Text style={styles.routeFieldLabel}>To</Text>
+              <TextInput
+                style={styles.routeFieldInput}
+                value={to}
+                onChangeText={v => { setTo(v); setShowAutocomplete(true); }}
+                autoFocus
                 autoCapitalize="words"
+                placeholderTextColor={Colors.inkMuted}
+                placeholder="City"
               />
             </View>
           </View>
 
           {/* Swap button */}
-          <TouchableOpacity style={styles.swapBtn} onPress={swapCities}>
-            <Text style={styles.swapIcon}>⇅</Text>
+          <TouchableOpacity style={styles.swapBtn}>
+            <Text style={styles.swapBtnText}>⇅</Text>
           </TouchableOpacity>
+        </View>
 
-          {/* TO */}
-          <View style={styles.routeRow}>
-            <View style={styles.dotWrapper}>
-              <View style={[styles.dot, { backgroundColor: Colors.error }]} />
+        {/* Date tabs */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateTabs}>
+          {DATE_TABS.map((tab, i) => (
+            <TouchableOpacity
+              key={tab}
+              style={styles.dateTab}
+              onPress={() => setDateTabIdx(i)}
+            >
+              <Text style={[styles.dateTabText, dateTabIdx === i && styles.dateTabTextActive]}>
+                {tab}
+              </Text>
+              {dateTabIdx === i ? <View style={styles.dateTabUnderline} /> : null}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* ── BOTTOM: Autocomplete / recent / cities ── */}
+      <ScrollView style={styles.suggestions} keyboardShouldPersistTaps="always">
+        {/* Autocomplete suggestions */}
+        {showAutocomplete && to.length > 0 && AUTOCOMPLETE.filter(a =>
+          a.main.toLowerCase().startsWith(to.toLowerCase())
+        ).map(item => (
+          <TouchableOpacity
+            key={item.main}
+            style={styles.suggestionRow}
+            onPress={() => { setTo(item.main); handleSearch(item.main); }}
+            activeOpacity={0.8}
+          >
+            <View style={styles.suggestionIcon}>
+              <Text style={styles.suggestionIconText}>📍</Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.routeFieldLabel}>TO</Text>
-              <Input
-                placeholder="Destination city"
-                value={to}
-                onChangeText={setTo}
-                containerStyle={styles.routeInput}
-                error={errors.to}
-                autoCapitalize="words"
-              />
+            <View style={styles.suggestionText}>
+              <Text style={styles.suggestionMain}>
+                <Text style={{ fontWeight: '800' }}>{to}</Text>
+                {item.main.slice(to.length)}
+              </Text>
+              <Text style={styles.suggestionSub}>{item.sub}</Text>
             </View>
-          </View>
+            <Text style={styles.suggestionArrow}>→</Text>
+          </TouchableOpacity>
+        ))}
+
+        {/* Recent */}
+        <Text style={styles.groupLabel}>RECENT</Text>
+        {RECENT.map(r => (
+          <TouchableOpacity
+            key={r.route}
+            style={styles.recentRow}
+            onPress={() => {
+              const dest = r.route.split('→')[1].trim();
+              setTo(dest);
+              handleSearch(dest);
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.recentIcon}>🕐</Text>
+            <Text style={styles.recentRoute}>{r.route}</Text>
+            <Text style={styles.recentWhen}>{r.when}</Text>
+          </TouchableOpacity>
+        ))}
+
+        {/* Other cities */}
+        <Text style={styles.groupLabel}>OTHER CITIES</Text>
+        <View style={styles.cityChips}>
+          {OTHER_CITIES.map(city => (
+            <TouchableOpacity
+              key={city}
+              style={styles.cityChip}
+              onPress={() => { setTo(city); handleSearch(city); }}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.cityChipText}>{city}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
-
-        {/* Quick city chips */}
-        <View style={styles.chipsSection}>
-          <Text style={styles.chipsLabel}>Popular destinations</Text>
-          <View style={styles.chips}>
-            {CITIES.filter(c => c !== from).slice(0, 6).map(city => (
-              <TouchableOpacity
-                key={city}
-                style={[styles.chip, to === city && styles.chipActive]}
-                onPress={() => setTo(city)}
-              >
-                <Text style={[styles.chipText, to === city && styles.chipTextActive]}>
-                  {city}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Date */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Travel date</Text>
-          <View style={styles.dateRow}>
-            {[0, 1, 2, 3, 4].map(offset => {
-              const d = new Date();
-              d.setDate(d.getDate() + offset);
-              const val = toDateString(d);
-              const label = offset === 0
-                ? 'Today'
-                : offset === 1
-                ? 'Tomorrow'
-                : d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' });
-              return (
-                <TouchableOpacity
-                  key={val}
-                  style={[styles.dateChip, date === val && styles.dateChipActive]}
-                  onPress={() => setDate(val)}
-                >
-                  <Text style={[styles.dateChipText, date === val && styles.dateChipTextActive]}>
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-          {errors.date ? <Text style={styles.fieldError}>{errors.date}</Text> : null}
-        </View>
-
-        {/* Sort */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Sort by</Text>
-          <View style={styles.sortRow}>
-            {SORT_OPTIONS.map(opt => (
-              <TouchableOpacity
-                key={opt.value}
-                style={[styles.sortChip, sort === opt.value && styles.sortChipActive]}
-                onPress={() => setSort(opt.value)}
-              >
-                <Text style={[styles.sortChipText, sort === opt.value && styles.sortChipTextActive]}>
-                  {opt.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        <Button
-          title="Search trips"
-          onPress={handleSearch}
-          style={styles.searchBtn}
-        />
-
       </ScrollView>
+
+      {/* ── DARK CTA BUTTON ── */}
+      <View style={styles.ctaWrap}>
+        <TouchableOpacity style={styles.ctaBtn} onPress={() => handleSearch()} activeOpacity={0.9}>
+          <Text style={styles.ctaBtnText}>Show trips for {DATE_TABS[dateTabIdx]} Nov</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
-  scroll: { padding: 20, paddingBottom: 40 },
+  safe: { flex: 1, backgroundColor: Colors.surface },
 
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
-  backBtn: { padding: 4, marginRight: 12 },
-  backArrow: { fontSize: FontSize.lg, color: Colors.ink },
-  headerTitle: { flex: 1 },
+  // ── Top input area ──
+  topArea: { backgroundColor: Colors.surface, paddingBottom: 4 },
+  closeBtn: { marginLeft: 20, marginTop: 8, width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
+  closeBtnText: { fontSize: 18, color: Colors.ink },
+  passengerHint: { position: 'absolute', right: 20, top: 16, fontSize: 14, color: Colors.inkSecondary, fontWeight: '500' },
 
-  routeCard: {
+  routeBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 8,
+    gap: 14,
+  },
+  connector: { alignItems: 'center', width: 20, paddingTop: 12 },
+  connectorDotBlue: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 3,
+    borderColor: Colors.primary,
     backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: Colors.ink,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-    marginBottom: 20,
-    position: 'relative',
   },
-  routeRow: { flexDirection: 'row', alignItems: 'flex-start' },
-  dotWrapper: { alignItems: 'center', width: 20, paddingTop: 28, marginRight: 10 },
-  dot: { width: 12, height: 12, borderRadius: 6 },
-  dottedLine: {
-    width: 1.5,
-    height: 52,
-    backgroundColor: Colors.border,
-    marginTop: 4,
+  connectorLine: { width: 2, flex: 1, minHeight: 36, backgroundColor: Colors.primary, marginVertical: 2 },
+  connectorDotOrange: {
+    width: 14,
+    height: 14,
+    borderRadius: 4,
+    backgroundColor: Colors.orange,
   },
-  routeFieldLabel: {
-    fontSize: FontSize.xs,
-    fontWeight: FontWeight.semibold,
-    color: Colors.inkSecondary,
-    letterSpacing: 1,
-    marginBottom: 4,
-    marginTop: 4,
-  },
-  routeInput: { marginBottom: 0 },
+
+  routeFields: { flex: 1 },
+  routeFieldRow: { paddingVertical: 10 },
+  routeFieldLabel: { fontSize: 12, color: Colors.inkMuted, fontWeight: '500', marginBottom: 2 },
+  routeFieldValue: { fontSize: 22, fontWeight: '800', color: Colors.ink },
+  routeFieldInput: { fontSize: 22, fontWeight: '800', color: Colors.ink, padding: 0 },
+  routeFieldDivider: { height: 1, backgroundColor: Colors.border },
 
   swapBtn: {
-    position: 'absolute',
-    right: 16,
-    top: '50%',
-    marginTop: -18,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.primaryLight,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 10,
   },
-  swapIcon: { fontSize: 18, color: Colors.primary, fontWeight: FontWeight.bold },
+  swapBtnText: { fontSize: 18, color: Colors.ink },
 
-  chipsSection: { marginBottom: 20 },
-  chipsLabel: {
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.semibold,
-    color: Colors.inkSecondary,
-    marginBottom: 10,
+  dateTabs: { paddingLeft: 20, paddingBottom: 2, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  dateTab: { paddingRight: 24, paddingVertical: 10, alignItems: 'center' },
+  dateTabText: { fontSize: 15, color: Colors.inkSecondary, fontWeight: '500' },
+  dateTabTextActive: { color: Colors.ink, fontWeight: '700' },
+  dateTabUnderline: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, backgroundColor: Colors.primary, borderRadius: 1 },
+
+  // ── Suggestions ──
+  suggestions: { flex: 1, backgroundColor: Colors.surface },
+
+  suggestionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+  suggestionIcon: {
+    width: 40,
+    height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    backgroundColor: Colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  chipActive: { backgroundColor: Colors.primaryLight, borderColor: Colors.primary },
-  chipText: { fontSize: FontSize.sm, color: Colors.inkSecondary },
-  chipTextActive: { color: Colors.primary, fontWeight: FontWeight.semibold },
+  suggestionIconText: { fontSize: 18 },
+  suggestionText: { flex: 1 },
+  suggestionMain: { fontSize: 16, color: Colors.ink },
+  suggestionSub: { fontSize: 13, color: Colors.inkSecondary, marginTop: 2 },
+  suggestionArrow: { fontSize: 18, color: Colors.inkMuted },
 
-  section: { marginBottom: 20 },
-  sectionLabel: {
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.semibold,
-    color: Colors.inkSecondary,
-    marginBottom: 10,
+  groupLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.inkMuted,
+    letterSpacing: 0.8,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 8,
   },
-  fieldError: { fontSize: FontSize.xs, color: Colors.error, marginTop: 4 },
 
-  dateRow: { flexDirection: 'row', gap: 8 },
-  dateChip: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: Colors.surface,
+  recentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    gap: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  recentIcon: { fontSize: 18, color: Colors.inkMuted },
+  recentRoute: { flex: 1, fontSize: 15, fontWeight: '600', color: Colors.ink },
+  recentWhen: { fontSize: 14, color: Colors.inkSecondary },
+
+  cityChips: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 20, gap: 10, paddingBottom: 24 },
+  cityChip: {
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    borderRadius: 22,
     borderWidth: 1.5,
     borderColor: Colors.border,
-    alignItems: 'center',
-  },
-  dateChipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  dateChipText: { fontSize: FontSize.xs, fontWeight: FontWeight.medium, color: Colors.inkSecondary },
-  dateChipTextActive: { color: Colors.white },
-
-  sortRow: { flexDirection: 'row', gap: 8 },
-  sortChip: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
     backgroundColor: Colors.surface,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    alignItems: 'center',
   },
-  sortChipActive: { backgroundColor: Colors.primaryLight, borderColor: Colors.primary },
-  sortChipText: { fontSize: FontSize.sm, color: Colors.inkSecondary },
-  sortChipTextActive: { color: Colors.primary, fontWeight: FontWeight.semibold },
+  cityChipText: { fontSize: 14, fontWeight: '500', color: Colors.ink },
 
-  searchBtn: { marginTop: 8 },
+  // ── CTA ──
+  ctaWrap: { padding: 20, paddingBottom: 16, backgroundColor: Colors.surface },
+  ctaBtn: {
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.navy,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ctaBtnText: { fontSize: 16, fontWeight: '700', color: Colors.white },
 });

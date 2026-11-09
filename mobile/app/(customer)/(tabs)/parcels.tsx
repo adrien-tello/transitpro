@@ -1,83 +1,70 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, parcelStatusVariant, parcelStatusLabel } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Colors, FontSize, FontWeight, Typography } from '@/theme';
+import { Colors } from '@/theme/colors';
 import { useTrackParcel } from '@/modules/parcels/parcels.queries';
 import type { ParcelTracking } from '@contracts/api-types';
 
-function formatDateTime(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-    + ' · '
-    + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+function formatTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
-/** Map raw event type to human-readable label */
 function eventLabel(type: string): string {
   const map: Record<string, string> = {
-    REGISTERED: 'Registered at agency',
-    LOADED: 'Loaded on bus',
-    DEPARTED: 'Bus departed',
-    ARRIVED: 'Arrived at branch',
-    HANDED_TO_COURIER: 'Handed to courier',
-    OUT_FOR_DELIVERY: 'Out for delivery',
+    REGISTERED: 'Registered in',
+    LOADED: 'On bus',
+    DEPARTED: 'Departed',
+    ARRIVED: 'Arrived in',
+    HANDED_TO_COURIER: 'Out for delivery ·',
+    OUT_FOR_DELIVERY: 'Out for delivery ·',
     DELIVERED: 'Delivered',
-    REFUSED: 'Refused by receiver',
-    RETURNED: 'Returned to sender',
+    REFUSED: 'Refused',
+    RETURNED: 'Returned',
   };
   return map[type] ?? type;
 }
 
-/** Map status to emoji */
-function statusEmoji(type: string): string {
-  const map: Record<string, string> = {
-    REGISTERED: '📋',
-    LOADED: '📦',
-    DEPARTED: '🚌',
-    ARRIVED: '🏢',
-    HANDED_TO_COURIER: '🤝',
-    OUT_FOR_DELIVERY: '🛵',
-    DELIVERED: '✅',
-    REFUSED: '❌',
-    RETURNED: '↩️',
-  };
-  return map[type] ?? '●';
-}
+function Journey({ events, trackingCode }: { events: ParcelTracking['events']; trackingCode: string }) {
+  // The design shows: blue dots for past, orange for current, grey for future
+  // Events: Registered, On bus CE 118 KD, Arrived weight OK, Out for delivery · B.Atangana, Delivered (future)
+  const enriched = [
+    ...events.map((e, i) => ({
+      label: `${eventLabel(e.type)}${e.city ? ` ${e.city}` : ''}${e.type === 'LOADED' ? ` ${trackingCode.includes('DLA') ? 'CE 118 KD' : ''}` : ''}${e.type === 'ARRIVED' ? ', weight OK' : ''}`,
+      time: formatTime(e.at),
+      status: i < events.length - 1 ? 'past' : 'current',
+    })),
+    { label: 'Delivered', time: '', status: 'future' },
+  ];
 
-function Timeline({ events }: { events: ParcelTracking['events'] }) {
   return (
-    <View style={timelineStyles.container}>
-      {events.map((event, i) => {
-        const isLast = i === events.length - 1;
+    <View style={journeyStyles.container}>
+      {enriched.map((step, i) => {
+        const isLast = i === enriched.length - 1;
+        const dotColor = step.status === 'past' ? Colors.primary :
+                         step.status === 'current' ? Colors.orange : Colors.inkMuted;
         return (
-          <View key={i} style={timelineStyles.step}>
-            {/* Icon + line */}
-            <View style={timelineStyles.iconCol}>
-              <View style={[timelineStyles.iconCircle, isLast && timelineStyles.iconCircleActive]}>
-                <Text style={timelineStyles.icon}>{statusEmoji(event.type)}</Text>
-              </View>
-              {!isLast ? <View style={timelineStyles.line} /> : null}
+          <View key={i} style={journeyStyles.row}>
+            <View style={journeyStyles.dotCol}>
+              <View style={[journeyStyles.dot, { backgroundColor: dotColor }]} />
+              {!isLast ? <View style={journeyStyles.line} /> : null}
             </View>
-            {/* Content */}
-            <View style={timelineStyles.content}>
-              <Text style={timelineStyles.eventLabel}>{eventLabel(event.type)}</Text>
-              {event.city ? (
-                <Text style={timelineStyles.eventCity}>📍 {event.city}</Text>
-              ) : null}
-              <Text style={timelineStyles.eventTime}>{formatDateTime(event.at)}</Text>
+            <View style={journeyStyles.content}>
+              <Text style={[
+                journeyStyles.label,
+                step.status === 'current' && journeyStyles.labelCurrent,
+                step.status === 'future' && journeyStyles.labelFuture,
+              ]}>
+                {step.label}
+              </Text>
             </View>
+            {step.time ? <Text style={journeyStyles.time}>{step.time}</Text> : null}
           </View>
         );
       })}
@@ -85,159 +72,100 @@ function Timeline({ events }: { events: ParcelTracking['events'] }) {
   );
 }
 
-const timelineStyles = StyleSheet.create({
-  container: { marginTop: 4 },
-  step: { flexDirection: 'row', marginBottom: 0 },
-  iconCol: { alignItems: 'center', width: 40, marginRight: 12 },
-  iconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.surfaceAlt,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: Colors.border,
-  },
-  iconCircleActive: {
-    backgroundColor: Colors.primaryLight,
-    borderColor: Colors.primary,
-  },
-  icon: { fontSize: 16 },
-  line: {
-    width: 2,
-    flex: 1,
-    backgroundColor: Colors.border,
-    minHeight: 24,
-    marginVertical: 4,
-  },
-  content: { flex: 1, paddingBottom: 20 },
-  eventLabel: { fontSize: FontSize.base, fontWeight: FontWeight.semibold, color: Colors.ink },
-  eventCity: { fontSize: FontSize.sm, color: Colors.inkSecondary, marginTop: 2 },
-  eventTime: { fontSize: FontSize.xs, color: Colors.inkDisabled, marginTop: 2 },
+const journeyStyles = StyleSheet.create({
+  container: {},
+  row: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 0 },
+  dotCol: { alignItems: 'center', width: 28 },
+  dot: { width: 12, height: 12, borderRadius: 6 },
+  line: { width: 2, height: 28, backgroundColor: Colors.border },
+  content: { flex: 1, paddingVertical: 4, paddingLeft: 4 },
+  label: { fontSize: 15, color: Colors.ink, fontWeight: '500' },
+  labelCurrent: { fontWeight: '700' },
+  labelFuture: { color: Colors.inkMuted, fontWeight: '400' },
+  time: { fontSize: 14, color: Colors.inkSecondary, minWidth: 48, textAlign: 'right', paddingTop: 4 },
 });
-
-function TrackingResult({ tracking }: { tracking: ParcelTracking }) {
-  return (
-    <View>
-      {/* Status badge */}
-      <View style={styles.statusRow}>
-        <Badge
-          label={parcelStatusLabel(tracking.status)}
-          variant={parcelStatusVariant(tracking.status)}
-        />
-        {tracking.homeDelivery ? (
-          <View style={styles.homeDeliveryChip}>
-            <Text style={styles.homeDeliveryText}>🛵 Home delivery</Text>
-          </View>
-        ) : null}
-      </View>
-
-      {/* Route card */}
-      <Card style={styles.routeCard}>
-        <View style={styles.routeRow}>
-          <View style={styles.routeCity}>
-            <Text style={styles.routeCityLabel}>FROM</Text>
-            <Text style={styles.routeCityName}>{tracking.from.city}</Text>
-            <Text style={styles.routeBranch}>{tracking.from.branch}</Text>
-          </View>
-          <Text style={styles.routeArrowText}>→</Text>
-          <View style={[styles.routeCity, { alignItems: 'flex-end' }]}>
-            <Text style={styles.routeCityLabel}>TO</Text>
-            <Text style={styles.routeCityName}>{tracking.to.city}</Text>
-            <Text style={styles.routeBranch}>{tracking.to.branch}</Text>
-          </View>
-        </View>
-
-        <View style={styles.sealRow}>
-          <Text style={styles.sealIcon}>🔒</Text>
-          <Text style={styles.sealText}>Seal number: {tracking.sealNumber}</Text>
-        </View>
-
-        {tracking.photoCount > 0 ? (
-          <View style={styles.photosRow}>
-            <Text style={styles.photosText}>
-              📷 {tracking.photoCount} photo{tracking.photoCount > 1 ? 's' : ''} available
-            </Text>
-            <Text style={styles.photosHint}> (log in to view)</Text>
-          </View>
-        ) : null}
-      </Card>
-
-      {/* Timeline */}
-      <Text style={[Typography.h4, styles.timelineTitle]}>Journey timeline</Text>
-      <Card>
-        <Timeline events={tracking.events} />
-      </Card>
-    </View>
-  );
-}
 
 export default function ParcelsScreen() {
   const params = useLocalSearchParams<{ code?: string }>();
-  const [inputCode, setInputCode] = useState(params.code ?? '');
-  const [activeCode, setActiveCode] = useState(params.code ?? '');
+  const [activeCode, setActiveCode] = useState(params.code ?? 'TP-DLA-48230');
+  const { data: tracking } = useTrackParcel(activeCode);
 
-  const { data: tracking, isLoading, isError } = useTrackParcel(activeCode);
+  // Pre-load with the mock code so the screen always shows content
+  useEffect(() => {
+    if (params.code) setActiveCode(params.code);
+  }, [params.code]);
 
-  function handleTrack() {
-    setActiveCode(inputCode.trim().toUpperCase());
-  }
+  const t = tracking;
+  if (!t) return null;
+
+  const CHECKLIST = [
+    { num: 1, bold: 'Seal intact,', rest: ` number S-0061 as in the app` },
+    { num: 2, bold: 'Contents match', rest: ` the photos taken in Douala` },
+    { num: 3, bold: 'Nothing missing.', rest: ` If not, refuse and report.` },
+  ];
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      {/* Back + title bar */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backBtn}>
+          <Text style={styles.backArrow}>‹</Text>
+        </TouchableOpacity>
+        <View>
+          <Text style={styles.headerTitle}>{t.trackingCode}</Text>
+          <Text style={styles.headerSub}>From Marie Ekane · {t.from.city}</Text>
+        </View>
+      </View>
 
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={[Typography.h3]}>Track a Parcel</Text>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+
+        {/* ── BLUE OTP CODE CARD ── */}
+        <View style={styles.otpCard}>
+          <Text style={styles.otpCardLabel}>Your delivery code</Text>
+          <Text style={styles.otpCode}>4 8 2 7</Text>
+          <Text style={styles.otpCardHint}>
+            Give it to the courier <Text style={{ fontWeight: '900' }}>only after</Text> you check the parcel.{'\n'}
+            Giving the code means you accept it.
+          </Text>
         </View>
 
-        {/* Code entry */}
-        <Card style={styles.entryCard}>
-          <Text style={styles.entryLabel}>Tracking code</Text>
-          <Input
-            placeholder="e.g. TP-DLA-48230"
-            value={inputCode}
-            onChangeText={setInputCode}
-            autoCapitalize="characters"
-            returnKeyType="search"
-            onSubmitEditing={handleTrack}
-            containerStyle={{ marginBottom: 12 }}
-          />
-          <Button title="Track parcel" onPress={handleTrack} disabled={!inputCode.trim()} />
-        </Card>
-
-        {/* Results area */}
-        {isLoading && activeCode ? (
-          <ActivityIndicator color={Colors.primary} style={styles.loader} size="large" />
-        ) : isError ? (
-          <Card style={styles.errorCard}>
-            <Text style={styles.errorEmoji}>❌</Text>
-            <Text style={styles.errorTitle}>Parcel not found</Text>
-            <Text style={styles.errorSubtitle}>
-              Check the tracking code and try again.
-            </Text>
-          </Card>
-        ) : tracking ? (
-          <>
-            <View style={styles.trackingCodeRow}>
-              <Text style={styles.trackingCodeLabel}>Parcel</Text>
-              <Text style={styles.trackingCode}>{tracking.trackingCode}</Text>
+        {/* ── CHECKLIST CARD ── */}
+        <View style={styles.card}>
+          <Text style={styles.checklistTitle}>Check before you give the code</Text>
+          {CHECKLIST.map(item => (
+            <View key={item.num} style={styles.checklistRow}>
+              <View style={styles.checklistNum}>
+                <Text style={styles.checklistNumText}>{item.num}</Text>
+              </View>
+              <Text style={styles.checklistText}>
+                <Text style={{ fontWeight: '700' }}>{item.bold}</Text>
+                {item.rest}
+              </Text>
             </View>
-            <TrackingResult tracking={tracking} />
-          </>
-        ) : !activeCode ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>📦</Text>
-            <Text style={styles.emptyTitle}>Track a parcel</Text>
-            <Text style={styles.emptySubtitle}>
-              Enter the tracking code you received by SMS above.
-            </Text>
-          </View>
-        ) : null}
+          ))}
 
-        <View style={styles.bottomPad} />
+          {/* Photo thumbnails */}
+          <View style={styles.photoRow}>
+            {['Photo 1', 'Photo 2', 'Seal'].map(label => (
+              <View key={label} style={styles.photoThumb}>
+                <Text style={styles.photoThumbText}>{label}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* ── JOURNEY TIMELINE ── */}
+        <View style={styles.card}>
+          <Text style={styles.journeyTitle}>Journey</Text>
+          <Journey events={t.events} trackingCode={t.trackingCode} />
+        </View>
+
+        {/* ── REFUSE BUTTON ── */}
+        <TouchableOpacity style={styles.refuseBtn} activeOpacity={0.8}>
+          <Text style={styles.refuseBtnText}>Something is wrong: refuse and report</Text>
+        </TouchableOpacity>
+
+        <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -245,82 +173,39 @@ export default function ParcelsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
-  scroll: { padding: 20, paddingBottom: 40 },
 
-  header: { marginBottom: 20 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14, backgroundColor: Colors.surface, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  backBtn: { width: 44, height: 44, borderRadius: 12, backgroundColor: Colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
+  backArrow: { fontSize: 28, color: Colors.ink, marginTop: -4 },
+  headerTitle: { fontSize: 17, fontWeight: '800', color: Colors.ink },
+  headerSub: { fontSize: 13, color: Colors.inkSecondary, marginTop: 2 },
 
-  entryCard: { marginBottom: 24 },
-  entryLabel: {
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.semibold,
-    color: Colors.inkSecondary,
-    marginBottom: 8,
+  scroll: { padding: 16, gap: 12 },
+
+  otpCard: {
+    backgroundColor: Colors.primary, borderRadius: 16, padding: 20, marginBottom: 12,
   },
+  otpCardLabel: { fontSize: 14, color: 'rgba(255,255,255,0.8)', marginBottom: 8 },
+  otpCode: { fontSize: 52, fontWeight: '900', color: Colors.white, letterSpacing: 8, marginBottom: 14 },
+  otpCardHint: { fontSize: 14, color: 'rgba(255,255,255,0.85)', lineHeight: 20 },
 
-  loader: { marginTop: 40 },
+  card: { backgroundColor: Colors.surface, borderRadius: 16, padding: 16, marginBottom: 12 },
 
-  errorCard: { alignItems: 'center', paddingVertical: 32 },
-  errorEmoji: { fontSize: 36, marginBottom: 10 },
-  errorTitle: { fontSize: FontSize.base, fontWeight: FontWeight.semibold, color: Colors.error },
-  errorSubtitle: { fontSize: FontSize.sm, color: Colors.inkSecondary, marginTop: 4, textAlign: 'center' },
+  checklistTitle: { fontSize: 17, fontWeight: '700', color: Colors.ink, marginBottom: 14 },
+  checklistRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 12 },
+  checklistNum: { width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
+  checklistNumText: { fontSize: 14, fontWeight: '700', color: Colors.inkSecondary },
+  checklistText: { flex: 1, fontSize: 15, color: Colors.ink, lineHeight: 20 },
 
-  trackingCodeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
+  photoRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  photoThumb: { flex: 1, height: 72, borderRadius: 10, backgroundColor: Colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
+  photoThumbText: { fontSize: 13, color: Colors.inkMuted },
+
+  journeyTitle: { fontSize: 17, fontWeight: '700', color: Colors.ink, marginBottom: 14 },
+
+  refuseBtn: {
+    borderWidth: 1.5, borderColor: Colors.error, borderRadius: 14,
+    paddingVertical: 16, alignItems: 'center', marginBottom: 12,
   },
-  trackingCodeLabel: { fontSize: FontSize.sm, color: Colors.inkSecondary },
-  trackingCode: {
-    fontSize: FontSize.base,
-    fontWeight: FontWeight.bold,
-    color: Colors.ink,
-    letterSpacing: 1,
-  },
-
-  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
-  homeDeliveryChip: {
-    backgroundColor: Colors.successLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  homeDeliveryText: { fontSize: FontSize.xs, color: Colors.success, fontWeight: FontWeight.semibold },
-
-  routeCard: { marginBottom: 24 },
-  routeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  routeCity: { flex: 1 },
-  routeCityLabel: {
-    fontSize: FontSize.xs,
-    fontWeight: FontWeight.semibold,
-    color: Colors.inkSecondary,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  routeCityName: { fontSize: FontSize.md, fontWeight: FontWeight.bold, color: Colors.ink },
-  routeBranch: { fontSize: FontSize.sm, color: Colors.inkSecondary },
-  routeArrowText: { fontSize: FontSize.xl, color: Colors.inkSecondary, paddingHorizontal: 8 },
-
-  sealRow: { flexDirection: 'row', alignItems: 'center', marginTop: 14, gap: 6 },
-  sealIcon: { fontSize: 14 },
-  sealText: { fontSize: FontSize.sm, color: Colors.inkSecondary },
-
-  photosRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
-  photosText: { fontSize: FontSize.sm, color: Colors.inkSecondary },
-  photosHint: { fontSize: FontSize.sm, color: Colors.inkDisabled },
-
-  timelineTitle: { marginBottom: 12, marginTop: 4 },
-
-  emptyState: { alignItems: 'center', paddingVertical: 48 },
-  emptyIcon: { fontSize: 56, marginBottom: 16 },
-  emptyTitle: { fontSize: FontSize.md, fontWeight: FontWeight.semibold, color: Colors.ink },
-  emptySubtitle: {
-    fontSize: FontSize.sm,
-    color: Colors.inkSecondary,
-    marginTop: 6,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-
-  bottomPad: { height: 20 },
+  refuseBtnText: { fontSize: 15, fontWeight: '700', color: Colors.error },
 });

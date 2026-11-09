@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,16 +8,12 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Colors, FontSize, FontWeight, Typography } from '@/theme';
+import { Colors } from '@/theme/colors';
 import { useSeatMap } from '@/modules/booking/booking.queries';
 
-function formatPrice(n: number) {
-  return n.toLocaleString('fr-FR') + ' FCFA';
-}
+function formatPrice(n: number) { return n.toLocaleString('fr-FR'); }
 
-interface SeatButtonProps {
+interface SeatProps {
   number: number;
   taken: boolean;
   front: boolean;
@@ -26,34 +21,27 @@ interface SeatButtonProps {
   onPress: () => void;
 }
 
-function SeatButton({ number, taken, front, selected, onPress }: SeatButtonProps) {
-  // Typed as string so TS allows reassignment to different colour literals
+function Seat({ number, taken, front, selected, onPress }: SeatProps) {
   let bg: string = Colors.surface;
-  let borderColor: string = Colors.border;
+  let border: string = Colors.border;
   let textColor: string = Colors.ink;
 
   if (taken) {
-    bg = Colors.surfaceAlt;
-    borderColor = Colors.border;
-    textColor = Colors.inkDisabled;
+    bg = Colors.surfaceAlt; border = Colors.surfaceAlt; textColor = Colors.inkMuted;
   } else if (selected) {
-    bg = Colors.primary;
-    borderColor = Colors.primary;
-    textColor = Colors.white;
+    bg = Colors.primary; border = Colors.primary; textColor = Colors.white;
   } else if (front) {
-    bg = '#FFFBEB';
-    borderColor = Colors.warning;
-    textColor = Colors.ink;
+    bg = '#FFFBEB'; border = Colors.orange; textColor = Colors.ink;
   }
 
   return (
     <TouchableOpacity
-      style={[styles.seat, { backgroundColor: bg, borderColor }]}
+      style={[styles.seat, { backgroundColor: bg, borderColor: border }]}
       onPress={onPress}
       disabled={taken}
-      activeOpacity={0.8}
+      activeOpacity={0.75}
     >
-      <Text style={[styles.seatNumber, { color: textColor }]}>{number}</Text>
+      <Text style={[styles.seatNum, { color: textColor }]}>{number}</Text>
     </TouchableOpacity>
   );
 }
@@ -61,250 +49,152 @@ function SeatButton({ number, taken, front, selected, onPress }: SeatButtonProps
 export default function SeatsScreen() {
   const router = useRouter();
   const { tripId } = useLocalSearchParams<{ tripId: string }>();
-  const { data: map, isLoading } = useSeatMap(tripId ?? '');
+  const { data: map } = useSeatMap(tripId ?? '');
+  const [selected, setSelected] = useState<number | null>(14);
 
-  const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
+  if (!map) return null;
 
-  if (isLoading || !map) {
-    return (
-      <SafeAreaView style={styles.safe} edges={['top']}>
-        <ActivityIndicator color={Colors.primary} style={styles.loader} size="large" />
-      </SafeAreaView>
-    );
-  }
-
-  const selectedSeatObj = map.seats.find(s => s.number === selectedSeat);
-  const price = selectedSeatObj?.front
-    ? map.price + map.frontRowExtra
-    : map.price;
-
-  function handleContinue() {
-    if (!selectedSeat) return;
-    router.push(
-      `/(customer)/booking/pay?tripId=${map!.tripId}&seatNumber=${selectedSeat}&price=${price}`,
-    );
-  }
-
-  // Build grid: 4 columns per row with an aisle gap between col 2 and col 3
-  const rows = Array.from({ length: map.rows }, (_, rowIdx) =>
-    map.seats.filter(s => s.row === rowIdx + 1),
+  const selectedObj = map.seats.find(s => s.number === selected);
+  const price = selectedObj?.front ? map.price + map.frontRowExtra : map.price;
+  const rows = Array.from({ length: map.rows }, (_, i) =>
+    map.seats.filter(s => s.row === i + 1),
   );
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-
-      {/* Header */}
+      {/* Back + title */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backArrow}>←</Text>
+        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <Text style={styles.backArrow}>‹</Text>
         </TouchableOpacity>
-        <Text style={[Typography.h4, { flex: 1 }]}>Choose your seat</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.headerTitle}>Choose your seat</Text>
+          <Text style={styles.headerMeta}>Étoile Voyages · Tue 3 Nov · 08:00 · {map.busClass}</Text>
+        </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Bus info */}
-        <View style={styles.busInfo}>
-          <View style={styles.busInfoRow}>
-            <Text style={styles.busInfoLabel}>Bus plate</Text>
-            <Text style={styles.busInfoValue}>{map.busPlate}</Text>
+      {/* Legend */}
+      <View style={styles.legend}>
+        {[
+          { bg: Colors.surface, border: Colors.border, label: 'Free' },
+          { bg: Colors.surfaceAlt, border: Colors.surfaceAlt, label: 'Taken' },
+          { bg: Colors.primary, border: Colors.primary, label: 'Yours' },
+          { bg: '#FFFBEB', border: Colors.orange, label: `Front +${formatPrice(map.frontRowExtra)}` },
+        ].map(item => (
+          <View key={item.label} style={styles.legendItem}>
+            <View style={[styles.legendSwatch, { backgroundColor: item.bg, borderColor: item.border }]} />
+            <Text style={styles.legendLabel}>{item.label}</Text>
           </View>
-          <View style={styles.busInfoRow}>
-            <Text style={styles.busInfoLabel}>Class</Text>
-            <Badge label={map.busClass} variant={map.busClass === 'VIP' ? 'vip' : 'classic'} />
-          </View>
-          <View style={styles.busInfoRow}>
-            <Text style={styles.busInfoLabel}>Base price</Text>
-            <Text style={styles.busInfoValue}>{formatPrice(map.price)}</Text>
-          </View>
-          {map.frontRowExtra > 0 ? (
-            <View style={styles.busInfoRow}>
-              <Text style={styles.busInfoLabel}>Front row extra</Text>
-              <Text style={[styles.busInfoValue, { color: Colors.warning }]}>
-                +{formatPrice(map.frontRowExtra)}
-              </Text>
+        ))}
+      </View>
+
+      {/* Bus grid card */}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.gridScroll}>
+        <View style={styles.gridCard}>
+          {/* Driver + Door row */}
+          <View style={styles.busTopRow}>
+            <View style={styles.driverArea}>
+              <Text style={styles.driverIcon}>⊕</Text>
+              <Text style={styles.driverLabel}> Driver</Text>
             </View>
-          ) : null}
-        </View>
+            <Text style={styles.doorLabel}>Door</Text>
+          </View>
+          <View style={styles.gridDivider} />
 
-        {/* Legend */}
-        <View style={styles.legend}>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: Colors.surface, borderColor: Colors.border }]} />
-            <Text style={styles.legendText}>Available</Text>
-          </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: Colors.primary }]} />
-            <Text style={styles.legendText}>Selected</Text>
-          </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: Colors.surfaceAlt }]} />
-            <Text style={styles.legendText}>Taken</Text>
-          </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: '#FFFBEB', borderColor: Colors.warning }]} />
-            <Text style={styles.legendText}>+{formatPrice(map.frontRowExtra)}</Text>
-          </View>
-        </View>
-
-        {/* Bus front indicator */}
-        <View style={styles.busFront}>
-          <Text style={styles.busFrontText}>🚌 Front</Text>
-        </View>
-
-        {/* Seat grid */}
-        <View style={styles.grid}>
+          {/* Seat rows */}
           {rows.map((row, rowIdx) => (
-            <View key={rowIdx} style={styles.rowContainer}>
-              <Text style={styles.rowNumber}>{rowIdx + 1}</Text>
-              <View style={styles.seatRow}>
-                {/* Left pair */}
-                {row.slice(0, 2).map(seat => (
-                  <SeatButton
-                    key={seat.number}
-                    number={seat.number}
-                    taken={seat.taken}
-                    front={seat.front}
-                    selected={selectedSeat === seat.number}
-                    onPress={() => setSelectedSeat(seat.number)}
-                  />
-                ))}
-                {/* Aisle */}
-                <View style={styles.aisle} />
-                {/* Right pair */}
-                {row.slice(2, 4).map(seat => (
-                  <SeatButton
-                    key={seat.number}
-                    number={seat.number}
-                    taken={seat.taken}
-                    front={seat.front}
-                    selected={selectedSeat === seat.number}
-                    onPress={() => setSelectedSeat(seat.number)}
-                  />
-                ))}
-              </View>
+            <View key={rowIdx} style={styles.seatRow}>
+              {row.slice(0, 2).map(s => (
+                <Seat key={s.number} number={s.number} taken={s.taken} front={s.front}
+                  selected={selected === s.number} onPress={() => setSelected(s.number)} />
+              ))}
+              <View style={styles.aisle} />
+              {row.slice(2, 4).map(s => (
+                <Seat key={s.number} number={s.number} taken={s.taken} front={s.front}
+                  selected={selected === s.number} onPress={() => setSelected(s.number)} />
+              ))}
             </View>
           ))}
         </View>
-
-        <View style={styles.bottomPad} />
       </ScrollView>
 
-      {/* Sticky footer */}
+      {/* Dark footer */}
       <View style={styles.footer}>
-        {selectedSeat ? (
-          <View style={styles.footerInfo}>
-            <Text style={styles.footerSeat}>Seat {selectedSeat}</Text>
-            <Text style={styles.footerPrice}>{formatPrice(price)}</Text>
-          </View>
-        ) : (
-          <Text style={styles.footerHint}>Tap a seat to select</Text>
-        )}
-        <Button
-          title="Continue"
-          onPress={handleContinue}
-          disabled={!selectedSeat}
-          style={styles.continueBtn}
-        />
+        <View style={styles.footerLeft}>
+          {selected ? (
+            <>
+              <Text style={styles.footerSeatLabel}>Seat {selected} · window</Text>
+              <View style={styles.footerPriceRow}>
+                <Text style={styles.footerPriceBig}>{formatPrice(price)}</Text>
+                <Text style={styles.footerPriceFcfa}> FCFA</Text>
+              </View>
+            </>
+          ) : (
+            <Text style={styles.footerHint}>Tap a seat to select</Text>
+          )}
+        </View>
+        <TouchableOpacity
+          style={[styles.continueBtn, !selected && styles.continueBtnDisabled]}
+          disabled={!selected}
+          onPress={() => router.push(
+            `/(customer)/booking/pay?tripId=${map.tripId}&seatNumber=${selected}&price=${price}`
+          )}
+          activeOpacity={0.9}
+        >
+          <Text style={styles.continueBtnText}>Continue  →</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
-const SEAT_SIZE = 44;
-
+const SEAT = 70;
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
-  loader: { flex: 1, marginTop: 60 },
 
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14 },
+  backBtn: {
+    width: 44, height: 44, borderRadius: 12,
+    backgroundColor: Colors.surface, alignItems: 'center', justifyContent: 'center',
   },
-  backBtn: { padding: 4, marginRight: 12 },
-  backArrow: { fontSize: FontSize.lg, color: Colors.ink },
+  backArrow: { fontSize: 28, color: Colors.ink, marginTop: -4 },
+  headerTitle: { fontSize: 20, fontWeight: '800', color: Colors.ink },
+  headerMeta: { fontSize: 13, color: Colors.inkSecondary, marginTop: 2 },
 
-  busInfo: {
-    margin: 20,
-    backgroundColor: Colors.surface,
-    borderRadius: 14,
-    padding: 16,
-    gap: 10,
-  },
-  busInfoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  busInfoLabel: { fontSize: FontSize.sm, color: Colors.inkSecondary },
-  busInfoValue: { fontSize: FontSize.sm, fontWeight: FontWeight.semibold, color: Colors.ink },
-
-  legend: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 16,
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
+  legend: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 20, marginBottom: 14 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  legendDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 3,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-  },
-  legendText: { fontSize: FontSize.xs, color: Colors.inkSecondary },
+  legendSwatch: { width: 18, height: 18, borderRadius: 4, borderWidth: 1.5 },
+  legendLabel: { fontSize: 13, color: Colors.inkSecondary },
 
-  busFront: {
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  busFrontText: { fontSize: FontSize.sm, color: Colors.inkSecondary },
+  gridScroll: { paddingHorizontal: 16, paddingBottom: 16 },
+  gridCard: { backgroundColor: Colors.surface, borderRadius: 24, padding: 16, paddingBottom: 24 },
+  busTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 4, marginBottom: 8 },
+  driverArea: { flexDirection: 'row', alignItems: 'center' },
+  driverIcon: { fontSize: 18, color: Colors.inkSecondary },
+  driverLabel: { fontSize: 14, color: Colors.inkSecondary, fontWeight: '500' },
+  doorLabel: { fontSize: 14, color: Colors.inkSecondary, fontWeight: '500' },
+  gridDivider: { borderTopWidth: 1, borderTopColor: Colors.border, borderStyle: 'dashed', marginBottom: 12 },
 
-  grid: { paddingHorizontal: 20, paddingBottom: 16 },
-  rowContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
-  rowNumber: {
-    width: 20,
-    fontSize: FontSize.xs,
-    color: Colors.inkDisabled,
-    textAlign: 'center',
-    marginRight: 8,
-  },
-  seatRow: { flex: 1, flexDirection: 'row', alignItems: 'center' },
-
-  seat: {
-    width: SEAT_SIZE,
-    height: SEAT_SIZE,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 3,
-  },
-  seatNumber: { fontSize: FontSize.xs, fontWeight: FontWeight.semibold },
-
+  seatRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 },
+  seat: { width: SEAT, height: SEAT, borderRadius: 14, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  seatNum: { fontSize: 16, fontWeight: '700' },
   aisle: { flex: 1 },
-  bottomPad: { height: 100 },
 
   footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: Colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    padding: 20,
-    paddingBottom: 30,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
+    backgroundColor: Colors.navy,
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 24, paddingTop: 18, paddingBottom: 32, gap: 16,
   },
-  footerInfo: { flex: 1 },
-  footerSeat: { fontSize: FontSize.sm, color: Colors.inkSecondary },
-  footerPrice: { fontSize: FontSize.lg, fontWeight: FontWeight.bold, color: Colors.ink },
-  footerHint: { flex: 1, fontSize: FontSize.sm, color: Colors.inkDisabled },
-  continueBtn: { flex: 1 },
+  footerLeft: { flex: 1 },
+  footerSeatLabel: { fontSize: 13, color: 'rgba(255,255,255,0.6)' },
+  footerPriceRow: { flexDirection: 'row', alignItems: 'baseline' },
+  footerPriceBig: { fontSize: 30, fontWeight: '900', color: Colors.white },
+  footerPriceFcfa: { fontSize: 14, color: Colors.white, fontWeight: '600' },
+  footerHint: { fontSize: 15, color: 'rgba(255,255,255,0.4)' },
+  continueBtn: {
+    backgroundColor: Colors.surface, borderRadius: 28,
+    paddingHorizontal: 22, paddingVertical: 14,
+  },
+  continueBtnDisabled: { opacity: 0.4 },
+  continueBtnText: { fontSize: 15, fontWeight: '700', color: Colors.navy },
 });
