@@ -1,6 +1,12 @@
 # Unified class diagram (whole group)
 
-[unified-class-diagram.png](unified-class-diagram.png) (SVG next to it, sharp at any zoom)
+| File | For |
+|---|---|
+| [unified-class-diagram.png](unified-class-diagram.png) | **The requirements document.** All 21 classes and links, key attributes, large text |
+| [unified-class-diagram-enumerations.png](unified-class-diagram-enumerations.png) | Companion page: every enumeration (Role, ParcelStatus...) |
+| [unified-class-diagram-full.png](unified-class-diagram-full.png) | Annex / screen: every attribute and operation |
+
+SVG versions are next to each PNG (sharp at any zoom).
 
 The 21 classes of the central database, grouped in one package per module, with the owner of each module.
 It goes in the requirements document (FRD), section "Data model".
