@@ -25,7 +25,7 @@ Roles: `CUSTOMER, COUNTER_AGENT, DRIVER, COURIER, BRANCH_MANAGER, FLEET_MANAGER,
 `AGENCY_OWNER` passes every staff role check inside their agency (never the `PLATFORM_ADMIN` ones), `PLATFORM_ADMIN` everywhere.
 Staff of an agency that is not `APPROVED` can log in, but every agency route answers `403` ("Your agency is waiting for verification by TransitPro").
 
-Messages: all codes and notices go by **email** (Resend, free plan). No SMS: no free provider reaches Cameroon numbers.
+Messages: all codes and notices go by **email**, sent from the project Gmail account (Gmail SMTP, free, ~500 a day, to any address). No SMS: no free provider reaches Cameroon numbers.
 
 Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 
@@ -55,11 +55,11 @@ Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 | Bad fields | `400 VALIDATION_ERROR`, `details` = `{ field: [messages] }` | the message under each field |
 | Passwords | 8 to 72 characters | – |
 | Phones | spaces, dots and dashes are removed (`+237 6 70 00 00 00` → `+237670000000`) | – |
-| Forgot password | always `{ ok: true }`, even for an unknown email. Code: 6 digits, 15 min, 5 wrong tries, works once | "If this email has an account, we sent you a code. Check your inbox and spam." |
+| Forgot password | always `{ ok: true }`, even for an unknown email. Code: 6 digits, **10 min**, 5 wrong tries, works once | "If this email has an account, we sent you a code. Check your inbox and spam." |
 | Reset or change password | every **other** device is logged out | – |
 | Any `401` later | the cookie is gone or ended | go back to the login screen |
 | 10 login / sign-up / reset tries in 15 min from one IP | `429` | "Too many tries, wait a few minutes" |
-| Dev testing | without `RESEND_API_KEY`, emails are printed in the **server terminal**, not sent | read the code there |
+| Dev testing | without `SMTP_USER` / `SMTP_PASS`, emails are printed in the **server terminal**, not sent | read the code there |
 
 ## Agencies (SaaS) · Lead
 

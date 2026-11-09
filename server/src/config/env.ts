@@ -16,11 +16,17 @@ const schema = z
     // Google sign-in: the OAuth client IDs (web, Android, iOS), comma-separated.
     // Empty = "Continue with Google" answers 501 until it is set.
     GOOGLE_CLIENT_IDS: z.string().default(''),
-    // Emails (codes, notices) go through Resend (resend.com, free: 3,000 / month).
-    // Empty key = emails are printed in the server terminal instead (development).
-    RESEND_API_KEY: z.string().default(''),
-    // Must be an address on a domain verified in Resend (onboarding@resend.dev only reaches your own inbox)
-    EMAIL_FROM: z.string().default('TransitPro <onboarding@resend.dev>'),
+    // Emails (codes, notices) are sent from one Gmail account through Gmail SMTP: free,
+    // about 500 emails a day, to ANY address. SMTP_PASS is a Google "App password"
+    // (16 letters), never the real Gmail password. Empty = emails printed in the terminal.
+    SMTP_USER: z.string().trim().default(''),
+    SMTP_PASS: z
+      .string()
+      .default('')
+      .transform((v) => v.replace(/\s/g, '')), // Google shows it as "abcd efgh ijkl mnop"
+    EMAIL_FROM_NAME: z.string().default('TransitPro'),
+    // Web dashboard address, used for the buttons in emails
+    WEB_URL: z.string().url().default('http://localhost:5173'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   })
   .refine((e) => e.NODE_ENV !== 'production' || !/localhost/.test(e.CORS_ORIGINS), {
@@ -28,9 +34,9 @@ const schema = z
     path: ['CORS_ORIGINS'],
   })
   // Online, codes must really be emailed, never printed in the logs
-  .refine((e) => e.NODE_ENV !== 'production' || e.RESEND_API_KEY.length > 0, {
-    message: 'In production RESEND_API_KEY is required (codes are sent by email)',
-    path: ['RESEND_API_KEY'],
+  .refine((e) => e.NODE_ENV !== 'production' || (e.SMTP_USER.length > 0 && e.SMTP_PASS.length > 0), {
+    message: 'In production SMTP_USER and SMTP_PASS are required (codes are sent by email)',
+    path: ['SMTP_USER'],
   });
 
 const parsed = schema.safeParse(process.env);

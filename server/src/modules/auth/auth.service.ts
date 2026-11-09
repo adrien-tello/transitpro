@@ -108,7 +108,7 @@ export async function loginWithGoogle(idToken: string) {
 
 // ─────────────── Forgot password ───────────────
 
-const RESET_CODE_MINUTES = 15;
+const RESET_CODE_MINUTES = 10;
 const RESET_MAX_ATTEMPTS = 5;
 const WRONG_CODE = 'The code is wrong or has expired';
 
@@ -129,9 +129,16 @@ export async function requestPasswordReset(email: string) {
   try {
     await sendEmail({
       to: user.email,
-      subject: `${code} is your TransitPro reset code`,
-      lines: [`Hello ${user.fullName},`, `Use this code to choose a new password. It expires in ${RESET_CODE_MINUTES} minutes.`],
-      code,
+      subject: `${code} is your TransitPro code`,
+      preheader: `Use it to choose a new password. It expires in ${RESET_CODE_MINUTES} minutes.`,
+      title: 'Reset your password',
+      lines: [`Hello ${user.fullName},`, 'Someone asked to reset the password of your TransitPro account. Enter this code in the app to choose a new one.'],
+      code: { value: code, expiresInMinutes: RESET_CODE_MINUTES },
+      callout: {
+        tone: 'warning',
+        title: "Didn't ask for this?",
+        text: 'Ignore this email. Your password stays the same and nobody can use this code without your inbox.',
+      },
     });
   } catch {
     // Swallowed on purpose: an error here would tell a stranger that this email has an account
