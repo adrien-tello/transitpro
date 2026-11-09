@@ -6,7 +6,8 @@ import type { Me, PublicUser } from '@contracts/api-types';
 import { env } from '../../config/env';
 import { prisma } from '../../lib/prisma';
 import { matchesHash, sha256 } from '../../lib/codes';
-import { sendEmail } from '../../lib/email';
+import { queueEmail } from '../../lib/email';
+import { passwordChangedEmail, resetCodeEmail, welcomeEmail } from './auth.emails';
 import { HttpError, badRequest, conflict, forbidden, notFound, unauthorized } from '../../lib/http-error';
 import type { ChangePasswordInput, LoginInput, RegisterInput, ResetPasswordInput } from './auth.schemas';
 
@@ -38,7 +39,7 @@ export async function register(input: RegisterInput) {
   const exists = await prisma.user.findFirst({ where: { OR: [{ email: input.email }, { phone: input.phone }] } });
   if (exists) throw conflict('An account with this email or phone already exists');
 
-  return prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       fullName: input.fullName,
       email: input.email,
@@ -47,6 +48,8 @@ export async function register(input: RegisterInput) {
       role: 'CUSTOMER',
     },
   });
+  queueEmail(welcomeEmail(user));
+  return user;
 }
 
 export async function login(input: LoginInput) {
@@ -100,6 +103,7 @@ export async function loginWithGoogle(idToken: string) {
     user = await prisma.user.create({
       data: { email, googleId: profile.sub, fullName: profile.name?.trim() || email.split('@')[0], role: 'CUSTOMER' },
     });
+    queueEmail(welcomeEmail(user));
   }
 
   if (!user.isActive) throw forbidden('This account is disabled');
@@ -126,23 +130,8 @@ export async function requestPasswordReset(email: string) {
       data: { userId: user.id, codeHash: sha256(code), expiresAt: new Date(Date.now() + RESET_CODE_MINUTES * 60_000) },
     }),
   ]);
-  try {
-    await sendEmail({
-      to: user.email,
-      subject: `${code} is your TransitPro code`,
-      preheader: `Use it to choose a new password. It expires in ${RESET_CODE_MINUTES} minutes.`,
-      title: 'Reset your password',
-      lines: [`Hello ${user.fullName},`, 'Someone asked to reset the password of your TransitPro account. Enter this code in the app to choose a new one.'],
-      code: { value: code, expiresInMinutes: RESET_CODE_MINUTES },
-      callout: {
-        tone: 'warning',
-        title: "Didn't ask for this?",
-        text: 'Ignore this email. Your password stays the same and nobody can use this code without your inbox.',
-      },
-    });
-  } catch {
-    // Swallowed on purpose: an error here would tell a stranger that this email has an account
-  }
+  // Sent in the background: the answer comes back in the same time whether the account exists or not
+  queueEmail(resetCodeEmail(user, code, RESET_CODE_MINUTES));
 }
 
 export async function resetPassword(input: ResetPasswordInput) {
@@ -168,6 +157,7 @@ export async function resetPassword(input: ResetPasswordInput) {
     }),
     prisma.passwordReset.update({ where: { id: reset.id }, data: { usedAt: new Date() } }),
   ]);
+  queueEmail(passwordChangedEmail(updated));
   return updated;
 }
 
@@ -181,10 +171,12 @@ export async function changePassword(userId: string, input: ChangePasswordInput)
     const ok = await bcrypt.compare(input.currentPassword ?? '', user.passwordHash);
     if (!ok) throw badRequest('Your current password is wrong');
   }
-  return prisma.user.update({
+  const updated = await prisma.user.update({
     where: { id: userId },
     data: { passwordHash: await hashPassword(input.newPassword), tokenVersion: { increment: 1 } },
   });
+  queueEmail(passwordChangedEmail(updated));
+  return updated;
 }
 
 // "Log out on all my devices": every existing cookie stops working

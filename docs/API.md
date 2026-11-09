@@ -27,6 +27,16 @@ Staff of an agency that is not `APPROVED` can log in, but every agency route ans
 
 Messages: all codes and notices go by **email**, sent from the project Gmail account (Gmail SMTP, free, ~500 a day, to any address). No SMS: no free provider reaches Cameroon numbers.
 
+| Email | Sent when | Module file |
+|---|---|---|
+| Welcome | `/auth/register`, first `/auth/google` | `auth.emails.ts` |
+| Reset code (6 digits, 10 min) | `/auth/password/forgot` | `auth.emails.ts` |
+| Password changed (security notice) | `/auth/password/reset`, `/auth/password/change` | `auth.emails.ts` |
+| Application received (documents list) | `/agencies/register`, to the owner | `agencies.emails.ts` |
+| Agency verified / not verified (with reason) | admin approve / reject, to the agency contact | `agencies.emails.ts` |
+
+New emails (staff invite, ticket, parcel...): write them in `<module>.emails.ts` like `auth.emails.ts`, then `queueEmail(yourEmail(...))` in the service. Never build HTML yourself.
+
 Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 
 ---

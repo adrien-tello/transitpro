@@ -2,6 +2,7 @@
 // Run: npm run email:test -- your.other.address@example.com
 import { env } from '../config/env';
 import { sendEmail } from '../lib/email';
+import { resetCodeEmail } from '../modules/auth/auth.emails';
 
 const to = process.argv[2];
 if (!to || !to.includes('@')) {
@@ -13,14 +14,7 @@ if (!env.SMTP_USER || !env.SMTP_PASS) {
   process.exit(1);
 }
 
-sendEmail({
-  to,
-  subject: '123456 is your TransitPro code (test)',
-  preheader: 'If you can read this, TransitPro emails work.',
-  title: 'Test email',
-  lines: ['If you can read this, the server can send emails. This code is fake.'],
-  code: { value: '123456', expiresInMinutes: 10 },
-})
+sendEmail(resetCodeEmail({ email: to, fullName: 'Test' }, '123456', 10))
   .then(() => console.log(`Sent. Check the inbox (and spam) of ${to}.`))
   .catch(() => {
     console.error('Not sent. EAUTH = wrong SMTP_USER or app password; ECONNECTION = network.');

@@ -1,135 +1,94 @@
 import nodemailer from 'nodemailer';
 import { env } from '../config/env';
 
-// Every email of the platform goes through here (codes, agency verification, staff invites...).
+// Every email of the platform goes through here (codes, welcome, agency verification, staff invites...).
 // Sent from the project Gmail account through Gmail SMTP: free, ~500 emails a day, to ANY address.
 // Without SMTP_USER / SMTP_PASS (development) the email is printed in the server terminal instead.
 //
-// Callers describe the email (title, lines, code, button...) and this file builds both versions:
-// HTML for email apps, plain text for the rest. Every value is escaped, so a name or a reason
+// Modules write their emails in <module>.emails.ts (see auth.emails.ts) as plain data:
+// greeting, paragraphs, code, button... This file turns that into a simple letter-style
+// HTML email and a plain-text version. Every value is escaped, so a name or a reason
 // typed by a user can never inject HTML into an email.
-
-type Tone = 'success' | 'danger' | 'warning' | 'info';
 
 export interface Email {
   to: string;
   subject: string;
-  preheader: string; // grey preview line shown next to the subject in the inbox
-  title: string;
-  lines: string[];
+  preheader: string; // grey preview line next to the subject in the inbox
+  greeting: string; // "Hi Marie,"
+  paragraphs: string[];
+  list?: string[]; // simple bullet list after the paragraphs
   code?: { value: string; expiresInMinutes: number };
-  status?: { tone: Tone; label: string }; // small pill above the title: "Verified", "Not approved"
-  callout?: { tone: Tone; title: string; text: string };
+  quote?: { label: string; text: string }; // e.g. the reason an agency was refused
   button?: { label: string; url: string };
+  after?: string[]; // paragraphs after the code / button
+  footnote?: string; // small grey line above the footer: "You get this because..."
 }
 
-// Same tokens as the web dashboard (web/src/styles/index.css)
-const C = {
-  ink: '#0E1726',
-  muted: '#5B6576',
-  primary: '#1E4FD8',
-  primaryTint: '#E8EEFD',
-  canvas: '#E9ECF7',
-  line: '#E4E8EF',
-  white: '#FFFFFF',
-};
-const TONES: Record<Tone, { fg: string; bg: string }> = {
-  success: { fg: '#146C43', bg: '#E3F5EC' },
-  danger: { fg: '#B42318', bg: '#FDECEA' },
-  warning: { fg: '#8A5200', bg: '#FFF3DC' },
-  info: { fg: C.primary, bg: C.primaryTint },
-};
-const FONT = "'Plus Jakarta Sans','Segoe UI',Helvetica,Arial,sans-serif";
-const MONO = "'JetBrains Mono',Consolas,'Courier New',monospace";
+const INK = '#0E1726';
+const BODY = '#2B3445';
+const MUTED = '#6B7280';
+const LINE = '#E5E7EB';
+const BLUE = '#1E4FD8';
+const FONT = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+const MONO = "'SF Mono',Menlo,Consolas,'Courier New',monospace";
 
 const esc = (v: string) =>
   v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-function codeBlock(code: NonNullable<Email['code']>): string {
-  return `
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 24px">
-  <tr><td align="center" bgcolor="${C.primaryTint}" style="background:${C.primaryTint};border-radius:14px;padding:22px 16px">
-    <div style="font:700 11px ${FONT};letter-spacing:1.6px;text-transform:uppercase;color:${C.muted};margin-bottom:10px">Your code</div>
-    <div style="font:700 36px/1.1 ${MONO};letter-spacing:12px;color:${C.ink};padding-left:12px">${esc(code.value)}</div>
-    <div style="font:500 13px ${FONT};color:${C.muted};margin-top:12px">Expires in ${code.expiresInMinutes} minutes</div>
-  </td></tr>
-</table>`;
-}
+const p = (text: string) => `<p style="margin:0 0 16px;font:15px/1.65 ${FONT};color:${BODY}">${esc(text)}</p>`;
 
-function statusPill(status: NonNullable<Email['status']>): string {
-  const t = TONES[status.tone];
-  return `<div style="margin-bottom:14px"><span style="display:inline-block;background:${t.bg};color:${t.fg};font:700 12px ${FONT};padding:5px 12px;border-radius:999px">${esc(status.label)}</span></div>`;
-}
-
-function callout(c: NonNullable<Email['callout']>): string {
-  const t = TONES[c.tone];
-  return `
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 22px">
-  <tr><td bgcolor="${t.bg}" style="background:${t.bg};border-left:4px solid ${t.fg};border-radius:10px;padding:14px 16px">
-    <div style="font:700 14px ${FONT};color:${t.fg};margin-bottom:4px">${esc(c.title)}</div>
-    <div style="font:400 14px/1.55 ${FONT};color:${C.ink}">${esc(c.text)}</div>
-  </td></tr>
-</table>`;
-}
-
-function button(b: NonNullable<Email['button']>): string {
-  return `
-<table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px 0 24px">
-  <tr><td bgcolor="${C.primary}" style="background:${C.primary};border-radius:10px">
-    <a href="${esc(b.url)}" target="_blank" style="display:inline-block;padding:13px 24px;font:700 15px ${FONT};color:${C.white};text-decoration:none;border-radius:10px">${esc(b.label)}</a>
-  </td></tr>
-</table>`;
-}
-
-export function renderHtml(email: Email): string {
-  const paragraphs = email.lines
-    .map((l) => `<p style="margin:0 0 14px;font:400 15px/1.6 ${FONT};color:${C.ink}">${esc(l)}</p>`)
-    .join('');
+export function renderHtml(e: Email): string {
+  const code = e.code
+    ? `<div style="margin:6px 0 8px;padding:14px 18px;background:#F4F5F7;border-radius:6px;display:inline-block;font:600 30px/1 ${MONO};letter-spacing:7px;color:${INK}">${esc(e.code.value)}</div>
+<p style="margin:0 0 20px;font:13px/1.5 ${FONT};color:${MUTED}">This code expires in ${e.code.expiresInMinutes} minutes and works once.</p>`
+    : '';
+  const list = e.list
+    ? `<ul style="margin:0 0 18px;padding-left:22px">${e.list.map((x) => `<li style="margin:0 0 6px;font:15px/1.6 ${FONT};color:${BODY}">${esc(x)}</li>`).join('')}</ul>`
+    : '';
+  const quote = e.quote
+    ? `<div style="margin:0 0 18px;padding:2px 0 2px 14px;border-left:3px solid ${LINE}">
+<div style="font:600 13px/1.6 ${FONT};color:${MUTED}">${esc(e.quote.label)}</div>
+<div style="font:15px/1.6 ${FONT};color:${INK}">${esc(e.quote.text)}</div></div>`
+    : '';
+  const button = e.button
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px 0 22px"><tr>
+<td bgcolor="${BLUE}" style="background:${BLUE};border-radius:6px"><a href="${esc(e.button.url)}" target="_blank" style="display:inline-block;padding:11px 20px;font:600 14px ${FONT};color:#FFFFFF;text-decoration:none">${esc(e.button.label)}</a></td>
+</tr></table>`
+    : '';
 
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="light"><title>${esc(email.subject)}</title></head>
-<body style="margin:0;padding:0;background:${C.canvas}">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0">${esc(email.preheader)}</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${C.canvas}" style="background:${C.canvas}">
-<tr><td align="center" style="padding:32px 14px">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px">
-
-    <tr><td style="padding:0 4px 18px">
-      <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-        <td width="34" height="34" align="center" bgcolor="${C.primary}" style="background:${C.primary};border-radius:9px;font:800 18px/34px ${FONT};color:${C.white}">T</td>
-        <td style="padding-left:10px;font:800 19px ${FONT};color:${C.ink};letter-spacing:-0.3px">Transit<span style="color:${C.primary}">Pro</span></td>
-      </tr></table>
-    </td></tr>
-
-    <tr><td bgcolor="${C.white}" style="background:${C.white};border:1px solid ${C.line};border-top:4px solid ${C.primary};border-radius:16px;padding:32px 30px 10px">
-      ${email.status ? statusPill(email.status) : ''}
-      <h1 style="margin:0 0 16px;font:800 23px/1.3 ${FONT};color:${C.ink};letter-spacing:-0.3px">${esc(email.title)}</h1>
-      ${paragraphs}
-      ${email.code ? codeBlock(email.code) : ''}
-      ${email.callout ? callout(email.callout) : ''}
-      ${email.button ? button(email.button) : ''}
-    </td></tr>
-
-    <tr><td align="center" style="padding:22px 20px 0;font:400 12px/1.6 ${FONT};color:${C.muted}">
-      Never share a code with anyone, not even TransitPro staff. We will never ask for it.<br>
-      This is an automatic email, replies are not read.<br>
-      <span style="color:${C.ink};font-weight:700">TransitPro</span> · Intercity buses and parcels in Cameroon
-    </td></tr>
-
-  </table>
-</td></tr>
-</table>
+<meta name="color-scheme" content="light only"><title>${esc(e.subject)}</title></head>
+<body style="margin:0;padding:0;background:#FFFFFF">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">${esc(e.preheader)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF"><tr><td style="padding:36px 22px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px"><tr><td>
+<div style="font:700 17px ${FONT};color:${INK};letter-spacing:-0.2px;margin-bottom:34px">TransitPro</div>
+<p style="margin:0 0 16px;font:15px/1.65 ${FONT};color:${INK}">${esc(e.greeting)}</p>
+${e.paragraphs.map(p).join('\n')}
+${list}${quote}${code}
+${(e.after ?? []).map(p).join('\n')}
+${button}
+<p style="margin:24px 0 0;font:15px/1.65 ${FONT};color:${BODY}">The TransitPro team</p>
+<div style="height:1px;background:${LINE};margin:36px 0 18px"></div>
+${e.footnote ? `<p style="margin:0 0 8px;font:12px/1.6 ${FONT};color:${MUTED}">${esc(e.footnote)}</p>` : ''}
+<p style="margin:0;font:12px/1.6 ${FONT};color:${MUTED}">TransitPro · Intercity buses and parcels · Cameroon<br>This mailbox is not monitored, please do not reply.</p>
+</td></tr></table>
+</td></tr></table>
 </body></html>`;
 }
 
-export function renderText(email: Email): string {
-  const parts = [email.title, '', ...email.lines];
-  if (email.code) parts.push('', `Your code: ${email.code.value}`, `Expires in ${email.code.expiresInMinutes} minutes.`);
-  if (email.callout) parts.push('', `${email.callout.title}: ${email.callout.text}`);
-  if (email.button) parts.push('', `${email.button.label}: ${email.button.url}`);
-  parts.push('', 'Never share a code with anyone, not even TransitPro staff.', 'TransitPro');
-  return parts.join('\n');
+export function renderText(e: Email): string {
+  const out = ['TransitPro', '', e.greeting, '', ...e.paragraphs.flatMap((x) => [x, ''])];
+  if (e.list) out.push(...e.list.map((x) => `- ${x}`), '');
+  if (e.quote) out.push(`${e.quote.label}: ${e.quote.text}`, '');
+  if (e.code) out.push(e.code.value, `This code expires in ${e.code.expiresInMinutes} minutes and works once.`, '');
+  for (const x of e.after ?? []) out.push(x, '');
+  if (e.button) out.push(`${e.button.label}: ${e.button.url}`, '');
+  out.push('The TransitPro team', '', '--');
+  if (e.footnote) out.push(e.footnote);
+  out.push('TransitPro · Intercity buses and parcels · Cameroon');
+  return out.join('\n');
 }
 
 // Gmail SMTP over TLS. Created once, reused for every email.
@@ -146,6 +105,7 @@ const transport =
       })
     : null;
 
+// Sends now and throws if Gmail refuses. Used by the email:test script.
 export async function sendEmail(email: Email): Promise<void> {
   const text = renderText(email);
 
@@ -170,4 +130,14 @@ export async function sendEmail(email: Email): Promise<void> {
     console.error(`[EMAIL] Gmail did not send an email: ${code}`);
     throw new Error('Email could not be sent');
   }
+}
+
+// What the modules use: the API answers at once and the email leaves in the background.
+//   - the user does not wait 1-2 s for Gmail
+//   - "forgot password" answers in the same time whether the account exists or not
+//   - a Gmail problem never breaks sign-up, approval...
+export function queueEmail(email: Email): void {
+  sendEmail(email).catch(() => {
+    // already logged (error code only) in sendEmail
+  });
 }

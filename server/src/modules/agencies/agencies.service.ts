@@ -1,7 +1,7 @@
 import type { AgencyRegistered, PendingAgency } from '@contracts/api-types';
 import { prisma } from '../../lib/prisma';
-import { sendEmail, type Email } from '../../lib/email';
-import { env } from '../../config/env';
+import { queueEmail } from '../../lib/email';
+import { applicationReceivedEmail, rejectedEmail, verifiedEmail } from './agencies.emails';
 import { badRequest, conflict, notFound } from '../../lib/http-error';
 import { hashPassword, publicUser } from '../auth/auth.service';
 import type { RegisterAgencyInput } from './agencies.schemas';
@@ -57,19 +57,11 @@ export async function registerAgency(input: RegisterAgencyInput): Promise<Agency
     return { agency: a, user };
   });
 
+  queueEmail(applicationReceivedEmail(created.agency.name, created.user));
   return { user: publicUser(created.user), agency: created.agency, tokenVersion: created.user.tokenVersion };
 }
 
 // ─────────────── TransitPro team (PLATFORM_ADMIN) ───────────────
-
-// The decision is saved even if the email fails (it is only a notice)
-async function notify(email: Email) {
-  try {
-    await sendEmail(email);
-  } catch {
-    console.error('[agencies] notice email not sent');
-  }
-}
 
 export async function listPending(): Promise<PendingAgency[]> {
   const rows = await prisma.agency.findMany({
@@ -105,18 +97,7 @@ export async function approve(id: string) {
     data: { status: 'APPROVED', verifiedAt: new Date(), rejectionReason: null },
     select: { id: true, name: true, slug: true, status: true },
   });
-  await notify({
-    to: agency.email,
-    subject: `${agency.name} is verified on TransitPro`,
-    preheader: 'Customers can now find your agency, book your trips and send parcels.',
-    status: { tone: 'success', label: 'Verified agency' },
-    title: `Welcome aboard, ${agency.name}`,
-    lines: [
-      'The TransitPro team checked your documents: your agency is now verified and shows the blue badge in the app.',
-      'Next steps: add your branches, invite your staff, then publish your first trips.',
-    ],
-    button: { label: 'Open your dashboard', url: env.WEB_URL },
-  });
+  queueEmail(verifiedEmail(agency));
   return updated;
 }
 
@@ -130,15 +111,6 @@ export async function reject(id: string, reason: string) {
     data: { status: 'REJECTED', rejectionReason: reason },
     select: { id: true, name: true, slug: true, status: true },
   });
-  await notify({
-    to: agency.email,
-    subject: `${agency.name} was not approved on TransitPro`,
-    preheader: `Reason: ${reason}`,
-    status: { tone: 'danger', label: 'Not approved' },
-    title: 'We could not verify your agency',
-    lines: [`We checked the documents of ${agency.name} and could not approve it yet.`],
-    callout: { tone: 'danger', title: 'Reason', text: reason },
-    button: { label: 'Fix my documents', url: env.WEB_URL },
-  });
+  queueEmail(rejectedEmail(agency, reason));
   return updated;
 }
