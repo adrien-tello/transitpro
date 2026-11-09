@@ -25,6 +25,8 @@ Roles: `CUSTOMER, COUNTER_AGENT, DRIVER, COURIER, BRANCH_MANAGER, FLEET_MANAGER,
 `AGENCY_OWNER` passes every staff role check inside their agency (never the `PLATFORM_ADMIN` ones), `PLATFORM_ADMIN` everywhere.
 Staff of an agency that is not `APPROVED` can log in, but every agency route answers `403` ("Your agency is waiting for verification by TransitPro").
 
+Messages: all codes and notices go by **email** (Resend, free plan). No SMS: no free provider reaches Cameroon numbers.
+
 Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 
 ---
@@ -36,7 +38,7 @@ Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 | POST | `/auth/register` | public | `fullName, email, phone, password` | `201 { user }` + cookie | Mobile · Create account | ✅ |
 | POST | `/auth/login` | public | `email, password` | `{ user }` + cookie | Mobile · Log in, Web · Sign in | ✅ |
 | POST | `/auth/google` | public | `idToken` (from Google on the device) | `{ user }` + cookie | Continue with Google | ✅ needs `GOOGLE_CLIENT_IDS`, answers 501 until set |
-| POST | `/auth/password/forgot` | public | `email` | `{ ok: true }`, 6-digit code by SMS | Forgot password | ✅ |
+| POST | `/auth/password/forgot` | public | `email` | `{ ok: true }`, 6-digit code by **email** | Forgot password | ✅ |
 | POST | `/auth/password/reset` | public | `email, code, password` | `{ user }` + cookie | Forgot password · new password | ✅ |
 | POST | `/auth/password/change` | logged in | `currentPassword, newPassword` | `{ user }` + fresh cookie | Profile · Security | ✅ |
 | POST | `/auth/logout` | any | – | clears cookie | Profile, sidebar Log out | ✅ |
@@ -53,11 +55,11 @@ Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 | Bad fields | `400 VALIDATION_ERROR`, `details` = `{ field: [messages] }` | the message under each field |
 | Passwords | 8 to 72 characters | – |
 | Phones | spaces, dots and dashes are removed (`+237 6 70 00 00 00` → `+237670000000`) | – |
-| Forgot password | always `{ ok: true }`, even for an unknown email. Code: 6 digits, 15 min, 5 wrong tries, works once | "If this email has an account, we sent a code by SMS" |
+| Forgot password | always `{ ok: true }`, even for an unknown email. Code: 6 digits, 15 min, 5 wrong tries, works once | "If this email has an account, we sent you a code. Check your inbox and spam." |
 | Reset or change password | every **other** device is logged out | – |
 | Any `401` later | the cookie is gone or ended | go back to the login screen |
 | 10 login / sign-up / reset tries in 15 min from one IP | `429` | "Too many tries, wait a few minutes" |
-| Dev testing | SMS are printed in the **server terminal**, not sent | read the code there |
+| Dev testing | without `RESEND_API_KEY`, emails are printed in the **server terminal**, not sent | read the code there |
 
 ## Agencies (SaaS) · Lead
 
@@ -69,8 +71,8 @@ Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 | POST | `/agencies/me/documents` | AGENCY_OWNER | RCCM, NIU, CNI, licence files | | Web · Register (documents step) | 🧱 |
 | GET/POST | `/agencies/me/branches` | owner / manager | Branches | | Web · settings, register parcel | 🧱 |
 | GET | `/agencies/admin/pending` | PLATFORM_ADMIN | Waiting for verification, oldest first | `PendingAgency[]` | Platform admin | ✅ |
-| POST | `/agencies/admin/:id/approve` | PLATFORM_ADMIN | – (SMS to the agency) | `{ id, name, slug, status }` | Platform admin | ✅ |
-| POST | `/agencies/admin/:id/reject` | PLATFORM_ADMIN | `{ reason }` (SMS to the agency) | `{ id, name, slug, status }` | Platform admin | ✅ |
+| POST | `/agencies/admin/:id/approve` | PLATFORM_ADMIN | – (email to the agency) | `{ id, name, slug, status }` | Platform admin | ✅ |
+| POST | `/agencies/admin/:id/reject` | PLATFORM_ADMIN | `{ reason }` (email to the agency) | `{ id, name, slug, status }` | Platform admin | ✅ |
 
 Web dashboard after login: if `me.agency.status` is `PENDING`, show the "waiting for verification" page (documents upload), not the dashboard.
 

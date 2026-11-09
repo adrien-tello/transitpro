@@ -16,11 +16,21 @@ const schema = z
     // Google sign-in: the OAuth client IDs (web, Android, iOS), comma-separated.
     // Empty = "Continue with Google" answers 501 until it is set.
     GOOGLE_CLIENT_IDS: z.string().default(''),
+    // Emails (codes, notices) go through Resend (resend.com, free: 3,000 / month).
+    // Empty key = emails are printed in the server terminal instead (development).
+    RESEND_API_KEY: z.string().default(''),
+    // Must be an address on a domain verified in Resend (onboarding@resend.dev only reaches your own inbox)
+    EMAIL_FROM: z.string().default('TransitPro <onboarding@resend.dev>'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   })
   .refine((e) => e.NODE_ENV !== 'production' || !/localhost/.test(e.CORS_ORIGINS), {
     message: 'In production CORS_ORIGINS must list the real website, not localhost',
     path: ['CORS_ORIGINS'],
+  })
+  // Online, codes must really be emailed, never printed in the logs
+  .refine((e) => e.NODE_ENV !== 'production' || e.RESEND_API_KEY.length > 0, {
+    message: 'In production RESEND_API_KEY is required (codes are sent by email)',
+    path: ['RESEND_API_KEY'],
   });
 
 const parsed = schema.safeParse(process.env);

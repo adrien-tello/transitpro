@@ -1,6 +1,6 @@
 import type { AgencyRegistered, PendingAgency } from '@contracts/api-types';
 import { prisma } from '../../lib/prisma';
-import { sendSms } from '../../lib/sms';
+import { sendEmail } from '../../lib/email';
 import { badRequest, conflict, notFound } from '../../lib/http-error';
 import { hashPassword, publicUser } from '../auth/auth.service';
 import type { RegisterAgencyInput } from './agencies.schemas';
@@ -61,6 +61,15 @@ export async function registerAgency(input: RegisterAgencyInput): Promise<Agency
 
 // ─────────────── TransitPro team (PLATFORM_ADMIN) ───────────────
 
+// The decision is saved even if the email fails (it is only a notice)
+async function notify(to: string, subject: string, lines: string[]) {
+  try {
+    await sendEmail({ to, subject, lines });
+  } catch {
+    console.error(`[agencies] notice email not sent: "${subject}"`);
+  }
+}
+
 export async function listPending(): Promise<PendingAgency[]> {
   const rows = await prisma.agency.findMany({
     where: { status: 'PENDING' },
@@ -95,7 +104,10 @@ export async function approve(id: string) {
     data: { status: 'APPROVED', verifiedAt: new Date(), rejectionReason: null },
     select: { id: true, name: true, slug: true, status: true },
   });
-  await sendSms(agency.phone, `TransitPro: ${agency.name} is verified. You can now sell tickets and send parcels.`);
+  await notify(agency.email, `${agency.name} is verified on TransitPro`, [
+    `Good news: ${agency.name} is now a verified agency.`,
+    'Log in to your dashboard to add your branches, staff and trips. Customers can now find you in the app.',
+  ]);
   return updated;
 }
 
@@ -109,6 +121,10 @@ export async function reject(id: string, reason: string) {
     data: { status: 'REJECTED', rejectionReason: reason },
     select: { id: true, name: true, slug: true, status: true },
   });
-  await sendSms(agency.phone, `TransitPro: ${agency.name} was not approved. Reason: ${reason}`);
+  await notify(agency.email, `${agency.name} was not approved on TransitPro`, [
+    `We could not verify ${agency.name}.`,
+    `Reason: ${reason}`,
+    'You can fix this and contact us to be checked again.',
+  ]);
   return updated;
 }

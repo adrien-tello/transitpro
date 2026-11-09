@@ -6,7 +6,7 @@ import type { Me, PublicUser } from '@contracts/api-types';
 import { env } from '../../config/env';
 import { prisma } from '../../lib/prisma';
 import { matchesHash, sha256 } from '../../lib/codes';
-import { sendSms } from '../../lib/sms';
+import { sendEmail } from '../../lib/email';
 import { HttpError, badRequest, conflict, forbidden, notFound, unauthorized } from '../../lib/http-error';
 import type { ChangePasswordInput, LoginInput, RegisterInput, ResetPasswordInput } from './auth.schemas';
 
@@ -112,10 +112,11 @@ const RESET_CODE_MINUTES = 15;
 const RESET_MAX_ATTEMPTS = 5;
 const WRONG_CODE = 'The code is wrong or has expired';
 
+// The code goes to the account's email (free with Resend, no SMS cost).
 // Always answers the same way, whether the email exists or not (no account discovery).
 export async function requestPasswordReset(email: string) {
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || !user.isActive || !user.phone) return;
+  if (!user || !user.isActive) return;
 
   const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
   await prisma.$transaction([
@@ -125,7 +126,16 @@ export async function requestPasswordReset(email: string) {
       data: { userId: user.id, codeHash: sha256(code), expiresAt: new Date(Date.now() + RESET_CODE_MINUTES * 60_000) },
     }),
   ]);
-  await sendSms(user.phone, `TransitPro: your password reset code is ${code}. It expires in ${RESET_CODE_MINUTES} minutes. Never share it.`);
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: `${code} is your TransitPro reset code`,
+      lines: [`Hello ${user.fullName},`, `Use this code to choose a new password. It expires in ${RESET_CODE_MINUTES} minutes.`],
+      code,
+    });
+  } catch {
+    // Swallowed on purpose: an error here would tell a stranger that this email has an account
+  }
 }
 
 export async function resetPassword(input: ResetPasswordInput) {
