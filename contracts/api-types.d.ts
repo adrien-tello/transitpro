@@ -66,11 +66,43 @@ export interface SessionResponse {
 
 // GET /auth/me  → the app opens the customer screens or the staff screens from `role`
 export interface Me extends PublicUser {
-  agency: { id: string; name: string; status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED' } | null;
+  agency: { id: string; name: string; status: AgencyStatus } | null;
   employee: { id: string; jobTitle: string; branchId: string | null; active: boolean } | null;
 }
 
+// POST /auth/password/forgot { email }                 → { ok: true } (same answer for unknown emails)
+// POST /auth/password/reset  { email, code, password }  → SessionResponse (6-digit SMS code)
+// POST /auth/password/change { currentPassword?, newPassword } → SessionResponse
+// POST /auth/google { idToken }                         → SessionResponse
+export interface OkResponse {
+  ok: true;
+}
+
 // ─────────────── Agencies · Lead ───────────────
+
+export type AgencyStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+
+// POST /agencies/register  Screen: Web · Register your agency (owner is logged in, agency PENDING)
+// POST /agencies/admin/:id/approve · /reject { reason } → AgencyRegistered['agency']
+export interface AgencyRegistered {
+  user: PublicUser;
+  agency: { id: string; name: string; slug: string; status: AgencyStatus };
+}
+
+// GET /agencies/admin/pending  Screen: Platform admin · Agencies to verify
+export interface PendingAgency {
+  id: string;
+  name: string;
+  slug: string;
+  headOffice: string;
+  phone: string;
+  email: string;
+  rccmNumber: string | null;
+  niuNumber: string | null;
+  documentTypes: string[]; // RCCM, NIU, OWNER_ID, TRANSPORT_LICENCE already uploaded
+  owner: { fullName: string; email: string; phone: string | null } | null;
+  createdAt: string;
+}
 
 // GET /agencies → Paginated<AgencyListItem>      Screen: Customer · Verified agencies, Home avatars
 export interface AgencyListItem extends AgencyBadge {

@@ -1,6 +1,6 @@
 import type { CookieOptions, NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import type { Role } from '@prisma/client';
+import type { AgencyStatus, Role } from '@prisma/client';
 import { env } from '../config/env';
 import { prisma } from '../lib/prisma';
 import { forbidden, unauthorized } from '../lib/http-error';
@@ -69,6 +69,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       isActive: true,
       tokenVersion: true,
       employee: { select: { id: true, active: true } },
+      agency: { select: { status: true } },
     },
   });
 
@@ -81,7 +82,13 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     throw forbidden('This staff account has been deactivated by your agency');
   }
 
-  req.user = { id: user.id, role: user.role, agencyId: user.agencyId, employeeId: user.employee?.id ?? null };
+  req.user = {
+    id: user.id,
+    role: user.role,
+    agencyId: user.agencyId,
+    agencyStatus: user.agency?.status ?? null,
+    employeeId: user.employee?.id ?? null,
+  };
   next();
 }
 
@@ -93,16 +100,32 @@ export function requireRole(...roles: Role[]) {
   return (req: Request, _res: Response, next: NextFunction) => {
     const role = req.user?.role;
     if (!role) return next(unauthorized());
-    if (role === 'PLATFORM_ADMIN' || role === 'AGENCY_OWNER' || roles.includes(role)) return next();
+    if (role === 'PLATFORM_ADMIN' || roles.includes(role)) return next();
+    // The owner passes staff checks, but never TransitPro-team checks
+    // (an owner must not be able to approve their own agency)
+    if (role === 'AGENCY_OWNER' && !roles.includes('PLATFORM_ADMIN')) return next();
     next(forbidden());
   };
 }
 
-// Staff routes: the agency of the logged-in user (never trust an agencyId sent by the client)
-export function agencyIdOf(req: Request): string {
+// TransitPro team only: agency verification, commission rates
+export const requirePlatformAdmin = requireRole('PLATFORM_ADMIN');
+
+const AGENCY_BLOCKED: Record<Exclude<AgencyStatus, 'APPROVED'>, string> = {
+  PENDING: 'Your agency is waiting for verification by TransitPro',
+  REJECTED: 'Your agency was not approved by TransitPro',
+  SUSPENDED: 'Your agency is suspended, contact TransitPro',
+};
+
+// Staff routes: the agency of the logged-in user (never trust an agencyId sent by the client).
+// Only a verified (APPROVED) agency can work: sell tickets, register parcels, pay staff...
+// The owner's sign-up screens (documents, first branches) pass { allowPending: true }.
+export function agencyIdOf(req: Request, options: { allowPending?: boolean } = {}): string {
   const agencyId = req.user?.agencyId;
-  if (!agencyId) throw forbidden('This account does not belong to an agency');
-  return agencyId;
+  const status = req.user?.agencyStatus;
+  if (!agencyId || !status) throw forbidden('This account does not belong to an agency');
+  if (status === 'APPROVED' || (options.allowPending && status === 'PENDING')) return agencyId;
+  throw forbidden(AGENCY_BLOCKED[status]);
 }
 
 export function employeeIdOf(req: Request): string {

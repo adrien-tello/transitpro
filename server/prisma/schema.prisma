@@ -172,6 +172,22 @@ model User {
   payments Payment[]
   reviews  Review[]
   claims   ParcelClaim[]
+  passwordResets PasswordReset[]
+}
+
+// "Forgot password": a 6-digit code sent by SMS. Only its hash is stored.
+// One code at a time per user, valid 15 minutes, 5 wrong tries max.
+model PasswordReset {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  attempts  Int       @default(0)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model Agency {

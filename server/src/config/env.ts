@@ -13,6 +13,9 @@ const schema = z
     JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
     JWT_EXPIRES_IN: z.string().default('7d'),
     CORS_ORIGINS: z.string().default('http://localhost:5173,http://localhost:8081'),
+    // Google sign-in: the OAuth client IDs (web, Android, iOS), comma-separated.
+    // Empty = "Continue with Google" answers 501 until it is set.
+    GOOGLE_CLIENT_IDS: z.string().default(''),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   })
   .refine((e) => e.NODE_ENV !== 'production' || !/localhost/.test(e.CORS_ORIGINS), {

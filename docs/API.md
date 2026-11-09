@@ -11,7 +11,7 @@ This file is the agreement between the server, the web dashboard and the mobile 
 
 | Topic | Rule |
 |---|---|
-| Auth | httpOnly cookie `tp_session`, set by `/auth/login`, `/auth/register`, `/hr/invites/:token/accept`. Clients send `credentials: 'include'`. |
+| Auth | httpOnly cookie `tp_session` (7 days), set by every route that logs someone in (see Auth below). Clients send `credentials: 'include'`. Never store a token yourself. |
 | Success | `200/201 { "data": <object or array> }` |
 | Error | `{ "error": { "code": "VALIDATION_ERROR", "message": "Some fields are invalid", "details": {...} } }` |
 | Codes | `400 BAD_REQUEST / VALIDATION_ERROR / BAD_JSON`, `401 UNAUTHORIZED`, `403 FORBIDDEN / BAD_ORIGIN`, `404 NOT_FOUND`, `409 CONFLICT`, `413 TOO_LARGE`, `415 UNSUPPORTED_MEDIA_TYPE`, `429 TOO_MANY_REQUESTS`, `501 NOT_IMPLEMENTED` |
@@ -22,7 +22,8 @@ This file is the agreement between the server, the web dashboard and the mobile 
 | IDs | cuid strings |
 
 Roles: `CUSTOMER, COUNTER_AGENT, DRIVER, COURIER, BRANCH_MANAGER, FLEET_MANAGER, HR_OFFICER, ACCOUNTANT, AGENCY_OWNER, PLATFORM_ADMIN`.
-`AGENCY_OWNER` passes every role check inside their agency, `PLATFORM_ADMIN` everywhere.
+`AGENCY_OWNER` passes every staff role check inside their agency (never the `PLATFORM_ADMIN` ones), `PLATFORM_ADMIN` everywhere.
+Staff of an agency that is not `APPROVED` can log in, but every agency route answers `403` ("Your agency is waiting for verification by TransitPro").
 
 Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 
@@ -32,24 +33,46 @@ Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 
 | Method | Path | Who | Body | Returns | Screen | Status |
 |---|---|---|---|---|---|---|
-| POST | `/auth/register` | public | `fullName, email, phone, password` | `{ user }` + cookie | Mobile · Create account | ✅ |
+| POST | `/auth/register` | public | `fullName, email, phone, password` | `201 { user }` + cookie | Mobile · Create account | ✅ |
 | POST | `/auth/login` | public | `email, password` | `{ user }` + cookie | Mobile · Log in, Web · Sign in | ✅ |
-| POST | `/auth/google` | public | `idToken` | `{ user }` + cookie | Continue with Google | 🧱 |
+| POST | `/auth/google` | public | `idToken` (from Google on the device) | `{ user }` + cookie | Continue with Google | ✅ needs `GOOGLE_CLIENT_IDS`, answers 501 until set |
+| POST | `/auth/password/forgot` | public | `email` | `{ ok: true }`, 6-digit code by SMS | Forgot password | ✅ |
+| POST | `/auth/password/reset` | public | `email, code, password` | `{ user }` + cookie | Forgot password · new password | ✅ |
+| POST | `/auth/password/change` | logged in | `currentPassword, newPassword` | `{ user }` + fresh cookie | Profile · Security | ✅ |
 | POST | `/auth/logout` | any | – | clears cookie | Profile, sidebar Log out | ✅ |
 | POST | `/auth/logout-all` | logged in | – | ends every session of this user on all devices | Profile | ✅ |
-| GET | `/auth/me` | logged in | – | user + agency + employee (role decides customer vs staff app) | app start | ✅ |
+| GET | `/auth/me` | logged in | – | user + agency (with `status`) + employee | app start | ✅ |
+
+**Rules every screen must know**
+
+| Situation | What the server does | What the screen shows |
+|---|---|---|
+| App starts | – | Call `GET /auth/me`. `401` → login screen. `role` = `CUSTOMER` → customer screens, any other role → staff screens. |
+| Wrong email **or** password | `401` "Wrong email or password" (same message, so emails can't be guessed) | the message |
+| Email or phone already used | `409` | "Log in instead?" |
+| Bad fields | `400 VALIDATION_ERROR`, `details` = `{ field: [messages] }` | the message under each field |
+| Passwords | 8 to 72 characters | – |
+| Phones | spaces, dots and dashes are removed (`+237 6 70 00 00 00` → `+237670000000`) | – |
+| Forgot password | always `{ ok: true }`, even for an unknown email. Code: 6 digits, 15 min, 5 wrong tries, works once | "If this email has an account, we sent a code by SMS" |
+| Reset or change password | every **other** device is logged out | – |
+| Any `401` later | the cookie is gone or ended | go back to the login screen |
+| 10 login / sign-up / reset tries in 15 min from one IP | `429` | "Too many tries, wait a few minutes" |
+| Dev testing | SMS are printed in the **server terminal**, not sent | read the code there |
 
 ## Agencies (SaaS) · Lead
 
-| Method | Path | Who | Purpose | Screen | Status |
-|---|---|---|---|---|---|
-| GET | `/agencies` | public | Verified agencies only, `?q=&sort=rating` | Customer · Verified agencies | 🧱 |
-| GET | `/agencies/:slug` | public | Profile, rating breakdown, today's departures | Customer · Agency profile | 🧱 |
-| POST | `/agencies/register` | public | Owner signs up the agency (PENDING) | Web · Register your agency | 🧱 |
-| POST | `/agencies/me/documents` | AGENCY_OWNER | RCCM, NIU, CNI, licence files | Web · Register (documents step) | 🧱 |
-| GET/POST | `/agencies/me/branches` | owner / manager | Branches | Web · settings, register parcel | 🧱 |
-| GET | `/agencies/admin/pending` | PLATFORM_ADMIN | Waiting for verification | Platform admin | 🧱 |
-| POST | `/agencies/admin/:id/approve` · `/reject` | PLATFORM_ADMIN | Verify / reject | Platform admin | 🧱 |
+| Method | Path | Who | Body / purpose | Returns | Screen | Status |
+|---|---|---|---|---|---|---|
+| GET | `/agencies` | public | Verified agencies only, `?q=&sort=rating` | `Paginated<AgencyListItem>` | Customer · Verified agencies | 🧱 |
+| GET | `/agencies/:slug` | public | Profile, rating breakdown, today's departures | `AgencyProfile` | Customer · Agency profile | 🧱 |
+| POST | `/agencies/register` | public | `{ agency: { name, headOffice, phone, email, rccmNumber?, niuNumber? }, owner: { fullName, email, phone, password } }` | `201 AgencyRegistered` + cookie (owner logged in, agency `PENDING`) | Web · Register your agency | ✅ |
+| POST | `/agencies/me/documents` | AGENCY_OWNER | RCCM, NIU, CNI, licence files | | Web · Register (documents step) | 🧱 |
+| GET/POST | `/agencies/me/branches` | owner / manager | Branches | | Web · settings, register parcel | 🧱 |
+| GET | `/agencies/admin/pending` | PLATFORM_ADMIN | Waiting for verification, oldest first | `PendingAgency[]` | Platform admin | ✅ |
+| POST | `/agencies/admin/:id/approve` | PLATFORM_ADMIN | – (SMS to the agency) | `{ id, name, slug, status }` | Platform admin | ✅ |
+| POST | `/agencies/admin/:id/reject` | PLATFORM_ADMIN | `{ reason }` (SMS to the agency) | `{ id, name, slug, status }` | Platform admin | ✅ |
+
+Web dashboard after login: if `me.agency.status` is `PENDING`, show the "waiting for verification" page (documents upload), not the dashboard.
 
 ## 1. Booking & Ticketing · Joy
 
