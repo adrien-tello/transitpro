@@ -1,0 +1,1 @@
+the link to my design https://claude.ai/artifact/1NiJFaNhTtXLuCb5VuzRaw#page-158b6c530a0b
