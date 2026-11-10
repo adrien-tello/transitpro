@@ -47,7 +47,7 @@ Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 |---|---|---|---|---|---|---|
 | POST | `/auth/register` | public | `fullName, email, phone, password` | `201 { user }` + cookie | Mobile · Create account | ✅ |
 | POST | `/auth/login` | public | `email, password` | `{ user }` + cookie | Mobile · Log in, Web · Sign in | ✅ |
-| POST | `/auth/google` | public | `idToken` (from Google on the device) | `{ user }` + cookie | Continue with Google | ✅ needs `GOOGLE_CLIENT_IDS`, answers 501 until set |
+| POST | `/auth/google` | public | `idToken` (from Google on the device) | `{ user }` + cookie | Continue with Google | ✅ tested with a real Google account |
 | POST | `/auth/password/forgot` | public | `email` | `{ ok: true }`, 6-digit code by **email** | Forgot password | ✅ |
 | POST | `/auth/password/reset` | public | `email, code, password` | `{ user }` + cookie | Forgot password · new password | ✅ |
 | POST | `/auth/password/change` | logged in | `currentPassword, newPassword` | `{ user }` + fresh cookie | Profile · Security | ✅ |
@@ -70,6 +70,12 @@ Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 | Any `401` later | the cookie is gone or ended | go back to the login screen |
 | 10 login / sign-up / reset tries in 15 min from one IP | `429` | "Too many tries, wait a few minutes" |
 | Dev testing | without `SMTP_USER` / `SMTP_PASS`, emails are printed in the **server terminal**, not sent | read the code there |
+
+**Google sign-in for the apps**
+- Web client ID (Google Cloud project `transitpro-514302`, client "TransitPro Web"): `556994393607-5l8a2rpeb7qv82ql30mu3pbrn56404c6.apps.googleusercontent.com`. It is public (it ships in the apps), not a secret.
+- Web: Google Identity Services button with this client ID, send `credential` as `idToken`. Allowed origins: `http://localhost:5173`, `http://localhost:8081`.
+- Mobile: use the **same web client ID** as `webClientId` in the Google sign-in library; the Android/iOS clients are created when the app has its package name (needs a development build, not Expo Go).
+- The Google app is in **Testing**: only test users can sign in (Google Cloud > Google Auth Platform > Audience > Test users). Publishing needs a home page and privacy policy on our own domain.
 
 ## Agencies (SaaS) · Lead
 
