@@ -1,6 +1,6 @@
 import type { CookieOptions, NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import type { Role } from '@prisma/client';
+import type { Role } from '.prisma/client';
 import { env } from '../config/env';
 import { prisma } from '../lib/prisma';
 import { forbidden, unauthorized } from '../lib/http-error';

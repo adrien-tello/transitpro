@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import type { User } from '@prisma/client';
+import type { User } from '.prisma/client';
 import type { Me, PublicUser } from '@contracts/api-types';
 import { prisma } from '../../lib/prisma';
 import { conflict, forbidden, notFound, unauthorized } from '../../lib/http-error';
