@@ -396,8 +396,11 @@ model Parcel {
 
   senderName             String
   senderPhone            String
+  // Optional: the delivery code and status emails go there (no SMS budget)
+  senderEmail            String?
   receiverName           String
   receiverPhone          String
+  receiverEmail          String?
 
   // Anti-tampering: what was sent must be what is received
   declaredContents       String
@@ -439,8 +442,12 @@ model Parcel {
 
   events  ParcelEvent[]
   claims  ParcelClaim[]
-  escrow  Escrow?
-  reviews Review[]
+  escrow   Escrow?
+  reviews  Review[]
+  payments Payment[] @relation("ParcelPayments")
+
+  // A numbered seal is used once per agency (anti-tampering)
+  @@unique([agencyId, sealNumber])
 }
 
 // Append-only log: one row per scan / handover. Never update or delete rows.
@@ -534,6 +541,9 @@ model Payment {
   // TransitPro's share of this payment
   platformFee Int            @default(0)
   providerRef String?
+  // Set for parcel payments (fee, cash on delivery). Ticket payments link through Ticket.paymentId.
+  parcelId    String?
+  parcel      Parcel?        @relation("ParcelPayments", fields: [parcelId], references: [id])
   createdAt   DateTime       @default(now())
 
   ticket Ticket?

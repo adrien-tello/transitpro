@@ -25,16 +25,23 @@ async function main() {
     },
   });
 
-  const akwa = await prisma.branch.create({ data: { agencyId: agency.id, name: 'Akwa', city: 'Douala', address: 'Boulevard de la Liberté' } });
-  await prisma.branch.create({ data: { agencyId: agency.id, name: 'Mvan', city: 'Yaoundé', address: 'Gare routière de Mvan' } });
+  // Safe to run again: branches and users are only created when missing
+  const branch = async (name: string, city: string, address: string) =>
+    (await prisma.branch.findFirst({ where: { agencyId: agency.id, name } })) ??
+    prisma.branch.create({ data: { agencyId: agency.id, name, city, address } });
+  const akwa = await branch('Akwa', 'Douala', 'Boulevard de la Liberté');
+  const mvan = await branch('Mvan', 'Yaoundé', 'Gare routière de Mvan');
 
-  const people: { email: string; fullName: string; role: Role; jobTitle?: string }[] = [
+  // Parcels travel Akwa (Douala) → Mvan (Yaoundé): the mvan.* accounts receive and deliver them
+  const people: { email: string; fullName: string; role: Role; jobTitle?: string; branchId?: string }[] = [
     { email: 'admin@transitpro.test', fullName: 'Platform Admin', role: 'PLATFORM_ADMIN' },
     { email: 'owner@etoile.test', fullName: 'Agency Owner', role: 'AGENCY_OWNER', jobTitle: 'Owner' },
     { email: 'manager@etoile.test', fullName: 'Alice Ngo', role: 'BRANCH_MANAGER', jobTitle: 'Branch manager' },
     { email: 'agent@etoile.test', fullName: 'Carine Ndoumbe', role: 'COUNTER_AGENT', jobTitle: 'Counter agent' },
     { email: 'driver@etoile.test', fullName: 'Jean Fotso', role: 'DRIVER', jobTitle: 'Driver' },
-    { email: 'courier@etoile.test', fullName: 'Bernard Atangana', role: 'COURIER', jobTitle: 'Courier' },
+    { email: 'courier@etoile.test', fullName: 'Bernard Atangana', role: 'COURIER', jobTitle: 'Courier', branchId: mvan.id },
+    { email: 'mvan.agent@etoile.test', fullName: 'Paul Essomba', role: 'COUNTER_AGENT', jobTitle: 'Counter agent', branchId: mvan.id },
+    { email: 'mvan.manager@etoile.test', fullName: 'Grace Mballa', role: 'BRANCH_MANAGER', jobTitle: 'Branch manager', branchId: mvan.id },
     { email: 'customer@transitpro.test', fullName: 'Marie Ekane', role: 'CUSTOMER' },
   ];
 
@@ -49,7 +56,7 @@ async function main() {
         role: p.role,
         passwordHash,
         agencyId: isStaff ? agency.id : null,
-        employee: isStaff ? { create: { agencyId: agency.id, branchId: akwa.id, jobTitle: p.jobTitle ?? p.role } } : undefined,
+        employee: isStaff ? { create: { agencyId: agency.id, branchId: p.branchId ?? akwa.id, jobTitle: p.jobTitle ?? p.role } } : undefined,
       },
     });
   }

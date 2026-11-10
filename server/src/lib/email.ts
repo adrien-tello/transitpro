@@ -37,10 +37,17 @@ const esc = (v: string) =>
 
 const p = (text: string) => `<p style="margin:0 0 16px;font:15px/1.65 ${FONT};color:${BODY}">${esc(text)}</p>`;
 
+// 10 → "10 minutes", 2880 → "2 days"
+function duration(minutes: number): string {
+  if (minutes % 1440 === 0) return `${minutes / 1440} day${minutes === 1440 ? '' : 's'}`;
+  if (minutes % 60 === 0) return `${minutes / 60} hour${minutes === 60 ? '' : 's'}`;
+  return `${minutes} minute${minutes === 1 ? '' : 's'}`;
+}
+
 export function renderHtml(e: Email): string {
   const code = e.code
     ? `<div style="margin:6px 0 8px;padding:14px 18px;background:#F4F5F7;border-radius:6px;display:inline-block;font:600 30px/1 ${MONO};letter-spacing:7px;color:${INK}">${esc(e.code.value)}</div>
-<p style="margin:0 0 20px;font:13px/1.5 ${FONT};color:${MUTED}">This code expires in ${e.code.expiresInMinutes} minutes and works once.</p>`
+<p style="margin:0 0 20px;font:13px/1.5 ${FONT};color:${MUTED}">This code expires in ${duration(e.code.expiresInMinutes)} and works once.</p>`
     : '';
   const list = e.list
     ? `<ul style="margin:0 0 18px;padding-left:22px">${e.list.map((x) => `<li style="margin:0 0 6px;font:15px/1.6 ${FONT};color:${BODY}">${esc(x)}</li>`).join('')}</ul>`
@@ -82,7 +89,7 @@ export function renderText(e: Email): string {
   const out = ['TransitPro', '', e.greeting, '', ...e.paragraphs.flatMap((x) => [x, ''])];
   if (e.list) out.push(...e.list.map((x) => `- ${x}`), '');
   if (e.quote) out.push(`${e.quote.label}: ${e.quote.text}`, '');
-  if (e.code) out.push(e.code.value, `This code expires in ${e.code.expiresInMinutes} minutes and works once.`, '');
+  if (e.code) out.push(e.code.value, `This code expires in ${duration(e.code.expiresInMinutes)} and works once.`, '');
   for (const x of e.after ?? []) out.push(x, '');
   if (e.button) out.push(`${e.button.label}: ${e.button.url}`, '');
   out.push('The TransitPro team', '', '--');

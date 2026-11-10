@@ -284,19 +284,103 @@ export interface RemittanceRow {
 
 // ─────────────── 3. Parcels · Lead ───────────────
 
+export type ParcelStatus =
+  | 'REGISTERED'
+  | 'LOADED'
+  | 'IN_TRANSIT'
+  | 'ARRIVED'
+  | 'OUT_FOR_DELIVERY'
+  | 'DELIVERED'
+  | 'ON_HOLD'
+  | 'REFUSED'
+  | 'RETURNED';
+
+export interface PlaceRef {
+  city: string;
+  branch: string;
+}
+
+export interface StaffRef {
+  id: string; // Employee id
+  name: string;
+  jobTitle: string;
+}
+
+// GET /parcels?status=&q=&page=   Screen: Web · Parcels list      GET /parcels/mine: Staff app (driver, courier)
+export interface ParcelListItem {
+  id: string;
+  trackingCode: string;
+  status: ParcelStatus;
+  from: PlaceRef;
+  to: PlaceRef;
+  senderName: string;
+  receiverName: string;
+  weightKg: number;
+  homeDelivery: boolean;
+  codAmount: number | null;
+  currentHolder: StaffRef | null; // the one person responsible right now
+  createdAt: string;
+  updatedAt: string;
+}
+
+// GET /parcels/:id (id or tracking code), and the answer of every parcel action
+// (scan, cod-payment, deliver, refuse, release-hold)      Screen: Web · Parcel detail
+export interface ParcelDetail extends ParcelListItem {
+  sender: { name: string; phone: string; email: string | null };
+  receiver: { name: string; phone: string; email: string | null };
+  declaredContents: string;
+  declaredValue: number;
+  deliveryAddress: string | null;
+  insured: boolean;
+  price: { fee: number; insuranceFee: number; total: number };
+  security: {
+    sealNumber: string;
+    photoUrls: string[];
+    weightAtRegistrationKg: number;
+    weightAtArrivalKg: number | null;
+    weightDifferenceKg: number | null;
+    weightOk: boolean | null; // null until weighed at arrival; false = ON_HOLD
+    deliveryAttempts: number;
+    maxAttempts: number;
+    codeExpiresAt: string | null;
+  };
+  trip: { id: string; departureAt: string; status: string } | null;
+  courier: StaffRef | null;
+  registeredBy: StaffRef;
+  delivery: { deliveredAt: string | null; photoUrl: string | null; lat: number | null; lng: number | null };
+  // Chain of custody, oldest first. Never edited or deleted.
+  events: {
+    type: string;
+    at: string;
+    by: StaffRef;
+    branch: PlaceRef | null;
+    weightKg: number | null;
+    lat: number | null;
+    lng: number | null;
+    note: string | null;
+  }[];
+  payments: { id: string; purpose: string; method: string; status: string; amount: number; platformFee: number; createdAt: string }[];
+  escrow: { amount: number; status: 'HELD' | 'RELEASED' | 'REFUNDED'; beneficiaryPhone: string; releasedAt: string | null } | null;
+  claims: { id: string; reason: string; status: string; amountPaid: number | null; createdAt: string }[];
+}
+
+// POST /parcels   Screen: Web · Register a parcel → print the label (QR of trackingCode) and the sender's receipt
+export interface ParcelRegistered {
+  parcel: ParcelDetail;
+  // Shown ONCE, printed on the sender's receipt only (never on the label). Only its hash is stored.
+  deliveryCode: string;
+}
+
+// POST /parcels/:id/release-hold   (branch manager after checking a parcel ON_HOLD) → new code for the receipt
+export interface ParcelHoldReleased {
+  parcel: ParcelDetail;
+  deliveryCode: string;
+}
+
 // GET /parcels/track/:code (public, no personal data)   Screen: Customer · Track parcel
 export interface ParcelTracking {
   trackingCode: string;
-  status:
-    | 'REGISTERED'
-    | 'LOADED'
-    | 'IN_TRANSIT'
-    | 'ARRIVED'
-    | 'OUT_FOR_DELIVERY'
-    | 'DELIVERED'
-    | 'ON_HOLD'
-    | 'REFUSED'
-    | 'RETURNED';
+  status: ParcelStatus;
   from: { city: string; branch: string };
   to: { city: string; branch: string };
   homeDelivery: boolean;

@@ -123,14 +123,44 @@ Web dashboard after login: if `me.agency.status` is `PENDING`, show the "waiting
 
 ## 3. Parcel & Courier · Lead (answers the lecturer's questions)
 
-| Method | Path | Who | Purpose | Screen | Status |
-|---|---|---|---|---|---|
-| POST | `/parcels` | COUNTER_AGENT, BRANCH_MANAGER | Register: sender, receiver, contents, value, **weightKg, sealNumber, photoUrls**, delivery, insurance, COD, payment → tracking code | Web · Register a parcel | 🧱 |
-| GET | `/parcels/track/:code` | public | Status + timeline, **no personal data** | Customer · Track parcel | 🧱 |
-| GET | `/parcels/:id` | COUNTER_AGENT, BRANCH_MANAGER | Full detail: chain of custody, security checks, claims, escrow | Web · Parcel detail | 🧱 |
-| POST | `/parcels/:id/scan` | COUNTER_AGENT, DRIVER, BRANCH_MANAGER | `{type: LOADED, tripId}` · `{type: DEPARTED}` · `{type: ARRIVED, weightKg}` (weight check) · `{type: HANDED_TO_COURIER, courierId}` | Staff scan, Web | 🧱 |
-| POST | `/parcels/:id/deliver` | COURIER, COUNTER_AGENT | `otp, photoUrl, lat, lng` → DELIVERED, escrow released | Staff · Courier delivery | 🧱 |
-| POST | `/parcels/:id/refuse` | COURIER, COUNTER_AGENT | `reason` → REFUSED + claim | Courier delivery, Customer "refuse and report" | 🧱 |
+`:id` = the parcel id **or the tracking code** (what the QR label contains), so the staff app can scan and call directly.
+Every action below answers the full `ParcelDetail` (contracts), so the screen refreshes from the answer.
+
+| Method | Path | Who | Body / purpose | Returns | Screen | Status |
+|---|---|---|---|---|---|---|
+| POST | `/parcels` | COUNTER_AGENT, BRANCH_MANAGER | sender/receiver (name, phone, email optional), `destinationBranchId`, contents, value, **`weightKg`, `sealNumber`, `photoUrls`** (1 to 6), `homeDelivery` + `deliveryAddress`, `insured`, `codAmount`, `paymentMethod` | `201 ParcelRegistered` = parcel + **`deliveryCode` (shown once)** | Web · Register a parcel → print label + receipt | ✅ |
+| GET | `/parcels/track/:code` | public | Status + timeline, **no personal data** | `ParcelTracking` | Customer · Track parcel | ✅ |
+| GET | `/parcels` | COUNTER_AGENT, BRANCH_MANAGER | `?status=&q=&page=&limit=` (q = tracking code or phone). Parcels leaving from or arriving at my branch; owner sees all | `Paginated<ParcelListItem>` | Web · Parcels | ✅ |
+| GET | `/parcels/mine` | DRIVER, COURIER, agents | Parcels I hold right now | `ParcelListItem[]` | Staff app home | ✅ |
+| GET | `/parcels/:id` | COUNTER_AGENT, BRANCH_MANAGER | Chain of custody, security checks, payments, escrow, claims | `ParcelDetail` | Web · Parcel detail | ✅ |
+| POST | `/parcels/:id/scan` | COUNTER_AGENT, DRIVER, BRANCH_MANAGER | `{type: LOADED, tripId}` · `{type: DEPARTED}` · `{type: ARRIVED, weightKg}` · `{type: HANDED_TO_COURIER, courierId}` | `ParcelDetail` | Staff scan, Web | ✅ |
+| POST | `/parcels/:id/cod-payment` | COURIER, COUNTER_AGENT | `{method}`: receiver pays the cash on delivery, money **held** in escrow | `ParcelDetail` | Courier delivery, counter | ✅ |
+| POST | `/parcels/:id/deliver` | COURIER, COUNTER_AGENT | `otp` (4 digits). Courier also `photoUrl, lat, lng` | `ParcelDetail` (DELIVERED, escrow released) | Courier delivery, counter pickup | ✅ |
+| POST | `/parcels/:id/refuse` | COURIER, COUNTER_AGENT | `reason` | `ParcelDetail` (REFUSED, claim, COD refunded) | Courier delivery, counter | ✅ |
+| POST | `/parcels/:id/release-hold` | BRANCH_MANAGER (destination) | `note`: after checking a parcel ON_HOLD | `ParcelHoldReleased` = parcel + **new `deliveryCode`** | Web · Parcel detail | ✅ |
+
+**The journey and its rules** (the server refuses anything out of order with a clear message)
+
+```
+REGISTERED ──LOADED──▶ LOADED ──DEPARTED──▶ IN_TRANSIT ──ARRIVED──▶ ARRIVED ──HANDED_TO_COURIER──▶ OUT_FOR_DELIVERY
+ (origin agent)        (trip of the same    (driver of     (destination agent,      │                (courier = holder)
+                        route, holder =      the trip)      re-weighs)             │                       │
+                        the driver)                          │ > 0.1 kg difference  ▼ pickup at counter     ▼
+                                                             └──▶ ON_HOLD       DELIVERED / REFUSED   DELIVERED / REFUSED
+```
+
+| Rule | Detail |
+|---|---|
+| Delivery code | 4 digits, made at registration, returned **once** in the register answer: print it on the **sender's receipt**, never on the label. Emailed to the sender/receiver if an email was given. Hash only on the server, valid 30 days, works once |
+| 5 wrong codes | parcel ON_HOLD; only the destination branch manager can release it, which makes a **new** code |
+| Custody | `currentHolder` is always one person: agent → driver (on LOADED) → destination agent (on ARRIVED) → courier. Only the courier holding it can deliver |
+| Branch | origin agents load, destination agents receive and hand over. Owner can do everything |
+| Seal | unique per agency (409 if reused). At least one photo |
+| Cash on delivery | receiver pays first (`cod-payment`) → escrow HELD → RELEASED to the sender with the right code, REFUNDED if refused. TransitPro keeps no fee on this money |
+| Price (provisional, `parcels.pricing.ts`) | 1000 + 250 per started kg + 1000 home delivery; insurance 2% of the declared value (min 500). TransitPro keeps `Agency.commissionRate` % (10%) as `platformFee` |
+| Payment | cash = SUCCEEDED at once; MoMo / Orange Money = PENDING until the Finance webhook (Sweet) |
+
+Test accounts: `agent@etoile.test` (Douala, origin), `driver@etoile.test`, `mvan.agent@etoile.test` and `mvan.manager@etoile.test` (Yaoundé, destination), `courier@etoile.test`. Password `Password123`. A trip Douala → Yaoundé must exist to load a parcel (Booking module).
 
 ## 4. Human Resources · Joy
 
