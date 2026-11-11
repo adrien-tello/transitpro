@@ -13,6 +13,7 @@ import { fleetRouter } from './modules/fleet/fleet.routes';
 import { parcelsRouter } from './modules/parcels/parcels.routes';
 import { hrRouter } from './modules/hr/hr.routes';
 import { financeRouter } from './modules/finance/finance.routes';
+import { paymentsRouter } from './modules/payments/payments.routes';
 
 export const app = express();
 
@@ -28,7 +29,16 @@ app.use(globalLimiter);
 app.use(originCheck);
 app.use(requireJson);
 app.use(cookieParser());
-app.use(express.json({ limit: '100kb', strict: true }));
+// rawBody keeps the exact bytes: a webhook signature is computed on them, not on re-built JSON
+app.use(
+  express.json({
+    limit: '100kb',
+    strict: true,
+    verify: (req, _res, buf) => {
+      (req as express.Request).rawBody = buf;
+    },
+  }),
+);
 app.use(noStore);
 // Never log cookies or bodies: they contain sessions and personal data
 app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
@@ -45,6 +55,7 @@ app.use('/api/fleet', fleetRouter);
 app.use('/api/parcels', parcelsRouter);
 app.use('/api/hr', hrRouter);
 app.use('/api/finance', financeRouter);
+app.use('/api/payments', paymentsRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

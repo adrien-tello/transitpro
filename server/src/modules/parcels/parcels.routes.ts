@@ -5,6 +5,7 @@ import { agencyIdOf, employeeIdOf, requireAuth, requireRole } from '../../middle
 import {
   codPaymentSchema,
   codeParam,
+  feePaymentSchema,
   deliverSchema,
   idParam,
   listQuery,
@@ -65,7 +66,17 @@ parcelsRouter.post(
   requireRole('COURIER', 'COUNTER_AGENT', 'BRANCH_MANAGER'),
   validate({ params: idParam, body: codPaymentSchema }),
   async (req, res) => {
-    res.json({ data: await parcels.payCashOnDelivery(id(req), req.body.method, staff(req)) });
+    res.json({ data: await parcels.payCashOnDelivery(id(req), req.body, staff(req)) });
+  },
+);
+
+// The fee payment failed (Mobile Money refused, no answer...): take it again, cash or another number
+parcelsRouter.post(
+  '/:id/fee-payment',
+  requireRole('COUNTER_AGENT', 'BRANCH_MANAGER'),
+  validate({ params: idParam, body: feePaymentSchema }),
+  async (req, res) => {
+    res.json({ data: await parcels.payFee(id(req), req.body, staff(req)) });
   },
 );
 

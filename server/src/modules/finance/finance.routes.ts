@@ -5,13 +5,11 @@ import { notImplemented } from '../../lib/http-error';
 // Owner: Sweet (Finance & Reporting)
 // Screens: web Finance page, dashboard KPIs and revenue chart, courier "Cash to remit".
 // Contract: docs/API.md, section "Finance". Follow modules/parcels for the style.
-// Other modules call finance.service.ts (recordPayment, holdInEscrow, releaseEscrowForParcel).
+// Other modules call payments.service.ts to take money, and finance.service.ts for escrow and expenses.
 export const financeRouter = Router();
 
-// Payment provider callback (Notch Pay / CinetPay), no login
-financeRouter.post('/webhooks/payments', async () => {
-  throw notImplemented('Payment provider confirms or fails a MoMo / OM payment');
-});
+// Mobile Money (Notch Pay) and its webhook live in modules/payments (built by the Lead).
+// Finance reads the Payment rows for its reports.
 
 financeRouter.use(requireAuth);
 

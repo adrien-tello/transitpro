@@ -27,6 +27,13 @@ const schema = z
     EMAIL_FROM_NAME: z.string().default('TransitPro'),
     // Web dashboard address, used for the buttons in emails
     WEB_URL: z.string().url().default('http://localhost:5173'),
+    // Mobile Money (MTN, Orange) through Notch Pay. Test keys start with pk_test / sk_test / hsk_test.
+    // Empty = Mobile Money answers 503 and only cash works.
+    NOTCHPAY_PUBLIC_KEY: z.string().trim().default(''),
+    NOTCHPAY_PRIVATE_KEY: z.string().trim().default(''),
+    NOTCHPAY_HASH_KEY: z.string().trim().default(''), // checks that a webhook really comes from Notch Pay
+    // Minutes a Mobile Money payment may stay PENDING before we give up (the phone prompt expires)
+    PAYMENT_TIMEOUT_MINUTES: z.coerce.number().int().min(2).max(60).default(15),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   })
   .refine((e) => e.NODE_ENV !== 'production' || !/localhost/.test(e.CORS_ORIGINS), {
@@ -34,6 +41,11 @@ const schema = z
     path: ['CORS_ORIGINS'],
   })
   // Online, codes must really be emailed, never printed in the logs
+  // Online, never with sandbox keys, and never live keys while developing
+  .refine((e) => !e.NOTCHPAY_PUBLIC_KEY || (e.NODE_ENV === 'production') !== /test/.test(e.NOTCHPAY_PUBLIC_KEY), {
+    message: 'Use Notch Pay TEST keys while developing and LIVE keys only in production',
+    path: ['NOTCHPAY_PUBLIC_KEY'],
+  })
   .refine((e) => e.NODE_ENV !== 'production' || (e.SMTP_USER.length > 0 && e.SMTP_PASS.length > 0), {
     message: 'In production SMTP_USER and SMTP_PASS are required (codes are sent by email)',
     path: ['SMTP_USER'],

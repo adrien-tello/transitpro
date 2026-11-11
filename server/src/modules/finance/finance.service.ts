@@ -1,4 +1,4 @@
-import type { PaymentMethod, PaymentPurpose, Prisma } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { badRequest, notImplemented } from '../../lib/http-error';
 
 // Owner: Sweet (Finance & Reporting).
@@ -8,39 +8,13 @@ import { badRequest, notImplemented } from '../../lib/http-error';
 // Each function takes the caller's transaction client (tx) so the payment is saved
 // in the same database transaction as the ticket or parcel.
 //
-// recordPayment, holdInEscrow, releaseEscrowForParcel and refundEscrowForParcel were
-// built by the Lead for the Parcels module (Nov 2026). Sweet: keep their signatures,
-// extend them freely (provider calls, webhooks, remittances).
+// holdInEscrow, releaseEscrowForParcel and refundEscrowForParcel were built by the Lead for
+// the Parcels module (Nov 2026). Sweet: keep their signatures, extend them freely.
 
 export type Tx = Prisma.TransactionClient;
 
-export interface RecordPaymentInput {
-  agencyId: string;
-  payerId?: string;
-  purpose: PaymentPurpose;
-  method: PaymentMethod;
-  amount: number;
-  // Percent of the amount kept by TransitPro (Agency.commissionRate). How the platform earns money.
-  commissionRate: number;
-  parcelId?: string; // parcel fee or cash on delivery
-}
-
-// Cash = SUCCEEDED at once. MoMo / OM = PENDING until the provider webhook confirms
-// (the webhook is Sweet's: POST /finance/webhooks/payments).
-export async function recordPayment(tx: Tx, input: RecordPaymentInput) {
-  return tx.payment.create({
-    data: {
-      agencyId: input.agencyId,
-      payerId: input.payerId,
-      parcelId: input.parcelId,
-      purpose: input.purpose,
-      method: input.method,
-      amount: input.amount,
-      platformFee: Math.round((input.amount * input.commissionRate) / 100),
-      status: input.method === 'CASH' ? 'SUCCEEDED' : 'PENDING',
-    },
-  });
-}
+// Taking money (cash or Mobile Money) is in modules/payments/payments.service.ts:
+//   payments.create(tx, {...}) inside the module's transaction, then payments.start(id) after it.
 
 // Cash on delivery: the receiver's money is held by the platform until the receiver
 // confirms with the delivery code (release) or refuses the parcel (refund).

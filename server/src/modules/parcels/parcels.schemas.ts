@@ -26,6 +26,8 @@ export const registerParcelSchema = z
     insured: z.boolean().default(false),
     codAmount: z.number().int().positive().optional(),
     paymentMethod: z.enum(['MTN_MOMO', 'ORANGE_MONEY', 'CASH']),
+    // Mobile Money number that pays the fee (default: the sender's phone)
+    payerPhone: phoneSchema.optional(),
   })
   .refine((v) => !v.homeDelivery || (v.deliveryAddress !== undefined && v.deliveryAddress.length >= 5), {
     message: 'Give the delivery address for a home delivery',
@@ -43,7 +45,11 @@ export const scanSchema = z.discriminatedUnion('type', [
 // Cash on delivery: the receiver pays before taking the parcel; the money is held in escrow
 export const codPaymentSchema = z.object({
   method: z.enum(['MTN_MOMO', 'ORANGE_MONEY', 'CASH']),
+  payerPhone: phoneSchema.optional(), // Mobile Money number of the receiver (default: receiver's phone)
 });
+
+// The fee payment failed (refused, no answer...): try again, maybe another number or cash
+export const feePaymentSchema = codPaymentSchema;
 
 // Courier: code + photo + GPS are required (checked in the service). Counter pickup: code only.
 export const deliverSchema = z.object({

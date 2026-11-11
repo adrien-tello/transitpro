@@ -13,6 +13,7 @@ import { deliveryOtp, matchesHash, sha256, trackingCode } from '../../lib/codes'
 import { queueEmail } from '../../lib/email';
 import { HttpError, badRequest, conflict, forbidden, notFound } from '../../lib/http-error';
 import * as finance from '../finance/finance.service';
+import * as payments from '../payments/payments.service';
 import { deliveredEmail, deliveryCodeEmail } from './parcels.emails';
 import { priceParcel } from './parcels.pricing';
 import type { DeliverInput, ListQuery, RegisterParcelInput, ScanInput } from './parcels.schemas';
@@ -142,15 +143,7 @@ function toDetail(p: ParcelFull): ParcelDetail {
       lng: ev.lng,
       note: ev.note,
     })),
-    payments: p.payments.map((pay) => ({
-      id: pay.id,
-      purpose: pay.purpose,
-      method: pay.method,
-      status: pay.status,
-      amount: pay.amount,
-      platformFee: pay.platformFee,
-      createdAt: pay.createdAt.toISOString(),
-    })),
+    payments: p.payments.map(payments.toView),
     escrow: p.escrow
       ? { amount: p.escrow.amount, status: p.escrow.status, beneficiaryPhone: p.escrow.beneficiaryPhone, releasedAt: iso(p.escrow.releasedAt) }
       : null,
@@ -222,17 +215,18 @@ export async function registerParcel(input: RegisterParcelInput, ctx: StaffConte
   const sealUsed = await prisma.parcel.findFirst({ where: { agencyId: ctx.agencyId, sealNumber: input.sealNumber }, select: { id: true } });
   if (sealUsed) throw conflict(`Seal ${input.sealNumber} was already used on another parcel. Use a new seal.`);
 
+  payments.assertMethodAvailable(input.paymentMethod);
   const agency = await prisma.agency.findUniqueOrThrow({ where: { id: ctx.agencyId }, select: { commissionRate: true } });
   const price = priceParcel(input);
   const delivery = newDeliveryCode();
 
   // Tracking codes are random: try again on the (rare) collision
-  let parcelId: string | null = null;
-  for (let attempt = 0; attempt < 5 && !parcelId; attempt++) {
+  let created: { parcelId: string; paymentId: string; code: string } | null = null;
+  for (let attempt = 0; attempt < 5 && !created; attempt++) {
     const code = trackingCode(origin.city);
     if (await prisma.parcel.findUnique({ where: { trackingCode: code }, select: { id: true } })) continue;
 
-    parcelId = await prisma.$transaction(async (tx) => {
+    created = await prisma.$transaction(async (tx) => {
       const parcel = await tx.parcel.create({
         data: {
           trackingCode: code,
@@ -273,24 +267,61 @@ export async function registerParcel(input: RegisterParcelInput, ctx: StaffConte
           note: `Seal ${input.sealNumber}, ${input.photoUrls.length} photo(s)`,
         },
       });
-      // Parcels → Finance: the sender pays the fee (+ insurance) now; TransitPro keeps its commission
-      await finance.recordPayment(tx, {
+      // The sender pays the fee (+ insurance) now; TransitPro keeps its commission.
+      // Cash: paid at once. Mobile Money: PENDING until the sender approves on their phone.
+      const payment = await payments.create(tx, {
         agencyId: ctx.agencyId,
         purpose: 'PARCEL_FEE',
         method: input.paymentMethod,
         amount: price.total,
         commissionRate: agency.commissionRate,
+        payerPhone: input.paymentMethod === 'CASH' ? undefined : (input.payerPhone ?? input.senderPhone),
         parcelId: parcel.id,
       });
-      return parcel.id;
+      return { parcelId: parcel.id, paymentId: payment.id, code };
     });
   }
-  if (!parcelId) throw new HttpError(503, 'TRY_AGAIN', 'Could not create a tracking code, please try again');
+  if (!created) throw new HttpError(503, 'TRY_AGAIN', 'Could not create a tracking code, please try again');
 
-  const full = await prisma.parcel.findUniqueOrThrow({ where: { id: parcelId }, include: detailInclude });
+  // After the commit: send the Mobile Money prompt (no-op for cash)
+  await payments.start(created.paymentId, `TransitPro parcel ${created.code}`, input.senderName);
+
+  const full = await prisma.parcel.findUniqueOrThrow({ where: { id: created.parcelId }, include: detailInclude });
   emailDeliveryCode(full, delivery.code);
   return { parcel: toDetail(full), deliveryCode: delivery.code };
 }
+
+// The fee payment failed (refused, no answer, not enough money): try again, maybe cash or another number
+export async function payFee(
+  idOrCode: string,
+  input: { method: 'MTN_MOMO' | 'ORANGE_MONEY' | 'CASH'; payerPhone?: string },
+  ctx: StaffContext,
+): Promise<ParcelDetail> {
+  const staff = await loadStaff(ctx);
+  needRole(staff, ['COUNTER_AGENT', 'BRANCH_MANAGER'], 'take parcel payments');
+  const p = await findParcel(idOrCode, ctx.agencyId);
+  if (!worksAt(staff, p.originBranchId)) throw forbidden('Take the fee at the branch where the parcel was registered');
+  const fees = p.payments.filter((pay) => pay.purpose === 'PARCEL_FEE');
+  if (fees.some((pay) => pay.status === 'SUCCEEDED')) throw conflict('The fee is already paid');
+  if (fees.some((pay) => pay.status === 'PENDING')) throw conflict('A payment is waiting for approval on the phone, wait for its result');
+  payments.assertMethodAvailable(input.method);
+  const agency = await prisma.agency.findUniqueOrThrow({ where: { id: ctx.agencyId }, select: { commissionRate: true } });
+  const payment = await prisma.$transaction((tx) =>
+    payments.create(tx, {
+      agencyId: ctx.agencyId,
+      purpose: 'PARCEL_FEE',
+      method: input.method,
+      amount: p.fee + p.insuranceFee,
+      commissionRate: agency.commissionRate,
+      payerPhone: input.method === 'CASH' ? undefined : (input.payerPhone ?? p.senderPhone),
+      parcelId: p.id,
+    }),
+  );
+  await payments.start(payment.id, `TransitPro parcel ${p.trackingCode}`, p.senderName);
+  return reload(p.id);
+}
+
+const feePaid = (p: ParcelFull) => p.payments.some((pay) => pay.purpose === 'PARCEL_FEE' && pay.status === 'SUCCEEDED');
 
 // ─────────────── Read ───────────────
 
@@ -381,6 +412,8 @@ export async function scan(idOrCode: string, input: ScanInput, ctx: StaffContext
     case 'LOADED': {
       needRole(staff, ['COUNTER_AGENT', 'BRANCH_MANAGER', 'DRIVER'], 'load parcels');
       if (p.status !== 'REGISTERED') throw badRequest(`Only a registered parcel can be loaded (it is ${p.status})`);
+      // A parcel travels only once its fee is paid (Mobile Money still waiting, or failed: no bus)
+      if (!feePaid(p)) throw badRequest('The parcel fee is not paid yet: wait for the Mobile Money approval or take the payment again');
       const trip = await prisma.trip.findFirst({
         where: { id: input.tripId, agencyId: ctx.agencyId },
         select: { id: true, status: true, driverId: true, originBranchId: true, destinationBranchId: true },
@@ -468,25 +501,42 @@ export async function scan(idOrCode: string, input: ScanInput, ctx: StaffContext
 // ─────────────── Cash on delivery ───────────────
 
 // The receiver pays the COD amount before taking the parcel. The money is HELD, not given to anyone yet.
-export async function payCashOnDelivery(idOrCode: string, method: 'MTN_MOMO' | 'ORANGE_MONEY' | 'CASH', ctx: StaffContext): Promise<ParcelDetail> {
+// Cash: held at once. Mobile Money: held as soon as the receiver approves on their phone.
+export async function payCashOnDelivery(
+  idOrCode: string,
+  input: { method: 'MTN_MOMO' | 'ORANGE_MONEY' | 'CASH'; payerPhone?: string },
+  ctx: StaffContext,
+): Promise<ParcelDetail> {
   const staff = await loadStaff(ctx);
   const p = await findParcel(idOrCode, ctx.agencyId);
   if (!p.codAmount) throw badRequest('This parcel has no cash on delivery');
   if (p.escrow) throw conflict('The cash on delivery was already paid');
+  if (p.payments.some((pay) => pay.purpose === 'COD_COLLECTION' && pay.status === 'PENDING')) {
+    throw conflict('The receiver has a payment waiting for approval on their phone, wait for its result');
+  }
   assertCanHandOver(staff, p);
-  await prisma.$transaction(async (tx) => {
-    const payment = await finance.recordPayment(tx, {
+  payments.assertMethodAvailable(input.method);
+  const payment = await prisma.$transaction((tx) =>
+    payments.create(tx, {
       agencyId: ctx.agencyId,
       purpose: 'COD_COLLECTION',
-      method,
+      method: input.method,
       amount: p.codAmount!,
       commissionRate: 0, // this money belongs to the sender, TransitPro keeps nothing of it
+      payerPhone: input.method === 'CASH' ? undefined : (input.payerPhone ?? p.receiverPhone),
       parcelId: p.id,
-    });
-    await finance.holdInEscrow(tx, { paymentId: payment.id, parcelId: p.id, amount: p.codAmount!, beneficiaryPhone: p.senderPhone });
-  });
+    }),
+  );
+  await payments.start(payment.id, `Cash on delivery, parcel ${p.trackingCode}`, p.receiverName);
   return reload(p.id);
 }
+
+// When a cash-on-delivery payment succeeds (cash at once, Mobile Money after approval): hold it in escrow
+payments.onSettled('COD_COLLECTION', async (tx, payment, ok) => {
+  if (!ok || !payment.parcelId) return;
+  const parcel = await tx.parcel.findUniqueOrThrow({ where: { id: payment.parcelId }, select: { senderPhone: true } });
+  await finance.holdInEscrow(tx, { paymentId: payment.id, parcelId: payment.parcelId, amount: payment.amount, beneficiaryPhone: parcel.senderPhone });
+});
 
 // Who may hand the parcel to the receiver: the courier holding it (home delivery),
 // or an agent of the destination branch (pickup at the counter)
@@ -516,10 +566,9 @@ export async function deliver(idOrCode: string, input: DeliverInput, ctx: StaffC
   if (!p.deliveryOtpHash || !p.deliveryOtpExpiresAt) throw badRequest('This parcel has no delivery code, ask the branch manager');
   if (p.deliveryOtpExpiresAt < new Date()) throw badRequest('The delivery code has expired, ask the branch manager for a new one');
   if (p.deliveryAttempts >= MAX_ATTEMPTS) throw onHoldError();
-  if (p.codAmount) {
-    if (!p.escrow) throw badRequest(`The receiver must first pay the cash on delivery (${p.codAmount} FCFA)`);
-    const codPayment = p.payments.find((pay) => pay.id === p.escrow!.paymentId);
-    if (codPayment?.status !== 'SUCCEEDED') throw badRequest('The cash-on-delivery payment is not confirmed yet');
+  // The escrow only exists once the COD payment succeeded (see the COD_COLLECTION handler)
+  if (p.codAmount && p.escrow?.status !== 'HELD') {
+    throw badRequest(`The receiver must first pay the cash on delivery (${p.codAmount} FCFA)`);
   }
 
   if (!matchesHash(input.otp, p.deliveryOtpHash)) {

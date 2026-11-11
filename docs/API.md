@@ -98,7 +98,7 @@ Web dashboard after login: if `me.agency.status` is `PENDING`, show the "waiting
 |---|---|---|---|---|---|
 | GET | `/booking/trips/search?from=&to=&date=&sort=` | public | Trips of verified agencies with price, seats left, agency rating | Customer · Search results | 🧱 |
 | GET | `/booking/trips/:id/seats` | public | Seat map: number, taken, front (+500) | Customer · Choose a seat | 🧱 |
-| POST | `/booking/tickets` | CUSTOMER | `tripId, seatNumber, passengerName, passengerIdNumber, paymentMethod, payerPhone` → ticket + payment (via Finance) | Customer · Pay | 🧱 |
+| POST | `/booking/tickets` | CUSTOMER | `tripId, seatNumber, passengerName, passengerIdNumber, paymentMethod, payerPhone` → ticket + payment (via Payments: MoMo prompt or cash) | Customer · Pay | 🧱 |
 | GET | `/booking/tickets/mine` | CUSTOMER | My tickets (next trip first) | Customer · Home, E-ticket | 🧱 |
 | POST | `/booking/tickets/:id/cancel` | CUSTOMER | Cancel before departure | E-ticket | 🧱 |
 | POST | `/booking/reviews` | CUSTOMER | Rate a trip I travelled on (once per trip) | after trip | 🧱 |
@@ -134,7 +134,8 @@ Every action below answers the full `ParcelDetail` (contracts), so the screen re
 | GET | `/parcels/mine` | DRIVER, COURIER, agents | Parcels I hold right now | `ParcelListItem[]` | Staff app home | ✅ |
 | GET | `/parcels/:id` | COUNTER_AGENT, BRANCH_MANAGER | Chain of custody, security checks, payments, escrow, claims | `ParcelDetail` | Web · Parcel detail | ✅ |
 | POST | `/parcels/:id/scan` | COUNTER_AGENT, DRIVER, BRANCH_MANAGER | `{type: LOADED, tripId}` · `{type: DEPARTED}` · `{type: ARRIVED, weightKg}` · `{type: HANDED_TO_COURIER, courierId}` | `ParcelDetail` | Staff scan, Web | ✅ |
-| POST | `/parcels/:id/cod-payment` | COURIER, COUNTER_AGENT | `{method}`: receiver pays the cash on delivery, money **held** in escrow | `ParcelDetail` | Courier delivery, counter | ✅ |
+| POST | `/parcels/:id/cod-payment` | COURIER, COUNTER_AGENT | `{method, payerPhone?}`: receiver pays the cash on delivery (cash, or MoMo/OM prompt on their phone); money **held** in escrow once paid | `ParcelDetail` | Courier delivery, counter | ✅ |
+| POST | `/parcels/:id/fee-payment` | COUNTER_AGENT, BRANCH_MANAGER | `{method, payerPhone?}`: the fee payment failed (refused, no answer…), take it again | `ParcelDetail` | Web · Parcel detail | ✅ |
 | POST | `/parcels/:id/deliver` | COURIER, COUNTER_AGENT | `otp` (4 digits). Courier also `photoUrl, lat, lng` | `ParcelDetail` (DELIVERED, escrow released) | Courier delivery, counter pickup | ✅ |
 | POST | `/parcels/:id/refuse` | COURIER, COUNTER_AGENT | `reason` | `ParcelDetail` (REFUSED, claim, COD refunded) | Courier delivery, counter | ✅ |
 | POST | `/parcels/:id/release-hold` | BRANCH_MANAGER (destination) | `note`: after checking a parcel ON_HOLD | `ParcelHoldReleased` = parcel + **new `deliveryCode`** | Web · Parcel detail | ✅ |
@@ -158,7 +159,7 @@ REGISTERED ──LOADED──▶ LOADED ──DEPARTED──▶ IN_TRANSIT ─�
 | Seal | unique per agency (409 if reused). At least one photo |
 | Cash on delivery | receiver pays first (`cod-payment`) → escrow HELD → RELEASED to the sender with the right code, REFUNDED if refused. TransitPro keeps no fee on this money |
 | Price (provisional, `parcels.pricing.ts`) | 1000 + 250 per started kg + 1000 home delivery; insurance 2% of the declared value (min 500). TransitPro keeps `Agency.commissionRate` % (10%) as `platformFee` |
-| Payment | cash = SUCCEEDED at once; MoMo / Orange Money = PENDING until the Finance webhook (Sweet) |
+| Payment | `paymentMethod` CASH = paid at once. MTN_MOMO / ORANGE_MONEY = a prompt on `payerPhone` (default: sender's phone), PENDING until approved (see Payments). **A parcel cannot be LOADED before its fee is SUCCEEDED** |
 
 Test accounts: `agent@etoile.test` (Douala, origin), `driver@etoile.test`, `mvan.agent@etoile.test` and `mvan.manager@etoile.test` (Yaoundé, destination), `courier@etoile.test`. Password `Password123`. A trip Douala → Yaoundé must exist to load a parcel (Booking module).
 
@@ -174,11 +175,43 @@ Test accounts: `agent@etoile.test` (Douala, origin), `driver@etoile.test`, `mvan
 | GET | `/hr/alerts/licences` | HR_OFFICER, BRANCH_MANAGER | Licences expiring in 30 days | Dashboard alert | 🧱 |
 | POST | `/hr/payroll/run` | HR_OFFICER | Monthly salaries → Finance expenses | Web · Staff | 🧱 |
 
+## Payments · Lead (cash, MTN Mobile Money, Orange Money)
+
+Mobile Money goes through **Notch Pay**. While developing, only **test keys**: no real money moves.
+
+| Method | Path | Who | Purpose | Returns | Status |
+|---|---|---|---|---|---|
+| GET | `/payments/:id` | the payer, staff of the agency, PLATFORM_ADMIN | Status of one payment. If still PENDING, the server asks Notch Pay first. **Poll every 3 s** while the payer approves | `PaymentView` | ✅ |
+| POST | `/payments/webhooks/notchpay` | Notch Pay only | Signed with our hash key (`x-notch-signature`, HMAC-SHA256 of the raw body). Unsigned or wrong = 401 | `{ received, known }` | ✅ |
+
+**How a Mobile Money payment works**
+
+```
+App / counter ──▶ our server: create the ticket or parcel + Payment PENDING (one transaction)
+                  our server ──▶ Notch Pay: "charge 3800 FCFA to +237670000000" → prompt on the payer's phone
+App ──▶ GET /payments/:id every 3 s  ──▶  PENDING … SUCCEEDED  or  FAILED + failureReason
+```
+
+| `status` | `failureReason` | Show the user |
+|---|---|---|
+| `PENDING` | – | "Approve the payment on your phone" + countdown (15 min max) |
+| `SUCCEEDED` | – | paid ✅ (ticket / parcel continues) |
+| `FAILED` | `FAILED` | "Payment refused (not enough money or blocked). Try again or use another number" |
+| `FAILED` | `EXPIRED` | "No answer in time" |
+| `FAILED` | `CANCELED` | "You cancelled the payment" |
+| `FAILED` | `PROVIDER_ERROR` | "Mobile Money is unavailable, try again later or pay cash" |
+| `REFUNDED` | – | money given back (refused parcel) |
+
+The server learns the result 3 ways, whichever comes first: the webhook, the app's polling, and a check it runs by itself every 5 s (so it works on a laptop that Notch Pay cannot reach). In all cases the result is **read from Notch Pay's API**, never from the message, so a fake "payment complete" cannot get in.
+
+**Test numbers** (sandbox): `670000000` / `690000000` success · `…0002` refused · `…0003` no answer (EXPIRED) · `…0004` cancelled by the payer · (`…0001` "insufficient funds" completes in the sandbox: use `…0002` for failures). 67… = MTN, 69… = Orange.
+
+**For module owners** (`payments.service.ts`): `payments.create(tx, {...})` inside your transaction (cash is settled there and then), `payments.start(id, description, payerName)` after the commit (sends the prompt), and `payments.onSettled('TICKET', handler)` to react to the result (mark the ticket PAID, or free the seat). Booking (Joy) plugs in this way.
+
 ## 5. Finance & Reporting · Sweet
 
 | Method | Path | Who | Purpose | Screen | Status |
 |---|---|---|---|---|---|
-| POST | `/finance/webhooks/payments` | payment provider | MoMo / OM confirmation | – | 🧱 |
 | GET | `/finance/summary` | ACCOUNTANT, BRANCH_MANAGER | Revenue today, tickets vs parcels, cash to remit | Dashboard KPI cards | 🧱 |
 | GET | `/finance/revenue?from=&to=&groupBy=day\|route\|bus` | ACCOUNTANT, BRANCH_MANAGER | Revenue chart | Dashboard chart, Web · Finance | 🧱 |
 | GET | `/finance/payments` | ACCOUNTANT | Payments | Web · Finance | 🧱 |
@@ -186,4 +219,4 @@ Test accounts: `agent@etoile.test` (Douala, origin), `driver@etoile.test`, `mvan
 | GET | `/finance/remittances` | ACCOUNTANT, BRANCH_MANAGER, COURIER | Cash each person must hand in | Courier "Cash to remit", Web | 🧱 |
 | POST | `/finance/remittances/:id/close` | BRANCH_MANAGER | SETTLED or SHORT | Web · Finance | 🧱 |
 
-Service functions other modules call (`finance.service.ts`): `recordPayment`, `holdInEscrow`, `releaseEscrowForParcel`, `recordExpense`.
+Service functions other modules call (`finance.service.ts`): `holdInEscrow`, `releaseEscrowForParcel`, `refundEscrowForParcel` (built by the Lead), `recordExpense`. Taking money is in **Payments** above.

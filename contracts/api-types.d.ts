@@ -282,6 +282,24 @@ export interface RemittanceRow {
   status: 'OPEN' | 'SETTLED' | 'SHORT';
 }
 
+// ─────────────── Payments · Lead (cash, MTN MoMo, Orange Money via Notch Pay) ───────────────
+
+// GET /payments/:id   The app polls it every 3 s while the payer approves on their phone.
+// PENDING → SUCCEEDED, or FAILED with failureReason:
+//   FAILED (refused / not enough money) · EXPIRED (no answer in time) · CANCELED (payer cancelled) · PROVIDER_ERROR
+export interface PaymentView {
+  id: string;
+  purpose: 'TICKET' | 'PARCEL_FEE' | 'COD_COLLECTION' | 'SUBSCRIPTION';
+  method: PaymentMethod;
+  status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'REFUNDED';
+  amount: number;
+  platformFee: number; // TransitPro's share
+  payerPhone: string | null;
+  failureReason: 'FAILED' | 'EXPIRED' | 'CANCELED' | 'PROVIDER_ERROR' | null;
+  createdAt: string;
+  settledAt: string | null;
+}
+
 // ─────────────── 3. Parcels · Lead ───────────────
 
 export type ParcelStatus =
@@ -359,7 +377,7 @@ export interface ParcelDetail extends ParcelListItem {
     lng: number | null;
     note: string | null;
   }[];
-  payments: { id: string; purpose: string; method: string; status: string; amount: number; platformFee: number; createdAt: string }[];
+  payments: PaymentView[]; // fee (+ cash on delivery): show PENDING as "waiting for the phone"
   escrow: { amount: number; status: 'HELD' | 'RELEASED' | 'REFUNDED'; beneficiaryPhone: string; releasedAt: string | null } | null;
   claims: { id: string; reason: string; status: string; amountPaid: number | null; createdAt: string }[];
 }

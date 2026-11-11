@@ -540,7 +540,13 @@ model Payment {
   amount      Int
   // TransitPro's share of this payment
   platformFee Int            @default(0)
-  providerRef String?
+  // Mobile Money through Notch Pay. Cash payments have no provider.
+  provider      String?   // "NOTCHPAY"
+  providerRef   String?   @unique // Notch Pay's reference (trx.test_...)
+  payerPhone    String?   // the Mobile Money number that pays
+  failureReason String?   // FAILED | EXPIRED | CANCELED | PROVIDER_ERROR
+  settledAt     DateTime? // when it became SUCCEEDED or FAILED
+  lastCheckedAt DateTime? // last time we asked Notch Pay
   // Set for parcel payments (fee, cash on delivery). Ticket payments link through Ticket.paymentId.
   parcelId    String?
   parcel      Parcel?        @relation("ParcelPayments", fields: [parcelId], references: [id])
@@ -548,6 +554,8 @@ model Payment {
 
   ticket Ticket?
   escrow Escrow?
+
+  @@index([status, provider])
 }
 
 // Money held by the platform until the receiver confirms delivery with their code
