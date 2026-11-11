@@ -36,3 +36,13 @@ export const initials = (name: string) =>
     .slice(0, 2)
     .map((w) => w[0]!.toUpperCase())
     .join('');
+
+// Big numbers on dashboard tiles: 2840000 → "2.84M", 310000 → "310K"
+export function compact(n: number) {
+  if (n >= 1_000_000) return `${+(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 10_000) return `${Math.round(n / 1000)}K`;
+  return new Intl.NumberFormat('en-US').format(n);
+}
+
+// "2026-11-10" (a Douala day from the server) → "Tue"
+export const weekday = (date: string) => new Date(`${date}T12:00:00+01:00`).toLocaleDateString('en-GB', { timeZone: tz, weekday: 'short' });

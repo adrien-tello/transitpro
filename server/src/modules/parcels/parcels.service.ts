@@ -2,8 +2,11 @@ import type { Prisma, ParcelStatus, Role } from '@prisma/client';
 import type {
   ParcelDetail,
   ParcelHoldReleased,
+  ParcelAlert,
+  ParcelDay,
   ParcelListItem,
   ParcelRegistered,
+  ParcelStats,
   ParcelTracking,
   Paginated,
   StaffRef,
@@ -356,13 +359,102 @@ export async function getForAgency(idOrCode: string, agencyId: string): Promise<
 
 const listInclude = { originBranch: branchSelect, destinationBranch: branchSelect, currentHolder: staffSelect } satisfies Prisma.ParcelInclude;
 
-// Web list: a counter agent / manager sees the parcels leaving from or arriving at their branch, the owner all
+// A counter agent / manager sees the parcels leaving from or arriving at their branch, the owner all
+function branchScope(staff: Staff): Prisma.ParcelWhereInput {
+  return staff.branchId && !isOwner(staff) ? { OR: [{ originBranchId: staff.branchId }, { destinationBranchId: staff.branchId }] } : {};
+}
+
+// Douala is UTC+1 all year (no summer time): a day starts at 23:00 UTC
+const DOUALA_MS = 3600_000;
+const dayKey = (d: Date) => new Date(d.getTime() + DOUALA_MS).toISOString().slice(0, 10);
+const LATE_DELIVERY_HOURS = 8;
+
+// Web dashboard: counters by status, the last 7 days (registered, fees paid) and what needs attention.
+// Five queries in parallel: one round trip to the database.
+export async function stats(ctx: StaffContext): Promise<ParcelStats> {
+  const staff = await loadStaff(ctx);
+  const scope: Prisma.ParcelWhereInput = { agencyId: ctx.agencyId, ...branchScope(staff) };
+  const today = dayKey(new Date());
+  const start = new Date(Date.parse(`${today}T00:00:00+01:00`) - 6 * 86_400_000);
+  const lateBefore = new Date(Date.now() - LATE_DELIVERY_HOURS * 3600_000);
+
+  const [grouped, created, paid, held, late, claims] = await Promise.all([
+    prisma.parcel.groupBy({ by: ['status'], where: scope, _count: { _all: true } }),
+    prisma.parcel.findMany({ where: { ...scope, createdAt: { gte: start } }, select: { createdAt: true } }),
+    prisma.payment.findMany({
+      where: { purpose: 'PARCEL_FEE', status: 'SUCCEEDED', settledAt: { gte: start }, parcel: scope },
+      select: { amount: true, settledAt: true },
+    }),
+    prisma.parcel.findMany({
+      where: { ...scope, status: 'ON_HOLD' },
+      orderBy: { updatedAt: 'desc' },
+      take: 5,
+      select: { trackingCode: true, updatedAt: true, weightAtRegistrationKg: true, weightAtArrivalKg: true, deliveryAttempts: true },
+    }),
+    prisma.parcel.findMany({
+      where: { ...scope, status: 'OUT_FOR_DELIVERY', updatedAt: { lt: lateBefore } },
+      orderBy: { updatedAt: 'asc' },
+      take: 5,
+      select: { trackingCode: true, updatedAt: true, courier: { select: { user: { select: { fullName: true } } } } },
+    }),
+    prisma.parcelClaim.findMany({
+      where: { status: { in: ['OPEN', 'INVESTIGATING'] }, parcel: scope },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: { reason: true, createdAt: true, parcel: { select: { trackingCode: true } } },
+    }),
+  ]);
+
+  const byStatus = Object.fromEntries(
+    (['REGISTERED', 'LOADED', 'IN_TRANSIT', 'ARRIVED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'ON_HOLD', 'REFUSED', 'RETURNED'] as ParcelStatus[]).map((st) => [st, 0]),
+  ) as Record<ParcelStatus, number>;
+  for (const g of grouped) byStatus[g.status] = g._count._all;
+
+  const days: ParcelDay[] = Array.from({ length: 7 }, (_, i) => ({ date: dayKey(new Date(start.getTime() + i * 86_400_000 + 12 * 3600_000)), registered: 0, revenue: 0 }));
+  const byDay = new Map(days.map((d) => [d.date, d]));
+  for (const c of created) {
+    const d = byDay.get(dayKey(c.createdAt));
+    if (d) d.registered++;
+  }
+  for (const p of paid) {
+    const d = p.settledAt && byDay.get(dayKey(p.settledAt));
+    if (d) d.revenue += p.amount;
+  }
+
+  const hours = (d: Date) => Math.max(1, Math.round((Date.now() - d.getTime()) / 3600_000));
+  const alerts: ParcelAlert[] = [
+    ...held.map((p) => ({
+      trackingCode: p.trackingCode,
+      kind: 'ON_HOLD' as const,
+      text:
+        p.weightAtArrivalKg != null && Math.abs(p.weightAtArrivalKg - p.weightAtRegistrationKg) > WEIGHT_TOLERANCE_KG
+          ? `Weight ${p.weightAtRegistrationKg} kg at registration, ${p.weightAtArrivalKg} kg on arrival`
+          : p.deliveryAttempts >= MAX_ATTEMPTS
+            ? `${p.deliveryAttempts} wrong delivery codes`
+            : 'On hold, waiting for the branch manager',
+      at: p.updatedAt.toISOString(),
+    })),
+    ...claims.map((c) => ({ trackingCode: c.parcel.trackingCode, kind: 'CLAIM' as const, text: c.reason, at: c.createdAt.toISOString() })),
+    ...late.map((p) => ({
+      trackingCode: p.trackingCode,
+      kind: 'LATE_DELIVERY' as const,
+      text: `With courier ${p.courier?.user.fullName ?? '—'} for ${hours(p.updatedAt)} h`,
+      at: p.updatedAt.toISOString(),
+    })),
+  ]
+    .sort((a, b) => b.at.localeCompare(a.at))
+    .slice(0, 5);
+
+  return { byStatus, days, alerts };
+}
+
+// Web list (same branch rule as above)
 export async function list(query: ListQuery, ctx: StaffContext): Promise<Paginated<ParcelListItem>> {
   const staff = await loadStaff(ctx);
   const where: Prisma.ParcelWhereInput = {
     agencyId: ctx.agencyId,
     ...(query.status ? { status: query.status } : {}),
-    ...(staff.branchId && !isOwner(staff) ? { OR: [{ originBranchId: staff.branchId }, { destinationBranchId: staff.branchId }] } : {}),
+    ...branchScope(staff),
     ...(query.q
       ? {
           AND: [

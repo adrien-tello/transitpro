@@ -41,6 +41,9 @@ agenciesRouter.post('/me/branches', requireRole('AGENCY_OWNER'), validate({ body
 });
 
 // TransitPro team only. AGENCY_OWNER is refused here: an owner never approves their own agency.
+agenciesRouter.get('/admin/overview', requirePlatformAdmin, async (_req, res) => {
+  res.json({ data: await agencies.overview() });
+});
 agenciesRouter.get('/admin/pending', requirePlatformAdmin, async (_req, res) => {
   res.json({ data: await agencies.listPending() });
 });

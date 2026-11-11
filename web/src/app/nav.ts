@@ -1,30 +1,51 @@
 import type { Role } from '@contracts/api-types';
 import type { IconName } from '../components/ui/Icon';
 
-// The sidebar of the design. `roles` = who sees the entry (the AGENCY_OWNER sees everything).
+// The sidebar of the design. `roles` = who sees the entry (AGENCY_OWNER and PLATFORM_ADMIN see every entry of their menu).
+// Each person only sees the screens of their job: a counter agent has no Fleet, an accountant no Parcels.
 // The server checks the roles again: hiding a menu is comfort, not security.
 export interface NavItem {
   label: string;
   to: string;
   icon: IconName;
   roles?: Role[];
-  soon?: boolean; // module not built yet: the page says who builds it
+  badge?: 'parcelAlerts' | 'pendingAgencies'; // live counter shown on the right
 }
 
 const OFFICE: Role[] = ['COUNTER_AGENT', 'BRANCH_MANAGER'];
+const MANAGERS: Role[] = ['BRANCH_MANAGER', 'FLEET_MANAGER'];
 
 export const AGENCY_NAV: NavItem[] = [
   { label: 'Dashboard', to: '/', icon: 'dash' },
-  { label: 'Parcels', to: '/parcels', icon: 'box', roles: OFFICE },
-  { label: 'Trips & booking', to: '/trips', icon: 'ticket', roles: OFFICE, soon: true },
-  { label: 'Live tracking', to: '/live', icon: 'pin', roles: ['BRANCH_MANAGER', 'FLEET_MANAGER'], soon: true },
-  { label: 'Fleet', to: '/fleet', icon: 'bus', roles: ['FLEET_MANAGER', 'BRANCH_MANAGER'], soon: true },
-  { label: 'Staff', to: '/staff', icon: 'users', roles: ['HR_OFFICER', 'BRANCH_MANAGER'], soon: true },
-  { label: 'Finance', to: '/finance', icon: 'wallet', roles: ['ACCOUNTANT', 'BRANCH_MANAGER'], soon: true },
+  { label: 'Live tracking', to: '/live', icon: 'pin', roles: MANAGERS },
+  { label: 'Trips & booking', to: '/trips', icon: 'ticket', roles: OFFICE },
+  { label: 'Schedule', to: '/schedule', icon: 'cal', roles: MANAGERS },
+  { label: 'Parcels', to: '/parcels', icon: 'box', roles: OFFICE, badge: 'parcelAlerts' },
+  { label: 'Fleet', to: '/fleet', icon: 'bus', roles: MANAGERS },
+  { label: 'Staff', to: '/staff', icon: 'users', roles: ['HR_OFFICER', 'BRANCH_MANAGER'] },
+  { label: 'Finance', to: '/finance', icon: 'wallet', roles: ['ACCOUNTANT', 'BRANCH_MANAGER'] },
+  { label: 'Messages', to: '/messages', icon: 'chat' },
+  { label: 'Reports', to: '/reports', icon: 'chart', roles: ['BRANCH_MANAGER', 'ACCOUNTANT', 'FLEET_MANAGER'] },
   { label: 'Branches', to: '/branches', icon: 'building', roles: [] }, // owner only
 ];
 
-export const ADMIN_NAV: NavItem[] = [{ label: 'Agencies to verify', to: '/admin', icon: 'shield' }];
+// The TransitPro team's own menu (PLATFORM_ADMIN)
+export const ADMIN_NAV: NavItem[] = [
+  { label: 'Overview', to: '/admin', icon: 'dash' },
+  { label: 'Agencies to verify', to: '/admin/verify', icon: 'shield', badge: 'pendingAgencies' },
+  { label: 'All agencies', to: '/admin/agencies', icon: 'building' },
+  { label: 'Payments', to: '/admin/payments', icon: 'wallet' },
+  { label: 'Payouts', to: '/admin/payouts', icon: 'send' },
+  { label: 'Customers', to: '/admin/customers', icon: 'users' },
+  { label: 'Reports', to: '/admin/reports', icon: 'chart' },
+];
+
+// Bottom of the sidebar (Log out is added by the layout)
+export const AGENCY_BOTTOM: NavItem[] = [
+  { label: 'Support', to: '/support', icon: 'help' },
+  { label: 'Settings', to: '/settings', icon: 'gear' },
+];
+export const ADMIN_BOTTOM: NavItem[] = [{ label: 'Settings', to: '/admin/settings', icon: 'gear' }];
 
 export function visibleNav(items: NavItem[], role: Role): NavItem[] {
   if (role === 'AGENCY_OWNER' || role === 'PLATFORM_ADMIN') return items;

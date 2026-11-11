@@ -52,6 +52,13 @@ export function useResetPassword() {
   });
 }
 
+// Settings: the server answers with a new session cookie (every other device is logged out)
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (body: { currentPassword: string; newPassword: string }) => api.post<SessionResponse>('/auth/password/change', body),
+  });
+}
+
 export interface RegisterAgencyBody {
   agency: { name: string; headOffice: string; phone: string; email: string; rccmNumber?: string; niuNumber?: string };
   owner: { fullName: string; email: string; phone: string; password: string };

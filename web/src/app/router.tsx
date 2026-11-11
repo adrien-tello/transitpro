@@ -1,12 +1,14 @@
 import { Navigate, Route, Routes } from 'react-router';
 import { AppLayout } from './AppLayout';
 import { PublicOnly, RequireUser } from './guards';
-import { ADMIN_NAV, AGENCY_NAV } from './nav';
+import { ADMIN_BOTTOM, ADMIN_NAV, AGENCY_BOTTOM, AGENCY_NAV } from './nav';
 import { LoginPage } from '../modules/auth/LoginPage';
 import { ForgotPasswordPage } from '../modules/auth/ForgotPasswordPage';
 import { AgencySignupPage } from '../modules/auth/AgencySignupPage';
+import { SettingsPage } from '../modules/auth/SettingsPage';
 import { MobileOnlyPage, PendingPage } from '../modules/agencies/PendingPage';
 import { AdminAgenciesPage } from '../modules/agencies/AdminAgenciesPage';
+import { AdminOverviewPage } from '../modules/agencies/AdminOverviewPage';
 import { BranchesPage } from '../modules/agencies/BranchesPage';
 import { DashboardPage } from '../modules/dashboard/DashboardPage';
 import { ComingSoonPage } from '../modules/dashboard/ComingSoonPage';
@@ -25,21 +27,35 @@ export function AppRoutes() {
       <Route path="/pending" element={<RequireUser area="pending">{(me) => <PendingPage me={me} />}</RequireUser>} />
       <Route path="/mobile-only" element={<RequireUser area="mobile-only">{(me) => <MobileOnlyPage me={me} />}</RequireUser>} />
 
-      <Route path="/admin" element={<RequireUser area="admin">{(me) => <AppLayout me={me} nav={ADMIN_NAV} admin />}</RequireUser>}>
-        <Route index element={<AdminAgenciesPage />} />
+      {/* TransitPro team */}
+      <Route path="/admin" element={<RequireUser area="admin">{(me) => <AppLayout me={me} nav={ADMIN_NAV} bottom={ADMIN_BOTTOM} admin />}</RequireUser>}>
+        <Route index element={<RequireUser area="admin">{(me) => <AdminOverviewPage me={me} />}</RequireUser>} />
+        <Route path="verify" element={<AdminAgenciesPage />} />
+        <Route path="agencies" element={<ComingSoonPage by="Lead + Adrien" title="All agencies" icon="building" text="Every agency with its status, branches and activity; suspend or reactivate an agency." />} />
+        <Route path="payments" element={<ComingSoonPage by="Lead + Adrien" title="Payments" icon="wallet" text="Every payment on the platform (tickets, parcel fees, cash on delivery) with its Notch Pay status." />} />
+        <Route path="payouts" element={<ComingSoonPage by="Lead" title="Payouts" icon="send" text="What each agency is owed after our 10 % commission, and the “Pay agency” button (Notch Pay transfers)." />} />
+        <Route path="customers" element={<ComingSoonPage by="Lead + Adrien" title="Customers" icon="users" text="Customer accounts from the mobile app, and blocking an account if needed." />} />
+        <Route path="reports" element={<ComingSoonPage by="Lead" title="Reports" icon="chart" text="Monthly volume, commission and growth per agency." />} />
+        <Route path="settings" element={<RequireUser area="admin">{(me) => <SettingsPage me={me} />}</RequireUser>} />
       </Route>
 
-      <Route element={<RequireUser area="agency">{(me) => <AppLayout me={me} nav={AGENCY_NAV} />}</RequireUser>}>
+      {/* Agency staff */}
+      <Route element={<RequireUser area="agency">{(me) => <AppLayout me={me} nav={AGENCY_NAV} bottom={AGENCY_BOTTOM} />}</RequireUser>}>
         <Route index element={<RequireUser area="agency">{(me) => <DashboardPage me={me} />}</RequireUser>} />
         <Route path="parcels" element={<ParcelsPage />} />
         <Route path="parcels/new" element={<RequireUser area="agency">{(me) => <RegisterParcelPage me={me} />}</RequireUser>} />
         <Route path="parcels/:id" element={<RequireUser area="agency">{(me) => <ParcelDetailPage me={me} />}</RequireUser>} />
         <Route path="branches" element={<BranchesPage />} />
-        <Route path="trips" element={<ComingSoonPage title="Trips & booking" icon="ticket" text="Routes, trips, seat maps and counter ticket sales. Server: Joy (Booking)." />} />
-        <Route path="live" element={<ComingSoonPage title="Live tracking" icon="pin" text="Buses and couriers on a map, from the staff app's GPS." />} />
-        <Route path="fleet" element={<ComingSoonPage title="Fleet" icon="bus" text="Buses, maintenance and fuel. A bus in maintenance stops seat sales. Server: Sweet (Fleet)." />} />
-        <Route path="staff" element={<ComingSoonPage title="Staff" icon="users" text="Staff list, invitations and driver licences. Server: Joy (HR)." />} />
-        <Route path="finance" element={<ComingSoonPage title="Finance" icon="wallet" text="Payments, what TransitPro owes your agency, payouts, expenses and the daily cash. Server: Sweet (Finance)." />} />
+        <Route path="trips" element={<ComingSoonPage by="Joy (Booking)" title="Trips & booking" icon="ticket" text="Routes, trips, seat maps and counter ticket sales. Server: Joy (Booking)." />} />
+        <Route path="schedule" element={<ComingSoonPage by="Joy (Booking)" title="Schedule" icon="cal" text="The week's departures per route, drivers and buses assigned to each trip." />} />
+        <Route path="live" element={<ComingSoonPage by="Fidel (staff app GPS) + Lead" title="Live tracking" icon="pin" text="Buses and couriers on a map, from the staff app's GPS." />} />
+        <Route path="fleet" element={<ComingSoonPage by="Sweet (Fleet)" title="Fleet" icon="bus" text="Buses, maintenance and fuel. A bus in maintenance stops seat sales. Server: Sweet (Fleet)." />} />
+        <Route path="staff" element={<ComingSoonPage by="Joy (HR)" title="Staff" icon="users" text="Staff list, invitations and driver licences. Server: Joy (HR)." />} />
+        <Route path="finance" element={<ComingSoonPage by="Sweet (Finance)" title="Finance" icon="wallet" text="Payments, what TransitPro owes your agency, payouts, expenses and the daily cash. Server: Sweet (Finance)." />} />
+        <Route path="messages" element={<ComingSoonPage by="to assign" title="Messages" icon="chat" text="Messages between branches, drivers and customers." />} />
+        <Route path="reports" element={<ComingSoonPage by="Sweet (Finance)" title="Reports" icon="chart" text="Daily and monthly reports: tickets, parcels, fuel and cash per branch." />} />
+        <Route path="support" element={<ComingSoonPage by="to assign" title="Support" icon="help" text="Help articles and a direct line to the TransitPro team." />} />
+        <Route path="settings" element={<RequireUser area="agency">{(me) => <SettingsPage me={me} />}</RequireUser>} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

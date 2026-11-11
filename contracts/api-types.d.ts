@@ -420,3 +420,30 @@ export interface ParcelTracking {
   photoCount: number; // photos are shown to the receiver only after login
   events: { type: string; city: string | null; at: string }[];
 }
+
+// GET /parcels/stats   Screen: Web · Agency dashboard (my branch; the owner sees the whole agency)
+export interface ParcelDay {
+  date: string; // YYYY-MM-DD, Douala time
+  registered: number;
+  revenue: number; // parcel fees paid that day, FCFA (cash + Mobile Money)
+}
+export interface ParcelAlert {
+  trackingCode: string;
+  kind: 'ON_HOLD' | 'CLAIM' | 'LATE_DELIVERY';
+  text: string;
+  at: string;
+}
+export interface ParcelStats {
+  byStatus: Record<ParcelStatus, number>;
+  days: ParcelDay[]; // the last 7 days, oldest first, today last
+  alerts: ParcelAlert[]; // at most 5, newest first
+}
+
+// GET /agencies/admin/overview   Screen: Web · TransitPro team overview
+export interface PlatformOverview {
+  agencies: { pending: number; approved: number; rejected: number; suspended: number };
+  parcels: { total: number; inTransit: number; onHold: number; deliveredThisWeek: number };
+  days: { date: string; volume: number; commission: number; signups: number }[]; // last 7 days, oldest first
+  week: { volume: number; commission: number; payments: number; failed: number };
+  latestAgencies: { id: string; name: string; headOffice: string; status: AgencyStatus; createdAt: string }[];
+}

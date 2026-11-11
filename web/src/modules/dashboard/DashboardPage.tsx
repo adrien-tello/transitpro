@@ -1,13 +1,20 @@
+import { useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
-import type { Me, ParcelStatus } from '@contracts/api-types';
+import type { Me, ParcelStats, ParcelStatus } from '@contracts/api-types';
 import { PageHeader } from '../../app/AppLayout';
-import { Card, EmptyState, ErrorState, Skeleton, SkeletonRows } from '../../components/ui/Feedback';
+import { MiniBars, WeekChart } from '../../components/ui/Charts';
+import { EmptyState, ErrorState, Panel, Skeleton, SkeletonRows } from '../../components/ui/Feedback';
 import { Icon, type IconName } from '../../components/ui/Icon';
-import { ago } from '../../lib/format';
-import { StatusBadge } from '../parcels/parcel-ui';
-import { useParcelCount, useParcels } from '../parcels/parcels.api';
+import { ago, compact, fcfa, weekday } from '../../lib/format';
+import { StatusBadge, statusLabel } from '../parcels/parcel-ui';
+import { useParcelStats, useParcels } from '../parcels/parcels.api';
+
+// Agency dashboard, laid out like the design canvas ("Web · Agency dashboard"):
+// greeting + actions, 4 key figures, live map + alerts, latest parcels + statuses, week revenue + trips.
+// Every number is real (GET /parcels/stats). Tiles of modules not built yet say so instead of showing fake data.
 
 const OFFICE = ['COUNTER_AGENT', 'BRANCH_MANAGER', 'AGENCY_OWNER'];
+type Period = 'today' | 'week';
 
 function greeting() {
   const h = Number(new Date().toLocaleString('en-GB', { timeZone: 'Africa/Douala', hour: 'numeric', hour12: false }));
@@ -15,9 +22,11 @@ function greeting() {
 }
 
 export function DashboardPage({ me }: { me: Me }) {
+  const [period, setPeriod] = useState<Period>('today');
   const first = me.fullName.split(' ')[0];
   const today = new Date().toLocaleDateString('en-GB', { timeZone: 'Africa/Douala', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const office = OFFICE.includes(me.role);
+  const stats = useParcelStats(office);
 
   return (
     <>
@@ -26,89 +35,508 @@ export function DashboardPage({ me }: { me: Me }) {
         subtitle={`${today} · here is what is happening at ${me.agency?.name}`}
         actions={
           office && (
-            <Link to="/parcels/new" className="flex h-11 items-center gap-2 rounded-full bg-primary px-[18px] text-sm font-bold text-white hover:bg-primary-dark hover:text-white">
-              <Icon name="plus" size={18} /> Register parcel
-            </Link>
+            <>
+              <div role="group" aria-label="Period" className="flex rounded-full bg-white p-1">
+                {(['today', 'week'] as const).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    aria-pressed={period === p}
+                    onClick={() => setPeriod(p)}
+                    className={`h-9 rounded-full px-3.5 text-[13px] transition-colors duration-200 ${period === p ? 'bg-ink font-bold text-white' : 'font-semibold text-body hover:text-ink'}`}
+                  >
+                    {p === 'today' ? 'Today' : '7 days'}
+                  </button>
+                ))}
+              </div>
+              <Link to="/trips" className="flex h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-bold text-ink transition-shadow hover:text-ink hover:shadow-[0_4px_14px_rgba(14,23,38,0.08)]">
+                <Icon name="plus" size={18} /> New trip
+              </Link>
+              <Link to="/parcels/new" className="flex h-11 items-center gap-2 rounded-full bg-primary px-[18px] text-sm font-bold text-white transition-colors hover:bg-primary-dark hover:text-white">
+                <Icon name="plus" size={18} /> Register parcel
+              </Link>
+            </>
           )
         }
       />
-      {office ? (
+      {!office ? (
+        // Fleet manager, HR, accountant: no parcel data for them, so the design's trip and bus tiles in their first-day state
         <>
-          <section aria-label="Key figures" className="grid grid-cols-[repeat(auto-fit,minmax(230px,1fr))] gap-4">
-            <Kpi status="IN_TRANSIT" label="Parcels in transit" icon="bus" tint="bg-primary-tint text-primary-dark" hint="On a bus right now" />
-            <Kpi status="ARRIVED" label="Waiting at the branch" icon="box" tint="bg-violet-tint text-violet" hint="Ready for pickup or courier" />
-            <Kpi status="OUT_FOR_DELIVERY" label="Out for delivery" icon="pin" tint="bg-warning-tint text-warning" hint="With a courier" />
-            <Kpi status="ON_HOLD" label="On hold" icon="alert" tint="bg-danger-tint text-danger" hint="Needs the branch manager" alert />
-          </section>
-          <RecentParcels />
+          <Row>
+            <LiveMap />
+            <TripOnRoad />
+          </Row>
+          <Row>
+            <Departures />
+            <BusAttention />
+          </Row>
         </>
+      ) : stats.isError ? (
+        <Panel>
+          <ErrorState error={stats.error} onRetry={() => stats.refetch()} />
+        </Panel>
       ) : (
-        <Card>
-          <EmptyState
-            icon="dash"
-            title="Your module is being built"
-            text="Your screens (fleet, staff or finance) arrive in the next versions of the dashboard. Your account is ready."
-          />
-        </Card>
+        <>
+          <Kpis stats={stats.data} period={period} />
+          {/* Same order as the design. Booking / Fleet tiles show their empty, first-day state until those modules are connected. */}
+          <Row>
+            <LiveMap />
+            <TripOnRoad />
+          </Row>
+          <Row>
+            <Departures />
+            <Alerts stats={stats.data} />
+          </Row>
+          <Row>
+            <Revenue stats={stats.data} />
+            <BusAttention />
+          </Row>
+          <Row>
+            <LatestParcels />
+            <ByStatus stats={stats.data} />
+          </Row>
+        </>
       )}
     </>
   );
 }
 
-function Kpi({ status, label, icon, tint, hint, alert = false }: { status: ParcelStatus; label: string; icon: IconName; tint: string; hint: string; alert?: boolean }) {
-  const count = useParcelCount(status);
-  const n = count.data ?? 0;
+// Two tiles side by side (2 : 1), stacked when the screen is narrow
+export function Row({ children }: { children: [ReactNode, ReactNode] }) {
   return (
-    <Link to={`/parcels?status=${status}`} className="flex flex-col gap-3.5 rounded-[22px] bg-white px-5 py-[18px] text-ink transition-shadow hover:text-ink hover:shadow-[0_6px_24px_rgba(14,23,38,0.08)]">
+    <div className="flex flex-wrap gap-4">
+      <div className="flex min-w-0 flex-[2_1_520px] flex-col">{children[0]}</div>
+      <div className="flex min-w-0 flex-[1_1_300px] flex-col">{children[1]}</div>
+    </div>
+  );
+}
+
+// ─── key figures ───
+
+function Kpis({ stats, period }: { stats?: ParcelStats; period: Period }) {
+  if (!stats)
+    return (
+      <section aria-label="Key figures" className="grid grid-cols-[repeat(auto-fit,minmax(230px,1fr))] gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-[150px] rounded-[22px]" />
+        ))}
+      </section>
+    );
+  const days = stats.days;
+  const t = days[days.length - 1]!;
+  const y = days[days.length - 2];
+  const sum = (k: 'registered' | 'revenue') => days.reduce((n, d) => n + d[k], 0);
+  const s = stats.byStatus;
+  const week = period === 'week';
+
+  const diff = (now: number, before: number | undefined, unit = '') => {
+    if (before == null) return { text: 'First day', tone: 'grey' as const };
+    const d = now - before;
+    if (d === 0) return { text: 'Same as yesterday', tone: 'grey' as const };
+    return { text: `${d > 0 ? '+' : '−'}${unit ? compact(Math.abs(d)) : Math.abs(d)}${unit} vs yesterday`, tone: d > 0 ? ('green' as const) : ('amber' as const) };
+  };
+
+  return (
+    <section aria-label="Key figures" className="tp-fade grid grid-cols-[repeat(auto-fit,minmax(230px,1fr))] gap-4">
+      {/* Booking (Joy): replace the "—" with the tickets sold today / in 7 days */}
+      <Kpi to="/trips" icon="ticket" tint="bg-primary-tint text-primary-dark" label="Tickets sold" value="—" pill={{ text: 'No ticket sold yet', tone: 'grey' }} />
+      <Kpi
+        to="/parcels?status=IN_TRANSIT"
+        icon="box"
+        tint="bg-warning-tint text-warning"
+        label="Parcels in transit"
+        value={String(s.LOADED + s.IN_TRANSIT)}
+        pill={{ text: week ? `${sum('registered')} registered in 7 days` : `${t.registered} registered today`, tone: 'amber' }}
+        bars={days.map((d) => d.registered)}
+        barsLabel="Parcels registered per day, last 7 days"
+      />
+      {/* Fleet (Sweet): buses on the road / all buses */}
+      <Kpi to="/fleet" icon="bus" tint="bg-success-tint text-success" label="Buses on the road" value="—" unit="/ —" pill={{ text: 'Add your buses in Fleet', tone: 'grey' }} />
+      <Kpi
+        to="/parcels"
+        icon="wallet"
+        tint="bg-violet-tint text-violet"
+        label={week ? 'Revenue, 7 days' : 'Revenue today'}
+        value={compact(week ? sum('revenue') : t.revenue)}
+        unit="FCFA"
+        pill={s.ON_HOLD > 0 ? { text: `${s.ON_HOLD} parcel on hold`, tone: 'red' } : week ? { text: `${compact(t.revenue)} today`, tone: 'grey' } : diff(t.revenue, y?.revenue, ' FCFA')}
+        bars={days.map((d) => d.revenue)}
+        barsLabel="Revenue per day (parcel fees), last 7 days"
+      />
+    </section>
+  );
+}
+
+const PILL = { green: 'bg-[#ecfccb] text-[#3f6212]', amber: 'bg-warning-tint text-warning', red: 'bg-danger-tint text-danger', grey: 'bg-chip text-body' };
+
+export function Kpi({ to, icon, tint, label, value, unit, pill, bars, barsLabel }: {
+  to: string;
+  icon: IconName;
+  tint: string;
+  label: string;
+  value: string;
+  unit?: string;
+  pill: { text: string; tone: keyof typeof PILL };
+  bars?: number[];
+  barsLabel?: string;
+}) {
+  return (
+    <Link to={to} className="tp-lift flex flex-col gap-3.5 rounded-[22px] bg-white px-5 py-[18px] text-ink hover:text-ink">
       <div className="flex items-center gap-2.5">
         <span className={`flex h-[34px] w-[34px] items-center justify-center rounded-full ${tint}`}>
           <Icon name={icon} size={18} strokeWidth={1.9} />
         </span>
         <span className="text-[15px] font-bold">{label}</span>
       </div>
-      <div>
-        {count.isPending ? <Skeleton className="h-10 w-16" /> : <span className="text-[34px] font-extrabold tracking-[-1px]">{count.isError ? '—' : n}</span>}
-        <span className={`mt-1 block w-fit rounded-full px-2 py-0.5 text-[11px] font-bold ${alert && n > 0 ? 'bg-danger-tint text-danger' : 'bg-chip text-body'}`}>{hint}</span>
+      <div className="flex items-end justify-between gap-2.5">
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-1">
+            <span className="text-[34px] font-extrabold tracking-[-1px]">{value}</span>
+            {unit && <span className="text-sm font-semibold text-muted">{unit}</span>}
+          </div>
+          <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-bold ${PILL[pill.tone]}`}>{pill.text}</span>
+        </div>
+        {bars && <MiniBars values={bars} label={barsLabel ?? label} />}
       </div>
     </Link>
   );
 }
 
-function RecentParcels() {
+// ─── live map (staff app GPS not connected yet) ───
+
+function LiveMap() {
+  return (
+    <Panel label="Live map" title="Live map" className="h-full" actions={<span className="rounded-full bg-chip px-2.5 py-1 text-xs font-bold text-body">Coming with the staff app</span>}>
+      <div className="relative h-[330px] overflow-hidden rounded-2xl bg-[#eef1f6]">
+        <svg width="100%" height="100%" viewBox="0 0 600 330" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Map of the routes between Douala, Yaoundé, Bafoussam, Bamenda and Kribi">
+          <path d="M0 260 C80 240 120 280 200 250 S340 210 420 240 600 220 600 220" stroke="#DCE2EC" strokeWidth="18" fill="none" />
+          <path d="M60 0 C90 80 40 140 90 200 S120 300 100 330" stroke="#DCE2EC" strokeWidth="10" fill="none" />
+          <path d="M300 0 C320 60 280 110 330 160" stroke="#DCE2EC" strokeWidth="8" fill="none" />
+          {['M150 230 C230 210 300 190 450 170', 'M150 230 C190 180 220 120 260 80', 'M260 80 C230 60 200 50 170 40', 'M150 230 C170 260 180 285 200 300'].map((d) => (
+            <path key={d} d={d} stroke="#C3CCDA" strokeWidth="4" fill="none" strokeDasharray="2 8" strokeLinecap="round" />
+          ))}
+          {[
+            [150, 230, 9, '#0E1726'],
+            [450, 170, 7, '#1E4FD8'],
+            [260, 80, 7, '#0E1726'],
+            [170, 40, 6, '#5B6576'],
+            [200, 300, 6, '#5B6576'],
+          ].map(([cx, cy, r, c]) => (
+            <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={r} fill="#FFFFFF" stroke={c as string} strokeWidth="4" />
+          ))}
+          {[
+            [118, 258, 'Douala'],
+            [436, 200, 'Yaoundé'],
+            [272, 76, 'Bafoussam'],
+            [128, 30, 'Bamenda'],
+            [212, 318, 'Kribi'],
+          ].map(([x, y, t]) => (
+            <text key={t} x={x} y={y} fontSize="13" fontWeight="700" fill="#0E1726" fontFamily="Plus Jakarta Sans, sans-serif">
+              {t}
+            </text>
+          ))}
+        </svg>
+        <div className="absolute bottom-3.5 left-3.5 right-3.5 flex items-center gap-2.5 rounded-[14px] bg-white px-3 py-2.5 shadow-[0_6px_18px_rgba(14,23,38,0.12)] sm:right-auto">
+          <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-accent" />
+          <span className="text-[13px] text-body">Buses and couriers appear here live once drivers use the staff app.</span>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+// ─── alerts ───
+
+const ALERT: Record<string, { label: string; icon: IconName; cls: string }> = {
+  ON_HOLD: { label: 'On hold', icon: 'scale', cls: 'bg-danger-tint text-danger' },
+  CLAIM: { label: 'Claim open', icon: 'alert', cls: 'bg-chip text-body' },
+  LATE_DELIVERY: { label: 'Late delivery', icon: 'clock', cls: 'bg-warning-tint text-warning' },
+};
+
+function Alerts({ stats }: { stats?: ParcelStats }) {
+  return (
+    <Panel
+      label="Parcel alerts"
+      title="Parcel alerts"
+      className="h-full"
+      actions={stats && stats.alerts.length > 0 && <span className="rounded-full bg-danger-tint px-2.5 py-[3px] text-xs font-bold text-danger">{stats.alerts.length} open</span>}
+    >
+      {!stats ? (
+        <div className="flex flex-col gap-2.5">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-[62px] rounded-2xl" />
+          ))}
+        </div>
+      ) : stats.alerts.length === 0 ? (
+        <div className="tp-fade flex flex-1 flex-col items-center justify-center gap-2 py-8 text-center">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-success-tint text-success">
+            <Icon name="check" size={20} />
+          </span>
+          <p className="text-sm font-bold text-ink">All good</p>
+          <p className="max-w-[240px] text-[13px] text-muted">Weight mismatches, wrong codes, claims and late deliveries show up here.</p>
+        </div>
+      ) : (
+        <div className="tp-fade flex flex-col gap-2.5">
+          {stats.alerts.map((a) => {
+            const k = ALERT[a.kind]!;
+            return (
+              <Link key={a.trackingCode + a.kind} to={`/parcels/${a.trackingCode}`} className="flex gap-3 rounded-2xl bg-[#f7f8fc] p-3 text-ink transition-colors hover:bg-soft hover:text-ink">
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${k.cls}`}>
+                  <Icon name={k.icon} size={18} strokeWidth={2} />
+                </span>
+                <span className="flex min-w-0 flex-col gap-0.5">
+                  <span className={`text-xs font-bold ${k.cls.split(' ')[1]}`}>
+                    {k.label} · {a.trackingCode}
+                  </span>
+                  <span className="text-[13px] text-body">{a.text}</span>
+                  <span className="text-xs text-muted">{ago(a.at)}</span>
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+// ─── latest parcels (styled like "Today's departures") ───
+
+function LatestParcels() {
   const navigate = useNavigate();
   const list = useParcels({ page: 1, limit: 6 });
   return (
-    <Card title="Latest parcels" subtitle="The most recently updated parcels of your branch" padded={false} actions={<Link to="/parcels" className="text-sm font-bold">See all</Link>}>
+    <Panel label="Latest parcels" title="Latest parcels" className="h-full" actions={<Link to="/parcels" className="text-[13px] font-bold">All parcels</Link>}>
       {list.isPending ? (
         <SkeletonRows rows={5} cols={4} />
       ) : list.isError ? (
         <ErrorState error={list.error} onRetry={() => list.refetch()} />
       ) : list.data.items.length === 0 ? (
-        <EmptyState
-          title="No parcel yet"
-          text="Register the first parcel of your branch: it appears here with its status."
-          action={
-            <Link to="/parcels/new" className="text-sm font-bold">
-              Register a parcel
-            </Link>
-          }
-        />
+        <EmptyState title="No parcel yet" text="Register the first parcel of your branch: it appears here with its status." action={<Link to="/parcels/new" className="text-sm font-bold">Register a parcel</Link>} />
       ) : (
-        <ul className="divide-y divide-line border-t border-line">
-          {list.data.items.map((p) => (
-            <li key={p.id}>
-              <button type="button" onClick={() => navigate(`/parcels/${p.trackingCode}`)} className="flex w-full flex-wrap items-center gap-3 px-5 py-3.5 text-left hover:bg-soft">
-                <span className="w-36 font-mono text-sm font-bold text-ink">{p.trackingCode}</span>
-                <span className="min-w-0 flex-1 truncate text-sm text-body">
-                  {p.from.city} → {p.to.city} · {p.receiverName}
+        <div className="tp-fade overflow-x-auto">
+          <div className="flex min-w-[600px] flex-col">
+            {list.data.items.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => navigate(`/parcels/${p.trackingCode}`)}
+                className="-mx-2 grid grid-cols-[110px_130px_110px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-xl border-t border-[#eef1f5] px-2 py-3 text-left transition-colors first:border-t-0 hover:bg-soft"
+              >
+                <span className="truncate text-sm font-bold text-ink">{p.from.city}</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="flex-1 border-t-[1.5px] border-dashed border-[#cbd3de]" />
+                  <span className="rounded-full bg-primary-tint px-2 py-0.5 text-[11px] font-bold text-primary-dark">{p.weightKg} kg</span>
+                  <span className="flex-1 border-t-[1.5px] border-dashed border-[#cbd3de]" />
                 </span>
-                <StatusBadge status={p.status} />
-                <span className="w-24 text-right text-xs text-muted">{ago(p.updatedAt)}</span>
+                <span className="truncate text-sm font-bold text-ink">{p.to.city}</span>
+                <span className="truncate text-[13px] text-muted">
+                  <span className="font-mono font-semibold text-body">{p.trackingCode}</span> · {ago(p.updatedAt)}
+                </span>
+                <span className="justify-self-end">
+                  <StatusBadge status={p.status} />
+                </span>
               </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+// ─── parcels by status ───
+
+const ORDER: ParcelStatus[] = ['REGISTERED', 'LOADED', 'IN_TRANSIT', 'ARRIVED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'ON_HOLD', 'REFUSED'];
+const BAR: Partial<Record<ParcelStatus, string>> = { ON_HOLD: 'bg-danger', REFUSED: 'bg-danger', DELIVERED: 'bg-success', OUT_FOR_DELIVERY: 'bg-accent', ARRIVED: 'bg-violet' };
+
+function ByStatus({ stats }: { stats?: ParcelStats }) {
+  const max = stats ? Math.max(1, ...ORDER.map((s) => stats.byStatus[s])) : 1;
+  return (
+    <Panel label="Parcels by status" title="Parcels by status" className="h-full">
+      {!stats ? (
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-5" />
+          ))}
+        </div>
+      ) : (
+        <ul className="tp-fade flex flex-col gap-1">
+          {ORDER.map((s) => (
+            <li key={s}>
+              <Link to={`/parcels?status=${s}`} className="-mx-2 flex items-center gap-3 rounded-lg px-2 py-1.5 text-ink transition-colors hover:bg-soft hover:text-ink">
+                <span className="w-[118px] shrink-0 text-[13px] font-semibold text-body">{statusLabel(s)}</span>
+                <span className="h-1.5 flex-1 rounded-full bg-chip">
+                  <span className={`block h-1.5 rounded-full transition-[width] duration-500 ${BAR[s] ?? 'bg-primary'}`} style={{ width: `${(stats.byStatus[s] / max) * 100}%` }} />
+                </span>
+                <span className="w-8 text-right text-sm font-extrabold">{stats.byStatus[s]}</span>
+              </Link>
             </li>
           ))}
         </ul>
       )}
-    </Card>
+    </Panel>
+  );
+}
+
+// ─── revenue this week ───
+
+function Revenue({ stats }: { stats?: ParcelStats }) {
+  const total = stats?.days.reduce((n, d) => n + d.revenue, 0) ?? 0;
+  return (
+    <Panel label="Revenue this week" className="h-full">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <div>
+          <h2 className="text-[17px] font-bold text-ink">Revenue, last 7 days</h2>
+          {stats ? (
+            <div className="mt-1.5 text-[26px] font-extrabold tracking-[-0.5px] text-ink">
+              {compact(total)} <span className="text-sm font-semibold text-muted">FCFA</span>
+            </div>
+          ) : (
+            <Skeleton className="mt-2 h-8 w-32" />
+          )}
+        </div>
+        <div className="flex gap-3.5 text-xs font-semibold text-body">
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-[3px] bg-accent" />
+            Parcels
+          </span>
+          <span className="flex items-center gap-1.5 text-muted">
+            <span className="h-2.5 w-2.5 rounded-[3px] bg-[#9db4f2]" />
+            Tickets (with Booking)
+          </span>
+        </div>
+      </div>
+      {stats ? (
+        <WeekChart
+          label="Parcel fees paid per day, last 7 days"
+          format={fcfa}
+          bars={stats.days.map((d, i) => ({ day: weekday(d.date), highlight: i === stats.days.length - 1, parts: [{ value: d.revenue, className: 'bg-accent', label: 'Parcels' }] }))}
+        />
+      ) : (
+        <Skeleton className="h-[170px]" />
+      )}
+    </Panel>
+  );
+}
+
+// ─── Booking + Fleet tiles: the design's blocks in their empty, first-day state ───
+// When Booking (Joy) and Fleet (Sweet) are connected, fill these from their APIs and keep the same layout.
+
+const Dash = () => <span className="text-muted">—</span>;
+
+function TripOnRoad() {
+  const stops = ['Departure', 'Stop', 'Arrival'];
+  return (
+    <Panel
+      label="Trip on the road"
+      title="Trip on the road"
+      className="h-full"
+      actions={
+        <Link to="/trips" aria-label="Open trips" className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-tint text-primary-dark transition-colors hover:bg-[#d9e3fc]">
+          <Icon name="arrowUpRight" size={14} strokeWidth={2.4} />
+        </Link>
+      }
+    >
+      <ol className="flex flex-col">
+        {stops.map((k, i) => (
+          <li key={k} className="flex gap-3">
+            <div className="flex w-3.5 flex-col items-center">
+              <span className="mt-[3px] h-3 w-3 shrink-0 rounded-full border-[3px] border-[#cbd3de] bg-white" />
+              {i < stops.length - 1 && <span className="min-h-[26px] w-0.5 flex-1 bg-line" />}
+            </div>
+            <div className="pb-2.5">
+              <div className="text-xs text-muted">{k}</div>
+              <div className="text-sm font-bold">
+                <Dash />
+              </div>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <div className="grid grid-cols-2 gap-2.5">
+        {['Passengers', 'Parcels on board', 'Driver', 'Bus'].map((k) => (
+          <div key={k} className="rounded-[14px] bg-soft px-3 py-2.5">
+            <div className="text-xs text-muted">{k}</div>
+            <div className="text-base font-extrabold">
+              <Dash />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-auto flex h-11 items-center justify-center gap-2 rounded-[14px] bg-primary-tint text-[13px] font-bold text-primary-dark">
+        <Icon name="clock" size={16} strokeWidth={2} /> No trip on the road right now
+      </div>
+    </Panel>
+  );
+}
+
+function Departures() {
+  return (
+    <Panel label="Today's departures" title="Today's departures" className="h-full" actions={<Link to="/trips" className="text-[13px] font-bold">All trips</Link>}>
+      <div className="overflow-x-auto">
+        <div className="grid min-w-[560px] grid-cols-[110px_150px_110px_120px_110px_minmax(0,1fr)] gap-2.5 border-b border-[#eef1f5] pb-2 text-xs font-semibold text-muted">
+          <span>From</span>
+          <span className="text-center">Duration</span>
+          <span>To</span>
+          <span>Time · bus</span>
+          <span>Seats</span>
+          <span className="text-right">Status</span>
+        </div>
+      </div>
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 py-6 text-center">
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-tint text-primary-dark">
+          <Icon name="ticket" size={20} />
+        </span>
+        <p className="text-sm font-bold text-ink">No departure today yet</p>
+        <p className="max-w-[340px] text-[13px] text-muted">Trips you schedule appear here with their seats sold and boarding status.</p>
+        <Link to="/trips" className="mt-1 text-[13px] font-bold">
+          Schedule a trip
+        </Link>
+      </div>
+    </Panel>
+  );
+}
+
+function BusAttention() {
+  const specs = [
+    ['Plate', 'file'],
+    ['Fuel use', 'wallet'],
+    ['Odometer', 'pin'],
+    ['Service due', 'cal'],
+  ] as const;
+  return (
+    <Panel
+      label="Bus needing attention"
+      title="Bus needing attention"
+      className="h-full"
+      actions={<span className="rounded-full bg-success-tint px-2.5 py-[3px] text-xs font-bold text-success">All clear</span>}
+    >
+      <div className="flex h-[120px] items-center justify-center rounded-2xl bg-[#eef1f6] text-muted">
+        <Icon name="bus" size={34} strokeWidth={1.4} />
+      </div>
+      <div className="grid grid-cols-2 gap-2.5">
+        {specs.map(([k, icon]) => (
+          <div key={k} className="flex items-center gap-2.5">
+            <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[10px] bg-[#f1f4fa] text-body">
+              <Icon name={icon} size={16} strokeWidth={2} />
+            </span>
+            <span>
+              <span className="block text-[11px] text-muted">{k}</span>
+              <span className="block text-[13px] font-bold">
+                <Dash />
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+      <p className="mt-auto rounded-[14px] bg-soft px-3 py-2.5 text-[13px] text-body">
+        Add your buses in{' '}
+        <Link to="/fleet" className="font-bold">
+          Fleet
+        </Link>
+        : a bus due for service shows here, and its trips are blocked from sale.
+      </p>
+    </Panel>
   );
 }

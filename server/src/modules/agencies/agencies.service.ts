@@ -1,4 +1,4 @@
-import type { AgencyRegistered, BranchRow, PendingAgency } from '@contracts/api-types';
+import type { AgencyRegistered, BranchRow, PendingAgency, PlatformOverview } from '@contracts/api-types';
 import { prisma } from '../../lib/prisma';
 import { queueEmail } from '../../lib/email';
 import { applicationReceivedEmail, rejectedEmail, verifiedEmail } from './agencies.emails';
@@ -129,4 +129,51 @@ export async function reject(id: string, reason: string) {
   });
   queueEmail(rejectedEmail(agency, reason));
   return updated;
+}
+
+// TransitPro team overview: agencies, parcels and money across the whole platform, last 7 days.
+// "volume" = every successful payment (tickets, parcel fees, cash on delivery); "commission" = our platformFee share.
+const DOUALA_MS = 3600_000; // UTC+1 all year
+const dayKey = (d: Date) => new Date(d.getTime() + DOUALA_MS).toISOString().slice(0, 10);
+
+export async function overview(): Promise<PlatformOverview> {
+  const today = dayKey(new Date());
+  const start = new Date(Date.parse(`${today}T00:00:00+01:00`) - 6 * 86_400_000);
+  const [byStatus, parcelsTotal, inTransit, onHold, delivered, paid, failed, signups, latest] = await Promise.all([
+    prisma.agency.groupBy({ by: ['status'], _count: { _all: true } }),
+    prisma.parcel.count(),
+    prisma.parcel.count({ where: { status: { in: ['LOADED', 'IN_TRANSIT'] } } }),
+    prisma.parcel.count({ where: { status: 'ON_HOLD' } }),
+    prisma.parcel.count({ where: { status: 'DELIVERED', deliveredAt: { gte: start } } }),
+    prisma.payment.findMany({ where: { status: 'SUCCEEDED', settledAt: { gte: start } }, select: { amount: true, platformFee: true, settledAt: true } }),
+    prisma.payment.count({ where: { status: 'FAILED', createdAt: { gte: start } } }),
+    prisma.agency.findMany({ where: { createdAt: { gte: start } }, select: { createdAt: true } }),
+    prisma.agency.findMany({ orderBy: { createdAt: 'desc' }, take: 6, select: { id: true, name: true, headOffice: true, status: true, createdAt: true } }),
+  ]);
+  const count = (st: string) => byStatus.find((g) => g.status === st)?._count._all ?? 0;
+  const days = Array.from({ length: 7 }, (_, i) => ({ date: dayKey(new Date(start.getTime() + i * 86_400_000 + 12 * 3600_000)), volume: 0, commission: 0, signups: 0 }));
+  const byDay = new Map(days.map((d) => [d.date, d]));
+  for (const p of paid) {
+    const d = p.settledAt && byDay.get(dayKey(p.settledAt));
+    if (d) {
+      d.volume += p.amount;
+      d.commission += p.platformFee;
+    }
+  }
+  for (const a of signups) {
+    const d = byDay.get(dayKey(a.createdAt));
+    if (d) d.signups++;
+  }
+  return {
+    agencies: { pending: count('PENDING'), approved: count('APPROVED'), rejected: count('REJECTED'), suspended: count('SUSPENDED') },
+    parcels: { total: parcelsTotal, inTransit, onHold, deliveredThisWeek: delivered },
+    days,
+    week: {
+      volume: days.reduce((n, d) => n + d.volume, 0),
+      commission: days.reduce((n, d) => n + d.commission, 0),
+      payments: paid.length,
+      failed,
+    },
+    latestAgencies: latest.map((a) => ({ ...a, createdAt: a.createdAt.toISOString() })),
+  };
 }

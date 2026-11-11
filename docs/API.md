@@ -86,6 +86,7 @@ Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 | POST | `/agencies/register` | public | `{ agency: { name, headOffice, phone, email, rccmNumber?, niuNumber? }, owner: { fullName, email, phone, password } }` | `201 AgencyRegistered` + cookie (owner logged in, agency `PENDING`) | Web · Register your agency | ✅ |
 | POST | `/agencies/me/documents` | AGENCY_OWNER | RCCM, NIU, CNI, licence files | | Web · Register (documents step) | 🧱 |
 | GET/POST | `/agencies/me/branches` | owner / manager | Branches | | Web · settings, register parcel | 🧱 |
+| GET | `/agencies/admin/overview` | PLATFORM_ADMIN | Agencies by status, parcels, payment volume and commission (7 days), latest sign-ups | `PlatformOverview` | Web · TransitPro overview | ✅ |
 | GET | `/agencies/admin/pending` | PLATFORM_ADMIN | Waiting for verification, oldest first | `PendingAgency[]` | Platform admin | ✅ |
 | POST | `/agencies/admin/:id/approve` | PLATFORM_ADMIN | – (email to the agency) | `{ id, name, slug, status }` | Platform admin | ✅ |
 | POST | `/agencies/admin/:id/reject` | PLATFORM_ADMIN | `{ reason }` (email to the agency) | `{ id, name, slug, status }` | Platform admin | ✅ |
@@ -131,6 +132,7 @@ Every action below answers the full `ParcelDetail` (contracts), so the screen re
 | POST | `/parcels` | COUNTER_AGENT, BRANCH_MANAGER | sender/receiver (name, phone, email optional), `destinationBranchId`, contents, value, **`weightKg`, `sealNumber`, `photoUrls`** (1 to 6), `homeDelivery` + `deliveryAddress`, `insured`, `codAmount`, `paymentMethod` | `201 ParcelRegistered` = parcel + **`deliveryCode` (shown once)** | Web · Register a parcel → print label + receipt | ✅ |
 | GET | `/parcels/track/:code` | public | Status + timeline, **no personal data** | `ParcelTracking` | Customer · Track parcel | ✅ |
 | GET | `/parcels` | COUNTER_AGENT, BRANCH_MANAGER | `?status=&q=&page=&limit=` (q = tracking code or phone). Parcels leaving from or arriving at my branch; owner sees all | `Paginated<ParcelListItem>` | Web · Parcels | ✅ |
+| GET | `/parcels/stats` | COUNTER_AGENT, BRANCH_MANAGER, owner | Counts by status, last 7 days (registered, fees paid), alerts (on hold, claims, late deliveries) | `ParcelStats` | Web · Agency dashboard | ✅ |
 | GET | `/parcels/mine` | DRIVER, COURIER, agents | Parcels I hold right now | `ParcelListItem[]` | Staff app home | ✅ |
 | GET | `/parcels/:id` | COUNTER_AGENT, BRANCH_MANAGER | Chain of custody, security checks, payments, escrow, claims | `ParcelDetail` | Web · Parcel detail | ✅ |
 | POST | `/parcels/:id/scan` | COUNTER_AGENT, DRIVER, BRANCH_MANAGER | `{type: LOADED, tripId}` · `{type: DEPARTED}` · `{type: ARRIVED, weightKg}` · `{type: HANDED_TO_COURIER, courierId}` | `ParcelDetail` | Staff scan, Web | ✅ |

@@ -74,6 +74,21 @@ export function Badge({ tone = 'grey', children }: { tone?: Tone; children: Reac
   return <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold ${TONES[tone]}`}>{children}</span>;
 }
 
+// Dashboard tile of the design: white, 22 px corners, no border (the Card above is for forms and details)
+export function Panel({ title, actions, children, className = '', label }: { title?: ReactNode; actions?: ReactNode; children: ReactNode; className?: string; label?: string }) {
+  return (
+    <section aria-label={label} className={`flex min-w-0 flex-col gap-3 rounded-[22px] bg-white px-5 py-[18px] ${className}`}>
+      {(title || actions) && (
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
+          {title && <h2 className="text-[17px] font-bold text-ink">{title}</h2>}
+          {actions}
+        </div>
+      )}
+      {children}
+    </section>
+  );
+}
+
 export function Card({ title, subtitle, actions, children, className = '', padded = true }: {
   title?: ReactNode;
   subtitle?: ReactNode;

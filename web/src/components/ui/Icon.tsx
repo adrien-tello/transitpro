@@ -31,6 +31,13 @@ const PATHS = {
   scale: 'M12 3v18M5 21h14M6 8l-3 7h6zM18 8l-3 7h6zM5 8h14',
   wifiOff: 'M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M2 8.8a15 15 0 0 1 4.2-2.6M10.7 5.1A15 15 0 0 1 22 8.8M5 12.9a10 10 0 0 1 5.2-2.8M19 12.9a10 10 0 0 0-2.1-1.6M12 20h.01',
   menu: 'M4 6h16M4 12h16M4 18h16',
+  chat: 'M4 4h16v12H8l-4 4z',
+  help: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01',
+  bell: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0',
+  arrowUpRight: 'M7 17 17 7M8 7h9v9',
+  chevronDown: 'm6 9 6 6 6-6',
+  chevronRight: 'm9 6 6 6-6 6',
+  send: 'M22 2 11 13M22 2l-7 20-4-9-9-4z',
 } as const;
 
 export type IconName = keyof typeof PATHS;

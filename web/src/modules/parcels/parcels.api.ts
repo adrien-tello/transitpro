@@ -5,6 +5,7 @@ import type {
   ParcelHoldReleased,
   ParcelListItem,
   ParcelRegistered,
+  ParcelStats,
   ParcelStatus,
   PaymentMethod,
   UploadResult,
@@ -35,6 +36,22 @@ export function useParcelCount(status: ParcelStatus) {
     queryFn: async () => (await api.get<Paginated<ParcelListItem>>('/parcels', { status, limit: 1, page: 1 })).total,
   });
 }
+
+// Dashboard numbers + the sidebar's alert badge (one request, shared by both through the cache)
+export function useParcelStats(enabled = true) {
+  return useQuery({
+    queryKey: keys.parcelStats,
+    queryFn: () => api.get<ParcelStats>('/parcels/stats'),
+    enabled,
+    refetchInterval: 60_000,
+  });
+}
+
+// Hovering the Parcels menu entry loads the first page before the click: the page opens with its data
+export const parcelsFirstPage = {
+  queryKey: keys.parcels({ page: 1 }),
+  queryFn: () => api.get<Paginated<ParcelListItem>>('/parcels', { page: 1, limit: 20 }),
+};
 
 // While a Mobile Money payment is PENDING, the detail refreshes every 3 s by itself
 // (the server asks Notch Pay), then stops as soon as it is settled.

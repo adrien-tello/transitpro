@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AgencyRegistered, BranchRow, PendingAgency } from '@contracts/api-types';
+import type { AgencyRegistered, BranchRow, PendingAgency, PlatformOverview } from '@contracts/api-types';
 import { api } from '../../lib/api';
 import { keys } from '../../lib/queryClient';
 
@@ -17,8 +17,13 @@ export function useAddBranch() {
 }
 
 // ─── TransitPro team ───
-export function usePendingAgencies() {
-  return useQuery({ queryKey: keys.pendingAgencies, queryFn: () => api.get<PendingAgency[]>('/agencies/admin/pending') });
+export function usePendingAgencies(enabled = true) {
+  return useQuery({ queryKey: keys.pendingAgencies, queryFn: () => api.get<PendingAgency[]>('/agencies/admin/pending'), enabled });
+}
+
+// Platform numbers for the TransitPro team's overview
+export function usePlatformOverview() {
+  return useQuery({ queryKey: keys.overview, queryFn: () => api.get<PlatformOverview>('/agencies/admin/overview'), refetchInterval: 60_000 });
 }
 
 export function useDecideAgency() {
@@ -36,6 +41,6 @@ export function useDecideAgency() {
       return { before };
     },
     onError: (_e, _v, ctx) => ctx?.before && qc.setQueryData(keys.pendingAgencies, ctx.before),
-    onSettled: () => qc.invalidateQueries({ queryKey: keys.pendingAgencies }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['admin'] }), // the list and the overview counters
   });
 }

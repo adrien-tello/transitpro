@@ -25,5 +25,7 @@ export const keys = {
   parcels: (filters?: object) => (filters ? (['parcels', filters] as const) : (['parcels'] as const)),
   parcel: (id: string) => ['parcel', id] as const,
   payment: (id: string) => ['payment', id] as const,
+  parcelStats: ['parcels', 'stats'] as const, // under 'parcels': refreshed with the lists after every change
   pendingAgencies: ['admin', 'pending-agencies'] as const,
+  overview: ['admin', 'overview'] as const,
 };

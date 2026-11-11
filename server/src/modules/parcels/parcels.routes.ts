@@ -40,6 +40,11 @@ parcelsRouter.get('/', requireRole('COUNTER_AGENT', 'BRANCH_MANAGER'), validate(
   res.json({ data: await parcels.list(req.query as unknown as z.infer<typeof listQuery>, staff(req)) });
 });
 
+// Web dashboard: counters, the last 7 days and alerts (before /:id, or "stats" would be read as a tracking code)
+parcelsRouter.get('/stats', requireRole('COUNTER_AGENT', 'BRANCH_MANAGER'), async (req, res) => {
+  res.json({ data: await parcels.stats(staff(req)) });
+});
+
 // Staff app: parcels I am responsible for (driver, courier)
 parcelsRouter.get('/mine', requireRole('DRIVER', 'COURIER', 'COUNTER_AGENT', 'BRANCH_MANAGER'), async (req, res) => {
   res.json({ data: await parcels.mine(staff(req)) });

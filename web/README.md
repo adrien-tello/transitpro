@@ -11,23 +11,20 @@ npm run dev     # http://localhost:5173  (calls to /api go to the server on :400
 npm run build   # production build in dist/ (also type-checks)
 ```
 
-Test accounts (password `Password123`): `agent@etoile.test` (Douala counter), `mvan.agent@etoile.test` and
-`mvan.manager@etoile.test` (Yaoundé), `owner@etoile.test`, `admin@transitpro.test` (TransitPro team).
+Test accounts (password `Password123`): see [`docs/TEST-ACCOUNTS.md`](../docs/TEST-ACCOUNTS.md).
 
 ## What is built
 
-| Screen | Route | Who |
-|---|---|---|
-| Sign in, forgot password (code by email) | `/login`, `/forgot-password` | everyone |
-| Register your agency | `/register-agency` | new agency owner |
-| Waiting for verification (rejection reason) | `/pending` | owner of a PENDING / REJECTED agency |
-| Agencies to verify (approve / reject) | `/admin` | PLATFORM_ADMIN |
-| Dashboard (parcel counters, latest parcels) | `/` | agency staff |
-| Parcels list (status tabs, search, pages) | `/parcels` | counter agent, branch manager, owner |
-| Register a parcel (photos, price, cash / MoMo / Orange, label, delivery code) | `/parcels/new` | same |
-| Parcel detail (checks, custody, payments, next step) | `/parcels/:trackingCode` | same |
-| Branches | `/branches` | owner |
-| Trips, Fleet, Staff, Finance, Live tracking | "coming soon" pages | |
+Full list of pages, status and who builds each one: [`docs/WEB-PAGES.md`](../docs/WEB-PAGES.md).
+Every login: [`docs/TEST-ACCOUNTS.md`](../docs/TEST-ACCOUNTS.md).
+
+- **Layout**: the design's sidebar (stays in place while the page scrolls, menu per role, live badges), top bar with search,
+  messages and notifications, pages fade in, data of the Parcels page loads while the pointer is on its link.
+- **Agency dashboard** (`/`): every block of the design. Parcels, alerts and revenue are live; tiles of modules not connected yet
+  (tickets, buses, trips) show "—" and their first-day state.
+- **TransitPro team** (`/admin`): overview (agencies, payments, our commission, parcels), agencies to verify.
+- Parcels (list, register, detail), branches, settings (profile, change password), sign-in, forgot password, agency sign-up.
+- Other menu entries: "coming soon" pages with the name of who builds them.
 
 Drivers, couriers and customers see "use the mobile app".
 

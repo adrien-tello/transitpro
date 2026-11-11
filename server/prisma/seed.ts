@@ -42,6 +42,9 @@ async function main() {
     { email: 'courier@etoile.test', fullName: 'Bernard Atangana', role: 'COURIER', jobTitle: 'Courier', branchId: mvan.id },
     { email: 'mvan.agent@etoile.test', fullName: 'Paul Essomba', role: 'COUNTER_AGENT', jobTitle: 'Counter agent', branchId: mvan.id },
     { email: 'mvan.manager@etoile.test', fullName: 'Grace Mballa', role: 'BRANCH_MANAGER', jobTitle: 'Branch manager', branchId: mvan.id },
+    { email: 'fleet@etoile.test', fullName: 'Eric Tchinda', role: 'FLEET_MANAGER', jobTitle: 'Fleet manager' },
+    { email: 'hr@etoile.test', fullName: 'Sandrine Mbida', role: 'HR_OFFICER', jobTitle: 'HR officer' },
+    { email: 'accountant@etoile.test', fullName: 'Joseph Kamga', role: 'ACCOUNTANT', jobTitle: 'Accountant' },
     { email: 'customer@transitpro.test', fullName: 'Marie Ekane', role: 'CUSTOMER' },
   ];
 
