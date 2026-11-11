@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { errorMessage } from '../../lib/api';
-import { useTheme } from '../../lib/theme';
+import { Spinner } from '../../components/ui/Button';
 import { useGoogleLogin } from './auth.api';
 
 // "Continue with Google" with Google Identity Services (the official button, in a Google iframe).
@@ -41,31 +41,44 @@ function loadGoogle(): Promise<GoogleId> {
 // The latest callback, so Google (initialized once) always calls the current component
 let onCredential: (token: string) => void = () => {};
 
+// Our own button from the design (same in light and dark mode) is what people see. Google's real button is
+// rendered on top of it, invisible and stretched to the same size: the click goes to Google (popup, ID token),
+// which keeps Google's security model while the look stays ours.
 export function GoogleButton() {
+  const wrap = useRef<HTMLDivElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const google = useGoogleLogin();
-  const { dark } = useTheme();
   const [state, setState] = useState<'loading' | 'ready' | 'failed'>('loading');
   const [loadError, setLoadError] = useState<string | null>(null);
 
   onCredential = (token) => google.mutate(token);
 
+  // Stretch Google's button over ours. It is drawn at the width we ask for (max 400 px) and 40 px high
+  // (size "large"), so the scale is known without measuring Google's frame.
+  const GOOGLE_H = 40;
+  const fit = () => {
+    const w = wrap.current;
+    const g = box.current;
+    if (!w || !g) return;
+    const width = Number(g.dataset.width) || Math.min(400, w.offsetWidth);
+    g.style.width = `${width}px`;
+    g.style.height = `${GOOGLE_H}px`;
+    g.style.transform = `scale(${w.offsetWidth / width}, ${w.offsetHeight / GOOGLE_H})`;
+  };
+
   useEffect(() => {
     let alive = true;
+    const ro = new ResizeObserver(fit);
     loadGoogle()
       .then((id) => {
-        if (!alive || !box.current) return;
+        if (!alive || !box.current || !wrap.current) return;
+        const width = Math.max(200, Math.min(400, wrap.current.offsetWidth));
+        box.current.dataset.width = String(width);
         id.initialize({ client_id: CLIENT_ID, callback: (r) => onCredential(r.credential), ux_mode: 'popup', auto_select: false, cancel_on_tap_outside: true });
         box.current.innerHTML = '';
-        id.renderButton(box.current, {
-          type: 'standard',
-          theme: dark ? 'filled_black' : 'outline',
-          size: 'large',
-          text: 'continue_with',
-          shape: 'rectangular',
-          logo_alignment: 'center',
-          width: Math.min(400, Math.max(200, Math.round(box.current.parentElement?.clientWidth ?? 360))),
-        });
+        id.renderButton(box.current, { type: 'standard', theme: 'outline', size: 'large', text: 'continue_with', shape: 'rectangular', width, locale: 'en' });
+        fit();
+        ro.observe(wrap.current);
         setState('ready');
       })
       .catch((e: Error) => {
@@ -75,21 +88,47 @@ export function GoogleButton() {
       });
     return () => {
       alive = false;
+      ro.disconnect();
     };
-  }, [dark]);
+  }, []);
 
+  const busy = google.isPending;
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="relative flex min-h-[44px] w-full justify-center">
-        {state === 'loading' && <span className="tp-skeleton absolute inset-0 rounded-[10px]" aria-label="Loading Google sign-in" />}
-        <div ref={box} className={`transition-opacity duration-200 ${state === 'ready' && !google.isPending ? 'opacity-100' : 'opacity-60'}`} />
+    <div className="flex flex-col gap-2">
+      <div ref={wrap} className="group relative h-[52px] w-full overflow-hidden rounded-[14px]">
+        {/* What people see */}
+        <div
+          aria-hidden="true"
+          className={`flex h-full w-full items-center justify-center gap-2.5 rounded-[14px] border border-field bg-surface text-[15px] font-bold text-ink transition-colors duration-200 group-hover:border-muted/50 group-hover:bg-soft group-focus-within:ring-2 group-focus-within:ring-primary/40 ${
+            state === 'ready' && !busy ? '' : 'opacity-60'
+          }`}
+        >
+          {busy ? <Spinner /> : <GoogleLogo />}
+          {busy ? 'Signing you in…' : 'Continue with Google'}
+        </div>
+        {/* What is clicked: Google's button, invisible, stretched over ours */}
+        <div
+          ref={box}
+          className={`absolute left-0 top-0 origin-top-left overflow-hidden opacity-[0.01] ${state === 'ready' && !busy ? '' : 'pointer-events-none'}`}
+          aria-label="Continue with Google"
+        />
       </div>
-      {google.isPending && <p className="text-[13px] text-muted">Signing you in with Google…</p>}
       {(google.isError || loadError) && (
         <p role="alert" className="text-center text-[13px] font-semibold text-danger">
           {loadError ?? errorMessage(google.error)}
         </p>
       )}
     </div>
+  );
+}
+
+function GoogleLogo() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />
+      <path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
+      <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z" />
+      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z" />
+    </svg>
   );
 }
