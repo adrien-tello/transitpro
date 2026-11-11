@@ -29,13 +29,16 @@ const BODY = '#2B3445';
 const MUTED = '#6B7280';
 const LINE = '#E5E7EB';
 const BLUE = '#1E4FD8';
+// Dark mode: the email has no background of its own (it takes the mail app's, dark or light). Apps that read
+// prefers-color-scheme (Apple Mail, iOS, Outlook) switch to these; Gmail recolors the text by itself.
+const DARK = { ink: '#E8EDF6', body: '#C2CAD8', muted: '#8E99AD', line: '#2A3550', code: '#1F2B44', blue: '#8AABFF' };
 const FONT = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const MONO = "'SF Mono',Menlo,Consolas,'Courier New',monospace";
 
 const esc = (v: string) =>
   v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-const p = (text: string) => `<p style="margin:0 0 16px;font:15px/1.65 ${FONT};color:${BODY}">${esc(text)}</p>`;
+const p = (text: string) => `<p class="tp-body" style="margin:0 0 16px;font:15px/1.65 ${FONT};color:${BODY}">${esc(text)}</p>`;
 
 // 10 → "10 minutes", 2880 → "2 days"
 function duration(minutes: number): string {
@@ -46,16 +49,16 @@ function duration(minutes: number): string {
 
 export function renderHtml(e: Email): string {
   const code = e.code
-    ? `<div style="margin:6px 0 8px;padding:14px 18px;background:#F4F5F7;border-radius:6px;display:inline-block;font:600 30px/1 ${MONO};letter-spacing:7px;color:${INK}">${esc(e.code.value)}</div>
-<p style="margin:0 0 20px;font:13px/1.5 ${FONT};color:${MUTED}">This code expires in ${duration(e.code.expiresInMinutes)} and works once.</p>`
+    ? `<div class="tp-code" style="margin:6px 0 8px;padding:14px 18px;background:#F4F5F7;border-radius:6px;display:inline-block;font:600 30px/1 ${MONO};letter-spacing:7px;color:${INK}">${esc(e.code.value)}</div>
+<p class="tp-muted" style="margin:0 0 20px;font:13px/1.5 ${FONT};color:${MUTED}">This code expires in ${duration(e.code.expiresInMinutes)} and works once.</p>`
     : '';
   const list = e.list
-    ? `<ul style="margin:0 0 18px;padding-left:22px">${e.list.map((x) => `<li style="margin:0 0 6px;font:15px/1.6 ${FONT};color:${BODY}">${esc(x)}</li>`).join('')}</ul>`
+    ? `<ul style="margin:0 0 18px;padding-left:22px">${e.list.map((x) => `<li class="tp-body" style="margin:0 0 6px;font:15px/1.6 ${FONT};color:${BODY}">${esc(x)}</li>`).join('')}</ul>`
     : '';
   const quote = e.quote
-    ? `<div style="margin:0 0 18px;padding:2px 0 2px 14px;border-left:3px solid ${LINE}">
-<div style="font:600 13px/1.6 ${FONT};color:${MUTED}">${esc(e.quote.label)}</div>
-<div style="font:15px/1.6 ${FONT};color:${INK}">${esc(e.quote.text)}</div></div>`
+    ? `<div class="tp-quote" style="margin:0 0 18px;padding:2px 0 2px 14px;border-left:3px solid ${LINE}">
+<div class="tp-muted" style="font:600 13px/1.6 ${FONT};color:${MUTED}">${esc(e.quote.label)}</div>
+<div class="tp-ink" style="font:15px/1.6 ${FONT};color:${INK}">${esc(e.quote.text)}</div></div>`
     : '';
   const button = e.button
     ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px 0 22px"><tr>
@@ -65,21 +68,38 @@ export function renderHtml(e: Email): string {
 
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="light only"><title>${esc(e.subject)}</title></head>
-<body style="margin:0;padding:0;background:#FFFFFF">
+<meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark">
+<title>${esc(e.subject)}</title>
+<style>
+:root { color-scheme: light dark; supported-color-schemes: light dark; }
+@media (prefers-color-scheme: dark) {
+  .tp-ink { color: ${DARK.ink} !important; }
+  .tp-body { color: ${DARK.body} !important; }
+  .tp-muted { color: ${DARK.muted} !important; }
+  .tp-code { background: ${DARK.code} !important; color: ${DARK.ink} !important; }
+  .tp-line { background: ${DARK.line} !important; }
+  .tp-quote { border-left-color: ${DARK.line} !important; }
+  .tp-brand { color: ${DARK.blue} !important; }
+}
+[data-ogsc] .tp-ink { color: ${DARK.ink} !important; }
+[data-ogsc] .tp-body { color: ${DARK.body} !important; }
+[data-ogsc] .tp-muted { color: ${DARK.muted} !important; }
+[data-ogsb] .tp-code { background: ${DARK.code} !important; }
+</style></head>
+<body style="margin:0;padding:0">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">${esc(e.preheader)}</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF"><tr><td style="padding:36px 22px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:36px 22px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px"><tr><td>
-<div style="font:700 17px ${FONT};color:${INK};letter-spacing:-0.2px;margin-bottom:34px">TransitPro</div>
-<p style="margin:0 0 16px;font:15px/1.65 ${FONT};color:${INK}">${esc(e.greeting)}</p>
+<div class="tp-brand" style="font:800 18px ${FONT};color:${BLUE};letter-spacing:-0.2px;margin-bottom:34px">TransitPro</div>
+<p class="tp-ink" style="margin:0 0 16px;font:15px/1.65 ${FONT};color:${INK}">${esc(e.greeting)}</p>
 ${e.paragraphs.map(p).join('\n')}
 ${list}${quote}${code}
 ${(e.after ?? []).map(p).join('\n')}
 ${button}
-<p style="margin:24px 0 0;font:15px/1.65 ${FONT};color:${BODY}">The TransitPro team</p>
-<div style="height:1px;background:${LINE};margin:36px 0 18px"></div>
-${e.footnote ? `<p style="margin:0 0 8px;font:12px/1.6 ${FONT};color:${MUTED}">${esc(e.footnote)}</p>` : ''}
-<p style="margin:0;font:12px/1.6 ${FONT};color:${MUTED}">TransitPro · Intercity buses and parcels · Cameroon<br>This mailbox is not monitored, please do not reply.</p>
+<p class="tp-body" style="margin:24px 0 0;font:15px/1.65 ${FONT};color:${BODY}">The TransitPro team</p>
+<div class="tp-line" style="height:1px;background:${LINE};margin:36px 0 18px"></div>
+${e.footnote ? `<p class="tp-muted" style="margin:0 0 8px;font:12px/1.6 ${FONT};color:${MUTED}">${esc(e.footnote)}</p>` : ''}
+<p class="tp-muted" style="margin:0;font:12px/1.6 ${FONT};color:${MUTED}">TransitPro · Intercity buses and parcels · Cameroon<br>This mailbox is not monitored, please do not reply.</p>
 </td></tr></table>
 </td></tr></table>
 </body></html>`;
