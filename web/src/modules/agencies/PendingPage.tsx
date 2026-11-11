@@ -124,8 +124,7 @@ export function MobileOnlyPage({ me }: { me: Me }) {
         </p>
         {me.role === 'CUSTOMER' && (
           <p className="text-[13px] text-muted">
-            Work for an agency? Ask your agency owner to add <span className="font-semibold text-body">{me.email}</span> to the staff, or{' '}
-            <a href="/register-agency" className="font-semibold">register your agency</a>.
+            Work for an agency? Ask your agency owner to add <span className="font-semibold text-body">{me.email}</span> to the staff. Own an agency? Log out, then choose “Register your agency” on the sign-in page.
           </p>
         )}
         <Button variant="secondary" icon="out" loading={logout.isPending} onClick={() => logout.mutate(undefined, { onSettled: () => navigate('/login', { replace: true }) })}>
