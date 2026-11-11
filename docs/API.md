@@ -134,7 +134,7 @@ Every action below answers the full `ParcelDetail` (contracts), so the screen re
 | GET | `/parcels` | COUNTER_AGENT, BRANCH_MANAGER | `?status=&q=&page=&limit=` (q = tracking code or phone). Parcels leaving from or arriving at my branch; owner sees all | `Paginated<ParcelListItem>` | Web · Parcels | ✅ |
 | GET | `/parcels/stats` | COUNTER_AGENT, BRANCH_MANAGER, owner | Counts by status, last 7 days (registered, fees paid), alerts (on hold, claims, late deliveries) | `ParcelStats` | Web · Agency dashboard | ✅ |
 | GET | `/parcels/mine` | DRIVER, COURIER, agents | Parcels I hold right now | `ParcelListItem[]` | Staff app home | ✅ |
-| GET | `/parcels/:id` | COUNTER_AGENT, BRANCH_MANAGER | Chain of custody, security checks, payments, escrow, claims | `ParcelDetail` | Web · Parcel detail | ✅ |
+| GET | `/parcels/:id` | COUNTER_AGENT, BRANCH_MANAGER; DRIVER / COURIER only for a parcel they hold | Chain of custody, security checks, payments, escrow, claims | `ParcelDetail` | Web · Parcel detail, Courier · Delivery | ✅ |
 | POST | `/parcels/:id/scan` | COUNTER_AGENT, DRIVER, BRANCH_MANAGER | `{type: LOADED, tripId}` · `{type: DEPARTED}` · `{type: ARRIVED, weightKg}` · `{type: HANDED_TO_COURIER, courierId}` | `ParcelDetail` | Staff scan, Web | ✅ |
 | POST | `/parcels/:id/cod-payment` | COURIER, COUNTER_AGENT | `{method, payerPhone?}`: receiver pays the cash on delivery (cash, or MoMo/OM prompt on their phone); money **held** in escrow once paid | `ParcelDetail` | Courier delivery, counter | ✅ |
 | POST | `/parcels/:id/fee-payment` | COUNTER_AGENT, BRANCH_MANAGER | `{method, payerPhone?}`: the fee payment failed (refused, no answer…), take it again | `ParcelDetail` | Web · Parcel detail | ✅ |

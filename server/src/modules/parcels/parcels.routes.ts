@@ -51,8 +51,10 @@ parcelsRouter.get('/mine', requireRole('DRIVER', 'COURIER', 'COUNTER_AGENT', 'BR
 });
 
 // :id = database id or tracking code (what the QR label contains)
-parcelsRouter.get('/:id', requireRole('COUNTER_AGENT', 'BRANCH_MANAGER'), validate({ params: idParam }), async (req, res) => {
-  res.json({ data: await parcels.getForAgency(id(req), agencyIdOf(req)) });
+// Counter staff see any parcel of the agency; a driver / courier only the parcels they hold right now
+parcelsRouter.get('/:id', requireRole('COUNTER_AGENT', 'BRANCH_MANAGER', 'DRIVER', 'COURIER'), validate({ params: idParam }), async (req, res) => {
+  const role = req.user!.role;
+  res.json({ data: role === 'DRIVER' || role === 'COURIER' ? await parcels.getForHolder(id(req), staff(req)) : await parcels.getForAgency(id(req), agencyIdOf(req)) });
 });
 
 // One handover = one scan: LOADED (tripId) · DEPARTED · ARRIVED (weightKg) · HANDED_TO_COURIER (courierId)

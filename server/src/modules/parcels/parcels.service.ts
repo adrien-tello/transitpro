@@ -357,6 +357,13 @@ export async function getForAgency(idOrCode: string, agencyId: string): Promise<
   return toDetail(await findParcel(idOrCode, agencyId));
 }
 
+// Staff app: a driver or courier reads a parcel only while they hold it (delivery screen: address, phone, payments)
+export async function getForHolder(idOrCode: string, ctx: StaffContext): Promise<ParcelDetail> {
+  const p = await findParcel(idOrCode, ctx.agencyId);
+  if (p.currentHolderId !== ctx.employeeId) throw forbidden('You can only open the parcels you are carrying');
+  return toDetail(p);
+}
+
 const listInclude = { originBranch: branchSelect, destinationBranch: branchSelect, currentHolder: staffSelect } satisfies Prisma.ParcelInclude;
 
 // A counter agent / manager sees the parcels leaving from or arriving at their branch, the owner all
