@@ -11,6 +11,9 @@ mobile/.expo/
 mobile/ios/
 mobile/android/
 
+# Uploaded photos (local storage while developing)
+server/uploads/
+
 # Vite
 web/dist/
 
@@ -18,3 +21,6 @@ web/dist/
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# TypeScript build cache
+*.tsbuildinfo

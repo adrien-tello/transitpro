@@ -66,7 +66,7 @@ export interface SessionResponse {
 
 // GET /auth/me  → the app opens the customer screens or the staff screens from `role`
 export interface Me extends PublicUser {
-  agency: { id: string; name: string; status: AgencyStatus } | null;
+  agency: { id: string; name: string; status: AgencyStatus; rejectionReason: string | null } | null;
   employee: { id: string; jobTitle: string; branchId: string | null; active: boolean } | null;
 }
 
@@ -87,6 +87,20 @@ export type AgencyStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
 export interface AgencyRegistered {
   user: PublicUser;
   agency: { id: string; name: string; slug: string; status: AgencyStatus };
+}
+
+// GET /agencies/me/branches   POST /agencies/me/branches (owner)   Screens: Register parcel, settings
+export interface BranchRow {
+  id: string;
+  name: string; // "Akwa"
+  city: string; // "Douala"
+  address: string;
+}
+
+// POST /uploads (raw image body, Content-Type image/jpeg | image/png | image/webp, max 3 MB)
+// → { url: "/api/uploads/<id>.jpg" }: use it in photoUrls / photoUrl. Only logged-in users can open it.
+export interface UploadResult {
+  url: string;
 }
 
 // GET /agencies/admin/pending  Screen: Platform admin · Agencies to verify

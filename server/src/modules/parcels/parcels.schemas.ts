@@ -1,5 +1,14 @@
 import { z } from 'zod';
 import { emailSchema, phoneSchema } from '../auth/auth.schemas';
+import { isUploadUrl } from '../uploads/uploads.routes';
+import { env } from '../../config/env';
+
+// A photo must come from our upload endpoint (Cloudinary or local), never a random link.
+// (example.com links are accepted in development only, for the automated tests.)
+const photoUrl = z
+  .string()
+  .max(300)
+  .refine((v) => isUploadUrl(v) || (env.NODE_ENV !== 'production' && v.startsWith('https://example.com/')), 'Upload the photo first');
 
 const optionalEmail = emailSchema.optional();
 const money = z.number().int().nonnegative();
@@ -20,7 +29,7 @@ export const registerParcelSchema = z
     declaredValue: money,
     weightKg: z.number().positive().max(500),
     sealNumber: z.string().trim().min(1).max(40),
-    photoUrls: z.array(z.string().url()).min(1, 'Take at least one photo of the contents before sealing').max(6),
+    photoUrls: z.array(photoUrl).min(1, 'Take at least one photo of the contents before sealing').max(6),
     homeDelivery: z.boolean().default(false),
     deliveryAddress: z.string().trim().max(300).optional(),
     insured: z.boolean().default(false),
@@ -54,7 +63,7 @@ export const feePaymentSchema = codPaymentSchema;
 // Courier: code + photo + GPS are required (checked in the service). Counter pickup: code only.
 export const deliverSchema = z.object({
   otp: z.string().trim().regex(/^\d{4}$/, 'The code has 4 digits'),
-  photoUrl: z.string().url().optional(),
+  photoUrl: photoUrl.optional(),
   lat: z.number().min(-90).max(90).optional(),
   lng: z.number().min(-180).max(180).optional(),
 });

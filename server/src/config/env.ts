@@ -27,6 +27,11 @@ const schema = z
     EMAIL_FROM_NAME: z.string().default('TransitPro'),
     // Web dashboard address, used for the buttons in emails
     WEB_URL: z.string().url().default('http://localhost:5173'),
+    // Photos (parcel contents, proof of delivery) are stored on Cloudinary. Console > Dashboard / Settings > API Keys.
+    // Empty = photos are saved in server/uploads/ (development only).
+    CLOUDINARY_CLOUD_NAME: z.string().trim().default(''),
+    CLOUDINARY_API_KEY: z.string().trim().default(''),
+    CLOUDINARY_API_SECRET: z.string().trim().default(''),
     // Mobile Money (MTN, Orange) through Notch Pay. Test keys start with pk_test / sk_test / hsk_test.
     // Empty = Mobile Money answers 503 and only cash works.
     NOTCHPAY_PUBLIC_KEY: z.string().trim().default(''),

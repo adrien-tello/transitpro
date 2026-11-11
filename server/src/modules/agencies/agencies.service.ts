@@ -1,4 +1,4 @@
-import type { AgencyRegistered, PendingAgency } from '@contracts/api-types';
+import type { AgencyRegistered, BranchRow, PendingAgency } from '@contracts/api-types';
 import { prisma } from '../../lib/prisma';
 import { queueEmail } from '../../lib/email';
 import { applicationReceivedEmail, rejectedEmail, verifiedEmail } from './agencies.emails';
@@ -59,6 +59,22 @@ export async function registerAgency(input: RegisterAgencyInput): Promise<Agency
 
   queueEmail(applicationReceivedEmail(created.agency.name, created.user));
   return { user: publicUser(created.user), agency: created.agency, tokenVersion: created.user.tokenVersion };
+}
+
+// ─────────────── Branches ───────────────
+
+export async function listBranches(agencyId: string): Promise<BranchRow[]> {
+  return prisma.branch.findMany({
+    where: { agencyId },
+    select: { id: true, name: true, city: true, address: true },
+    orderBy: [{ city: 'asc' }, { name: 'asc' }],
+  });
+}
+
+export async function addBranch(agencyId: string, input: { name: string; city: string; address: string }): Promise<BranchRow> {
+  const exists = await prisma.branch.findFirst({ where: { agencyId, name: input.name }, select: { id: true } });
+  if (exists) throw conflict(`A branch called ${input.name} already exists`);
+  return prisma.branch.create({ data: { agencyId, ...input }, select: { id: true, name: true, city: true, address: true } });
 }
 
 // ─────────────── TransitPro team (PLATFORM_ADMIN) ───────────────

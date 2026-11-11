@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { requireAuth, requirePlatformAdmin, requireRole, setSessionCookie } from '../../middleware/auth';
+import { agencyIdOf, requireAuth, requirePlatformAdmin, requireRole, setSessionCookie } from '../../middleware/auth';
 import { authLimiter } from '../../middleware/security';
 import { validate } from '../../middleware/validate';
 import { notImplemented } from '../../lib/http-error';
-import { agencyIdParams, registerAgencySchema, rejectAgencySchema } from './agencies.schemas';
+import { agencyIdParams, branchSchema, registerAgencySchema, rejectAgencySchema } from './agencies.schemas';
 import * as agencies from './agencies.service';
 
 // Owner: Lead (Fanyi Charllson). SaaS layer: agency sign-up, verification, public profiles.
@@ -31,11 +31,13 @@ agenciesRouter.use(requireAuth);
 agenciesRouter.post('/me/documents', requireRole('AGENCY_OWNER'), async () => {
   throw notImplemented('Upload RCCM, NIU, CNI, transport licence');
 });
-agenciesRouter.get('/me/branches', requireRole('BRANCH_MANAGER', 'COUNTER_AGENT'), async () => {
-  throw notImplemented('Branches of my agency');
+// Every staff member of the agency (destination lists, filters). Works while the agency is PENDING
+// so the owner can prepare branches before the approval.
+agenciesRouter.get('/me/branches', async (req, res) => {
+  res.json({ data: await agencies.listBranches(agencyIdOf(req, { allowPending: true })) });
 });
-agenciesRouter.post('/me/branches', requireRole('AGENCY_OWNER'), async () => {
-  throw notImplemented('Add a branch');
+agenciesRouter.post('/me/branches', requireRole('AGENCY_OWNER'), validate({ body: branchSchema }), async (req, res) => {
+  res.status(201).json({ data: await agencies.addBranch(agencyIdOf(req, { allowPending: true }), req.body) });
 });
 
 // TransitPro team only. AGENCY_OWNER is refused here: an owner never approves their own agency.

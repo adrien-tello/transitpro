@@ -44,6 +44,8 @@ export function originCheck(req: Request, _res: Response, next: NextFunction) {
 // so this also blocks form-based CSRF and keeps parsing predictable.
 export function requireJson(req: Request, _res: Response, next: NextFunction) {
   if (!WRITE_METHODS.has(req.method)) return next();
+  // Photo uploads send the image itself; the uploads route checks the type and the bytes
+  if (req.method === 'POST' && req.path === '/api/uploads') return next();
   const hasBody = Number(req.headers['content-length'] ?? 0) > 0 || req.headers['transfer-encoding'] !== undefined;
   if (hasBody && !req.is('application/json')) {
     return next(new HttpError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Send the body as JSON (Content-Type: application/json)'));

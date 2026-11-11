@@ -26,4 +26,10 @@ export const rejectAgencySchema = z.object({
   reason: z.string().trim().min(5, 'Tell the agency why (5 characters minimum)').max(500),
 });
 
+export const branchSchema = z.object({
+  name: z.string().trim().min(2).max(60), // "Akwa"
+  city: z.string().trim().min(2).max(60), // "Douala"
+  address: z.string().trim().min(3).max(200),
+});
+
 export type RegisterAgencyInput = z.infer<typeof registerAgencySchema>;

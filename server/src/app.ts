@@ -14,6 +14,7 @@ import { parcelsRouter } from './modules/parcels/parcels.routes';
 import { hrRouter } from './modules/hr/hr.routes';
 import { financeRouter } from './modules/finance/finance.routes';
 import { paymentsRouter } from './modules/payments/payments.routes';
+import { uploadsRouter } from './modules/uploads/uploads.routes';
 
 export const app = express();
 
@@ -56,6 +57,7 @@ app.use('/api/parcels', parcelsRouter);
 app.use('/api/hr', hrRouter);
 app.use('/api/finance', financeRouter);
 app.use('/api/payments', paymentsRouter);
+app.use('/api/uploads', uploadsRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
