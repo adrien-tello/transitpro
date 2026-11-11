@@ -119,8 +119,15 @@ export function MobileOnlyPage({ me }: { me: Me }) {
         </span>
         <h1 className="text-2xl font-extrabold text-ink">Use the TransitPro app</h1>
         <p className="text-[15px] text-muted">
-          Hi {me.fullName.split(' ')[0]}, this dashboard is for agency offices. {me.role === 'CUSTOMER' ? 'Book trips and track parcels' : 'Your scans and deliveries'} are in the mobile app, with the same email and password.
+          Hi {me.fullName.split(' ')[0]}, this dashboard is for agency staff.{' '}
+          {me.role === 'CUSTOMER' ? 'You can book trips and track your parcels in the TransitPro mobile app.' : 'Your scans and deliveries are in the TransitPro staff app.'} Sign in there with the same account.
         </p>
+        {me.role === 'CUSTOMER' && (
+          <p className="text-[13px] text-muted">
+            Work for an agency? Ask your agency owner to add <span className="font-semibold text-body">{me.email}</span> to the staff, or{' '}
+            <a href="/register-agency" className="font-semibold">register your agency</a>.
+          </p>
+        )}
         <Button variant="secondary" icon="out" loading={logout.isPending} onClick={() => logout.mutate(undefined, { onSettled: () => navigate('/login', { replace: true }) })}>
           Log out
         </Button>
