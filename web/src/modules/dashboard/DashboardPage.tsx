@@ -36,23 +36,23 @@ export function DashboardPage({ me }: { me: Me }) {
         actions={
           office && (
             <>
-              <div role="group" aria-label="Period" className="flex rounded-full bg-white p-1">
+              <div role="group" aria-label="Period" className="flex rounded-full bg-surface p-1">
                 {(['today', 'week'] as const).map((p) => (
                   <button
                     key={p}
                     type="button"
                     aria-pressed={period === p}
                     onClick={() => setPeriod(p)}
-                    className={`h-9 rounded-full px-3.5 text-[13px] transition-colors duration-200 ${period === p ? 'bg-ink font-bold text-white' : 'font-semibold text-body hover:text-ink'}`}
+                    className={`h-9 rounded-full px-3.5 text-[13px] transition-colors duration-200 ${period === p ? 'bg-inverse font-bold text-white' : 'font-semibold text-body hover:text-ink'}`}
                   >
                     {p === 'today' ? 'Today' : '7 days'}
                   </button>
                 ))}
               </div>
-              <Link to="/trips" className="flex h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-bold text-ink transition-shadow hover:text-ink hover:shadow-[0_4px_14px_rgba(14,23,38,0.08)]">
+              <Link to="/trips" className="flex h-11 items-center gap-2 rounded-full bg-surface px-4 text-sm font-bold text-ink transition-shadow hover:text-ink hover:shadow-[0_4px_14px_rgba(14,23,38,0.08)]">
                 <Icon name="plus" size={18} /> New trip
               </Link>
-              <Link to="/parcels/new" className="flex h-11 items-center gap-2 rounded-full bg-primary px-[18px] text-sm font-bold text-white transition-colors hover:bg-primary-dark hover:text-white">
+              <Link to="/parcels/new" className="flex h-11 items-center gap-2 rounded-full bg-primary px-[18px] text-sm font-bold text-white transition-colors hover:bg-primary-hover hover:text-white">
                 <Icon name="plus" size={18} /> Register parcel
               </Link>
             </>
@@ -167,7 +167,7 @@ function Kpis({ stats, period }: { stats?: ParcelStats; period: Period }) {
   );
 }
 
-const PILL = { green: 'bg-[#ecfccb] text-[#3f6212]', amber: 'bg-warning-tint text-warning', red: 'bg-danger-tint text-danger', grey: 'bg-chip text-body' };
+const PILL = { green: 'bg-lime-tint text-lime', amber: 'bg-warning-tint text-warning', red: 'bg-danger-tint text-danger', grey: 'bg-chip text-body' };
 
 export function Kpi({ to, icon, tint, label, value, unit, pill, bars, barsLabel }: {
   to: string;
@@ -181,7 +181,7 @@ export function Kpi({ to, icon, tint, label, value, unit, pill, bars, barsLabel 
   barsLabel?: string;
 }) {
   return (
-    <Link to={to} className="tp-lift flex flex-col gap-3.5 rounded-[22px] bg-white px-5 py-[18px] text-ink hover:text-ink">
+    <Link to={to} className="tp-lift flex flex-col gap-3.5 rounded-[22px] bg-surface px-5 py-[18px] text-ink hover:text-ink">
       <div className="flex items-center gap-2.5">
         <span className={`flex h-[34px] w-[34px] items-center justify-center rounded-full ${tint}`}>
           <Icon name={icon} size={18} strokeWidth={1.9} />
@@ -207,22 +207,22 @@ export function Kpi({ to, icon, tint, label, value, unit, pill, bars, barsLabel 
 function LiveMap() {
   return (
     <Panel label="Live map" title="Live map" className="h-full" actions={<span className="rounded-full bg-chip px-2.5 py-1 text-xs font-bold text-body">Coming with the staff app</span>}>
-      <div className="relative h-[330px] overflow-hidden rounded-2xl bg-[#eef1f6]">
+      <div className="relative h-[330px] overflow-hidden rounded-2xl bg-map">
         <svg width="100%" height="100%" viewBox="0 0 600 330" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Map of the routes between Douala, Yaoundé, Bafoussam, Bamenda and Kribi">
-          <path d="M0 260 C80 240 120 280 200 250 S340 210 420 240 600 220 600 220" stroke="#DCE2EC" strokeWidth="18" fill="none" />
-          <path d="M60 0 C90 80 40 140 90 200 S120 300 100 330" stroke="#DCE2EC" strokeWidth="10" fill="none" />
-          <path d="M300 0 C320 60 280 110 330 160" stroke="#DCE2EC" strokeWidth="8" fill="none" />
+          <path d="M0 260 C80 240 120 280 200 250 S340 210 420 240 600 220 600 220" style={{ stroke: 'var(--color-map-road)' }} strokeWidth="18" fill="none" />
+          <path d="M60 0 C90 80 40 140 90 200 S120 300 100 330" style={{ stroke: 'var(--color-map-road)' }} strokeWidth="10" fill="none" />
+          <path d="M300 0 C320 60 280 110 330 160" style={{ stroke: 'var(--color-map-road)' }} strokeWidth="8" fill="none" />
           {['M150 230 C230 210 300 190 450 170', 'M150 230 C190 180 220 120 260 80', 'M260 80 C230 60 200 50 170 40', 'M150 230 C170 260 180 285 200 300'].map((d) => (
-            <path key={d} d={d} stroke="#C3CCDA" strokeWidth="4" fill="none" strokeDasharray="2 8" strokeLinecap="round" />
+            <path key={d} d={d} style={{ stroke: 'var(--color-map-route)' }} strokeWidth="4" fill="none" strokeDasharray="2 8" strokeLinecap="round" />
           ))}
           {[
-            [150, 230, 9, '#0E1726'],
-            [450, 170, 7, '#1E4FD8'],
-            [260, 80, 7, '#0E1726'],
-            [170, 40, 6, '#5B6576'],
-            [200, 300, 6, '#5B6576'],
+            [150, 230, 9, 'var(--color-ink)'],
+            [450, 170, 7, 'var(--color-primary)'],
+            [260, 80, 7, 'var(--color-ink)'],
+            [170, 40, 6, 'var(--color-muted)'],
+            [200, 300, 6, 'var(--color-muted)'],
           ].map(([cx, cy, r, c]) => (
-            <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={r} fill="#FFFFFF" stroke={c as string} strokeWidth="4" />
+            <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={r} style={{ fill: 'var(--color-surface)', stroke: c as string }} strokeWidth="4" />
           ))}
           {[
             [118, 258, 'Douala'],
@@ -231,12 +231,12 @@ function LiveMap() {
             [128, 30, 'Bamenda'],
             [212, 318, 'Kribi'],
           ].map(([x, y, t]) => (
-            <text key={t} x={x} y={y} fontSize="13" fontWeight="700" fill="#0E1726" fontFamily="Plus Jakarta Sans, sans-serif">
+            <text key={t} x={x} y={y} fontSize="13" fontWeight="700" style={{ fill: 'var(--color-ink)' }} fontFamily="Plus Jakarta Sans, sans-serif">
               {t}
             </text>
           ))}
         </svg>
-        <div className="absolute bottom-3.5 left-3.5 right-3.5 flex items-center gap-2.5 rounded-[14px] bg-white px-3 py-2.5 shadow-[0_6px_18px_rgba(14,23,38,0.12)] sm:right-auto">
+        <div className="absolute bottom-3.5 left-3.5 right-3.5 flex items-center gap-2.5 rounded-[14px] bg-surface px-3 py-2.5 shadow-[0_6px_18px_rgba(14,23,38,0.12)] sm:right-auto">
           <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-accent" />
           <span className="text-[13px] text-body">Buses and couriers appear here live once drivers use the staff app.</span>
         </div>
@@ -280,7 +280,7 @@ function Alerts({ stats }: { stats?: ParcelStats }) {
           {stats.alerts.map((a) => {
             const k = ALERT[a.kind]!;
             return (
-              <Link key={a.trackingCode + a.kind} to={`/parcels/${a.trackingCode}`} className="flex gap-3 rounded-2xl bg-[#f7f8fc] p-3 text-ink transition-colors hover:bg-soft hover:text-ink">
+              <Link key={a.trackingCode + a.kind} to={`/parcels/${a.trackingCode}`} className="flex gap-3 rounded-2xl bg-soft p-3 text-ink transition-colors hover:bg-soft hover:text-ink">
                 <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${k.cls}`}>
                   <Icon name={k.icon} size={18} strokeWidth={2} />
                 </span>
@@ -321,13 +321,13 @@ function LatestParcels() {
                 key={p.id}
                 type="button"
                 onClick={() => navigate(`/parcels/${p.trackingCode}`)}
-                className="-mx-2 grid grid-cols-[110px_130px_110px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-xl border-t border-[#eef1f5] px-2 py-3 text-left transition-colors first:border-t-0 hover:bg-soft"
+                className="-mx-2 grid grid-cols-[110px_130px_110px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-xl border-t border-line px-2 py-3 text-left transition-colors first:border-t-0 hover:bg-soft"
               >
                 <span className="truncate text-sm font-bold text-ink">{p.from.city}</span>
                 <span className="flex items-center gap-1.5">
-                  <span className="flex-1 border-t-[1.5px] border-dashed border-[#cbd3de]" />
+                  <span className="flex-1 border-t-[1.5px] border-dashed border-field" />
                   <span className="rounded-full bg-primary-tint px-2 py-0.5 text-[11px] font-bold text-primary-dark">{p.weightKg} kg</span>
-                  <span className="flex-1 border-t-[1.5px] border-dashed border-[#cbd3de]" />
+                  <span className="flex-1 border-t-[1.5px] border-dashed border-field" />
                 </span>
                 <span className="truncate text-sm font-bold text-ink">{p.to.city}</span>
                 <span className="truncate text-[13px] text-muted">
@@ -402,7 +402,7 @@ function Revenue({ stats }: { stats?: ParcelStats }) {
             Parcels
           </span>
           <span className="flex items-center gap-1.5 text-muted">
-            <span className="h-2.5 w-2.5 rounded-[3px] bg-[#9db4f2]" />
+            <span className="h-2.5 w-2.5 rounded-[3px] bg-series" />
             Tickets (with Booking)
           </span>
         </div>
@@ -433,7 +433,7 @@ function TripOnRoad() {
       title="Trip on the road"
       className="h-full"
       actions={
-        <Link to="/trips" aria-label="Open trips" className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-tint text-primary-dark transition-colors hover:bg-[#d9e3fc]">
+        <Link to="/trips" aria-label="Open trips" className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-tint text-primary-dark transition-colors hover:brightness-95">
           <Icon name="arrowUpRight" size={14} strokeWidth={2.4} />
         </Link>
       }
@@ -442,7 +442,7 @@ function TripOnRoad() {
         {stops.map((k, i) => (
           <li key={k} className="flex gap-3">
             <div className="flex w-3.5 flex-col items-center">
-              <span className="mt-[3px] h-3 w-3 shrink-0 rounded-full border-[3px] border-[#cbd3de] bg-white" />
+              <span className="mt-[3px] h-3 w-3 shrink-0 rounded-full border-[3px] border-field bg-surface" />
               {i < stops.length - 1 && <span className="min-h-[26px] w-0.5 flex-1 bg-line" />}
             </div>
             <div className="pb-2.5">
@@ -475,7 +475,7 @@ function Departures() {
   return (
     <Panel label="Today's departures" title="Today's departures" className="h-full" actions={<Link to="/trips" className="text-[13px] font-bold">All trips</Link>}>
       <div className="overflow-x-auto">
-        <div className="grid min-w-[560px] grid-cols-[110px_150px_110px_120px_110px_minmax(0,1fr)] gap-2.5 border-b border-[#eef1f5] pb-2 text-xs font-semibold text-muted">
+        <div className="grid min-w-[560px] grid-cols-[110px_150px_110px_120px_110px_minmax(0,1fr)] gap-2.5 border-b border-line pb-2 text-xs font-semibold text-muted">
           <span>From</span>
           <span className="text-center">Duration</span>
           <span>To</span>
@@ -512,13 +512,13 @@ function BusAttention() {
       className="h-full"
       actions={<span className="rounded-full bg-success-tint px-2.5 py-[3px] text-xs font-bold text-success">All clear</span>}
     >
-      <div className="flex h-[120px] items-center justify-center rounded-2xl bg-[#eef1f6] text-muted">
+      <div className="flex h-[120px] items-center justify-center rounded-2xl bg-map text-muted">
         <Icon name="bus" size={34} strokeWidth={1.4} />
       </div>
       <div className="grid grid-cols-2 gap-2.5">
         {specs.map(([k, icon]) => (
           <div key={k} className="flex items-center gap-2.5">
-            <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[10px] bg-[#f1f4fa] text-body">
+            <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[10px] bg-chip text-body">
               <Icon name={icon} size={16} strokeWidth={2} />
             </span>
             <span>

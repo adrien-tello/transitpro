@@ -11,7 +11,7 @@ interface Wrap {
 }
 
 const control = (error?: string) =>
-  `h-11 w-full rounded-[10px] border bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-muted/70 focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:bg-soft ${
+  `h-11 w-full rounded-[10px] border bg-surface px-3 text-sm text-ink outline-none transition-colors placeholder:text-muted/70 focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:bg-soft ${
     error ? 'border-danger' : 'border-field'
   }`;
 
@@ -92,7 +92,7 @@ export function TextArea({ label, hint, error, className, ...area }: Wrap & Text
       <textarea
         id={id}
         aria-invalid={!!error}
-        className={`min-h-24 w-full rounded-[10px] border bg-white p-3 text-sm text-ink outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 ${
+        className={`min-h-24 w-full rounded-[10px] border bg-surface p-3 text-sm text-ink outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 ${
           error ? 'border-danger' : 'border-field'
         }`}
         {...area}

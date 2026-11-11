@@ -4,9 +4,9 @@ import { Icon, type IconName } from './Icon';
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-primary text-white hover:bg-primary-dark disabled:bg-primary/50',
-  secondary: 'bg-white text-ink border border-line hover:border-field hover:bg-soft disabled:text-muted',
-  danger: 'bg-danger text-white hover:bg-[#931c13] disabled:bg-danger/50',
+  primary: 'bg-primary text-white hover:bg-primary-hover disabled:bg-primary/50',
+  secondary: 'bg-surface text-ink border border-line hover:border-field hover:bg-soft disabled:text-muted',
+  danger: 'bg-danger-solid text-white hover:bg-danger-hover disabled:bg-danger-solid/50',
   ghost: 'bg-transparent text-body hover:bg-soft',
 };
 

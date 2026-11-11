@@ -242,12 +242,12 @@ export function RegisterParcelPage({ me }: { me: Me }) {
                           <Spinner />
                         </span>
                       )}
-                      {p.error && <span className="absolute inset-x-0 bottom-0 bg-danger px-2 py-1 text-[11px] font-bold text-white">{p.error}</span>}
+                      {p.error && <span className="absolute inset-x-0 bottom-0 bg-danger-solid px-2 py-1 text-[11px] font-bold text-white">{p.error}</span>}
                       <button
                         type="button"
                         onClick={() => setPhotos((list) => list.filter((x) => x.id !== p.id))}
                         aria-label="Remove photo"
-                        className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-ink/70 text-white"
+                        className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white"
                       >
                         <Icon name="x" size={14} />
                       </button>
@@ -320,7 +320,7 @@ export function RegisterParcelPage({ me }: { me: Me }) {
             </Section>
           </div>
 
-          <aside aria-label="Summary" className="sticky top-5 flex min-w-0 flex-[2_1_320px] flex-col gap-3.5 rounded-2xl border border-line bg-white p-5">
+          <aside aria-label="Summary" className="sticky top-5 flex min-w-0 flex-[2_1_320px] flex-col gap-3.5 rounded-2xl border border-line bg-surface p-5">
             <h2 className="text-[17px] font-bold text-ink">Summary</h2>
             <Row k={`Transport${weight ? ` (${weight} kg${origin && destination ? `, ${origin.city} → ${destination.city}` : ''})` : ''}`} v={price.transport ? fcfa(price.transport) : '—'} />
             {f.homeDelivery && <Row k="Home delivery" v={fcfa(price.home)} />}
@@ -351,7 +351,7 @@ export function RegisterParcelPage({ me }: { me: Me }) {
 
 function Section({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-line bg-white p-5">
+    <section className="rounded-2xl border border-line bg-surface p-5">
       <h2 className="mb-4 text-[17px] font-bold text-ink">
         <span className="text-primary">{n}</span> · {title}
       </h2>
@@ -428,11 +428,11 @@ function Registered({ result, onAnother }: { result: ParcelRegistered; onAnother
             </div>
           </Card>
 
-          <section className="rounded-2xl bg-ink p-5 text-white">
+          <section className="rounded-2xl bg-inverse p-5 text-white">
             <div className="flex flex-wrap items-center gap-5">
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-bold">Delivery code, for the sender&apos;s receipt only</div>
-                <p className="mt-1 text-[13px] text-[#DCE3EE]">
+                <p className="mt-1 text-[13px] text-white/80">
                   Shown only this once. Write it on the receipt (never on the parcel). The sender gives it to the receiver, who gives it to the courier at delivery.
                   {p.receiver.email && ` Also emailed to ${p.receiver.email}.`}
                 </p>
@@ -442,7 +442,7 @@ function Registered({ result, onAnother }: { result: ParcelRegistered; onAnother
           </section>
         </div>
 
-        <aside className="flex min-w-0 flex-[2_1_320px] flex-col gap-3 rounded-2xl border border-line bg-white p-5">
+        <aside className="flex min-w-0 flex-[2_1_320px] flex-col gap-3 rounded-2xl border border-line bg-surface p-5">
           <h2 className="text-[17px] font-bold text-ink">Payment</h2>
           {p.payments.map((x) => (
             <PaymentLine key={x.id} p={x} />

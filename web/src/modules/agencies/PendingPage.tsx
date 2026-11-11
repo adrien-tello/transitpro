@@ -25,7 +25,7 @@ export function PendingPage({ me }: { me: Me }) {
 
   return (
     <div className="flex min-h-screen flex-col gap-5 bg-canvas p-5">
-      <header className="flex flex-wrap items-center gap-3 rounded-[22px] bg-white px-[22px] py-3.5">
+      <header className="flex flex-wrap items-center gap-3 rounded-[22px] bg-surface px-[22px] py-3.5">
         <span className="flex-1">
           <Logo />
         </span>
@@ -68,7 +68,7 @@ export function PendingPage({ me }: { me: Me }) {
         )}
 
         <div className="flex flex-wrap items-start gap-4">
-          <section aria-label="Documents" className="flex min-w-0 flex-[3_1_560px] flex-col gap-3.5 rounded-[22px] bg-white p-6">
+          <section aria-label="Documents" className="flex min-w-0 flex-[3_1_560px] flex-col gap-3.5 rounded-[22px] bg-surface p-6">
             <div>
               <h2 className="text-[19px] font-extrabold text-ink">Legal documents</h2>
               <p className="mt-1 text-sm text-muted">The TransitPro team needs these 5 documents to approve your agency.</p>
@@ -88,7 +88,7 @@ export function PendingPage({ me }: { me: Me }) {
             <p className="text-[13px] text-muted">Document upload is the next step we are building. Until then, the TransitPro team contacts you by email.</p>
           </section>
 
-          <section aria-label="What happens next" className="flex min-w-0 flex-[2_1_340px] flex-col gap-3.5 rounded-[22px] bg-ink p-[22px] text-white">
+          <section aria-label="What happens next" className="flex min-w-0 flex-[2_1_340px] flex-col gap-3.5 rounded-[22px] bg-inverse p-[22px] text-white">
             <h2 className="text-[17px] font-bold">What happens next</h2>
             {[
               'You upload your documents.',
@@ -97,7 +97,7 @@ export function PendingPage({ me }: { me: Me }) {
             ].map((t, i) => (
               <div key={t} className="flex gap-3">
                 <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-white/15 text-[13px] font-extrabold">{i + 1}</span>
-                <span className="text-sm leading-snug text-[#DCE3EE]">{t}</span>
+                <span className="text-sm leading-snug text-white/80">{t}</span>
               </div>
             ))}
           </section>
@@ -113,7 +113,7 @@ export function MobileOnlyPage({ me }: { me: Me }) {
   const logout = useLogout();
   return (
     <div className="flex min-h-screen items-center justify-center bg-canvas p-5">
-      <div className="flex w-full max-w-md flex-col items-center gap-4 rounded-[28px] bg-white p-10 text-center">
+      <div className="flex w-full max-w-md flex-col items-center gap-4 rounded-[28px] bg-surface p-10 text-center">
         <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-tint text-primary-dark">
           <Icon name="phone" size={26} />
         </span>

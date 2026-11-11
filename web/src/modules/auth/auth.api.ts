@@ -29,6 +29,15 @@ export function useLogin() {
   });
 }
 
+// Google: the button gives an ID token, the server checks it with Google and sets the session cookie
+export function useGoogleLogin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (idToken: string) => api.post<SessionResponse>('/auth/google', { idToken }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.me }),
+  });
+}
+
 export function useLogout() {
   const qc = useQueryClient();
   return useMutation({

@@ -3,7 +3,8 @@ import { Link } from 'react-router';
 import { Button } from '../../components/ui/Button';
 import { FormError, PasswordField, TextField } from '../../components/ui/Field';
 import { ApiError, errorMessage, fieldError } from '../../lib/api';
-import { AuthShell, GoogleButton } from './AuthShell';
+import { AuthShell } from './AuthShell';
+import { GoogleButton } from './GoogleButton';
 import { useLogin } from './auth.api';
 
 export function LoginPage() {

@@ -58,7 +58,7 @@ export function AgencySignupPage() {
 
   return (
     <div className="flex min-h-screen flex-col gap-5 bg-canvas p-5">
-      <header className="flex flex-wrap items-center gap-3 rounded-[22px] bg-white px-[22px] py-3.5">
+      <header className="flex flex-wrap items-center gap-3 rounded-[22px] bg-surface px-[22px] py-3.5">
         <span className="flex-1">
           <Logo />
         </span>
@@ -76,7 +76,7 @@ export function AgencySignupPage() {
           <p className="mt-1.5 text-[15px] text-muted">The TransitPro team checks every agency before it can sell tickets or carry parcels.</p>
         </div>
 
-        <ol aria-label="Steps" className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-2.5 rounded-[22px] bg-white p-3.5">
+        <ol aria-label="Steps" className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-2.5 rounded-[22px] bg-surface p-3.5">
           {STEPS.map((s, i) => {
             const done = i < step;
             const current = i === step;
@@ -99,7 +99,7 @@ export function AgencySignupPage() {
         </ol>
 
         <div className="flex flex-wrap items-start gap-4">
-          <section className="flex min-w-0 flex-[3_1_560px] flex-col gap-4 rounded-[22px] bg-white p-6">
+          <section className="flex min-w-0 flex-[3_1_560px] flex-col gap-4 rounded-[22px] bg-surface p-6">
             {step === 0 ? (
               <form onSubmit={next} noValidate className="flex flex-col gap-4">
                 <div>
@@ -146,7 +146,7 @@ export function AgencySignupPage() {
           </section>
 
           <div className="flex min-w-0 flex-[2_1_340px] flex-col gap-4">
-            <section aria-label="Your agency" className="flex flex-col gap-3 rounded-[22px] bg-white p-[22px]">
+            <section aria-label="Your agency" className="flex flex-col gap-3 rounded-[22px] bg-surface p-[22px]">
               <div className="flex items-center gap-3">
                 <span className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-warning-tint font-extrabold text-warning">
                   {agency.name ? initials(agency.name) : 'TP'}
@@ -170,12 +170,12 @@ export function AgencySignupPage() {
                 ))}
               </dl>
             </section>
-            <section aria-label="What happens next" className="flex flex-col gap-3.5 rounded-[22px] bg-ink p-[22px] text-white">
+            <section aria-label="What happens next" className="flex flex-col gap-3.5 rounded-[22px] bg-inverse p-[22px] text-white">
               <h2 className="text-[17px] font-bold">What happens next</h2>
               {NEXT.map((t, i) => (
                 <div key={t} className="flex gap-3">
                   <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-white/15 text-[13px] font-extrabold">{i + 1}</span>
-                  <span className="text-sm leading-snug text-[#DCE3EE]">{t}</span>
+                  <span className="text-sm leading-snug text-white/80">{t}</span>
                 </div>
               ))}
             </section>

@@ -1,53 +1,118 @@
 @import "tailwindcss";
 
-/* Design tokens from the TransitPro design canvas (Web dashboard page). Use these names, not raw hex. */
+/* Design tokens from the TransitPro design canvas (Web dashboard page). Use these names, never raw hex:
+   every token has a dark value below, so a raw hex would stay light in dark mode. */
 @theme {
   --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  --color-ink: #0e1726;          /* titles, strong text, navy */
-  --color-body: #3e4757;         /* labels, normal text */
-  --color-muted: #5b6576;        /* secondary text */
-  --color-primary: #1e4fd8;      /* main blue: buttons, active nav */
-  --color-primary-dark: #163ba6; /* hover, text on blue tint */
+  --color-ink: #0e1726;           /* titles, strong text, navy */
+  --color-body: #3e4757;          /* labels, normal text */
+  --color-muted: #5b6576;         /* secondary text */
+  --color-primary: #1e4fd8;       /* main blue: buttons, active nav */
+  --color-primary-hover: #163ba6; /* hover of blue buttons */
+  --color-primary-dark: #163ba6;  /* text on the blue tint */
   --color-primary-tint: #e8eefd;
-  --color-primary-soft: #f5f8ff; /* dashed upload zones */
-  --color-accent: #f59e0b;       /* orange dot of the logo */
-  --color-canvas: #e9ecf7;       /* app background */
-  --color-line: #e4e8ef;         /* card borders, dividers */
-  --color-field: #d5dbe4;        /* input borders */
-  --color-soft: #f5f7fb;         /* small grey tiles */
-  --color-chip: #eef1f5;         /* neutral badges */
+  --color-primary-soft: #f5f8ff;  /* dashed upload zones */
+  --color-link: #1e4fd8;
+  --color-accent: #f59e0b;        /* orange dot of the logo */
+  --color-canvas: #e9ecf7;        /* app background */
+  --color-surface: #ffffff;       /* cards, sidebar, fields */
+  --color-inverse: #0e1726;       /* dark panels with white text (delivery code, "what happens next") */
+  --color-line: #e4e8ef;          /* card borders, dividers */
+  --color-field: #d5dbe4;         /* input borders */
+  --color-soft: #f5f7fb;          /* small grey tiles */
+  --color-chip: #eef1f5;          /* neutral badges */
   --color-success: #146c43;
   --color-success-tint: #e3f5ec;
+  --color-success-solid: #146c43; /* green with white text on it */
   --color-warning: #8a5200;
   --color-warning-tint: #fff3dc;
   --color-danger: #b42318;
   --color-danger-tint: #fdecea;
+  --color-danger-solid: #b42318;  /* red with white text on it */
+  --color-danger-hover: #931c13;
   --color-violet: #6b21a8;
   --color-violet-tint: #f3e8ff;
+  --color-lime: #3f6212;
+  --color-lime-tint: #ecfccb;
+  --color-series: #9db4f2;        /* second chart series */
+  --color-bar-soft: #c9d6f7;      /* small KPI bars (past days) */
+  --color-map: #eef1f6;           /* map background */
+  --color-map-road: #dce2ec;
+  --color-map-route: #c3cce0;
+}
+
+/* Dark mode: same names, darker grounds, lighter text. Switched by data-theme on <html> (lib/theme.ts). */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-ink: #e8edf6;
+  --color-body: #c2cad8;
+  --color-muted: #8e99ad;
+  --color-primary: #3b6cf0;
+  --color-primary-hover: #2f5be0;
+  --color-primary-dark: #a9c1ff;
+  --color-primary-tint: #1b2a52;
+  --color-primary-soft: #16213d;
+  --color-link: #8aabff;
+  --color-canvas: #0a101d;
+  --color-surface: #121a2b;
+  --color-inverse: #1f2b44;
+  --color-line: #243049;
+  --color-field: #34425e;
+  --color-soft: #182238;
+  --color-chip: #222d44;
+  --color-success: #4ade80;
+  --color-success-tint: #12301f;
+  --color-success-solid: #15803d;
+  --color-warning: #fbbf24;
+  --color-warning-tint: #33260b;
+  --color-danger: #f87171;
+  --color-danger-tint: #3a1414;
+  --color-danger-solid: #d92d20;
+  --color-danger-hover: #b42318;
+  --color-violet: #c4a1ff;
+  --color-violet-tint: #2a1a45;
+  --color-lime: #bef264;
+  --color-lime-tint: #24320f;
+  --color-series: #3d5ba8;
+  --color-bar-soft: #2c3d6b;
+  --color-map: #0f1729;
+  --color-map-road: #1c2740;
+  --color-map-route: #3a4866;
 }
 
 @layer base {
-  html { -webkit-font-smoothing: antialiased; }
-  body { margin: 0; background: var(--color-canvas); color: var(--color-ink); font-family: var(--font-sans); }
-  a { color: var(--color-primary); text-decoration: none; }
+  html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+  body { margin: 0; background: var(--color-canvas); color: var(--color-ink); font-family: var(--font-sans); transition: background-color 200ms ease; }
+  a { color: var(--color-link); text-decoration: none; }
   a:hover { color: var(--color-primary-dark); }
   button { cursor: pointer; }
   button:disabled { cursor: not-allowed; }
   :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 }
 
-/* Skeleton shimmer (loading placeholders) */
+/* Skeleton shimmer (loading placeholders). Ink at low opacity: visible on white cards AND on the grey
+   background, and the same rule works in dark mode (white at low opacity). A light band sweeps across. */
+:root {
+  --sk-base: rgba(14, 23, 38, 0.1);
+  --sk-shine: rgba(14, 23, 38, 0.035);
+}
+:root[data-theme="dark"] {
+  --sk-base: rgba(255, 255, 255, 0.08);
+  --sk-shine: rgba(255, 255, 255, 0.17);
+}
 @keyframes tp-shimmer {
-  0% { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
 }
 .tp-skeleton {
-  background: linear-gradient(90deg, #eef1f5 0%, #e3e8ef 40%, #eef1f5 80%);
-  background-size: 800px 100%;
-  animation: tp-shimmer 1.3s linear infinite;
+  background-color: var(--sk-base);
+  background-image: linear-gradient(90deg, var(--sk-base) 20%, var(--sk-shine) 50%, var(--sk-base) 80%);
+  background-size: 200% 100%;
+  animation: tp-shimmer 1.2s ease-in-out infinite;
 }
+
 /* Motion: short and soft. Pages fade in, menus pop, content replaces skeletons without a jump. */
 @keyframes tp-page-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes tp-fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -59,18 +124,23 @@
 .tp-bar { transform-origin: bottom; animation: tp-grow 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 .tp-lift { transition: transform 180ms ease, box-shadow 180ms ease; }
 .tp-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(14, 23, 38, 0.08); }
+:root[data-theme="dark"] .tp-lift:hover { box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45); }
+/* Menus and popovers: a deeper shadow in dark mode, or they melt into the page */
+:root[data-theme="dark"] .dark-pop { box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55); }
 
 /* The sidebar scrolls on its own when the window is short, with a thin scrollbar */
-.tp-scroll { scrollbar-width: thin; scrollbar-color: #d5dbe4 transparent; }
+.tp-scroll { scrollbar-width: thin; scrollbar-color: var(--color-field) transparent; }
 
 @media (prefers-reduced-motion: reduce) {
-  .tp-skeleton, .tp-page, .tp-fade, .tp-pop, .tp-bar { animation: none; }
+  .tp-page, .tp-fade, .tp-pop, .tp-bar { animation: none; }
+  .tp-skeleton { animation-duration: 2.4s; }
   .tp-lift, .tp-lift:hover { transition: none; transform: none; }
   html { scroll-behavior: auto; }
 }
 
-/* Printing a label / receipt: only the .tp-print block is printed */
+/* Printing a label / receipt: only the .tp-print block is printed, always light */
 @media print {
+  :root { color-scheme: light; }
   body { background: #fff; }
   body * { visibility: hidden; }
   .tp-print, .tp-print * { visibility: visible; }

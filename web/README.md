@@ -23,7 +23,10 @@ Every login: [`docs/TEST-ACCOUNTS.md`](../docs/TEST-ACCOUNTS.md).
 - **Agency dashboard** (`/`): every block of the design. Parcels, alerts and revenue are live; tiles of modules not connected yet
   (tickets, buses, trips) show "—" and their first-day state.
 - **TransitPro team** (`/admin`): overview (agencies, payments, our commission, parcels), agencies to verify.
-- Parcels (list, register, detail), branches, settings (profile, change password), sign-in, forgot password, agency sign-up.
+- Parcels (list, register, detail), branches, settings (profile, password, light / dark / system theme),
+  sign-in (email or Google), forgot password, agency sign-up.
+- **Dark mode**: every color is a token in `styles/index.css` with a dark value. Never use a raw hex or `bg-white`
+  (use `bg-surface`), or that spot stays light in dark mode.
 - Other menu entries: "coming soon" pages with the name of who builds them.
 
 Drivers, couriers and customers see "use the mobile app".
@@ -50,8 +53,8 @@ src/modules/<module>/   <module>.api.ts (queries + mutations) and the pages
    Buttons that send a request use `loading={mutation.isPending}` (no double submit). Field errors come from
    `fieldError(error, 'field')`, the rest from `errorMessage(error)`.
 3. **Route** in `app/router.tsx`, **menu entry** in `app/nav.ts` (with the roles that see it).
-4. **Style:** the components in `components/ui` and the tokens (`text-ink`, `bg-primary`, `border-line`...), as on the
-   design canvas. No raw hex colors, no new font.
+4. **Style:** the components in `components/ui` and the tokens (`text-ink`, `bg-surface`, `bg-primary`, `border-line`...), as on the
+   design canvas. No raw hex colors, no `bg-white`, no new font (they break dark mode).
 5. Never store a token or personal data in `localStorage`. The session is the httpOnly cookie.
 
 Design: page "Web dashboard" on https://claude.ai/artifact/1NiJFaNhTtXLuCb5VuzRaw

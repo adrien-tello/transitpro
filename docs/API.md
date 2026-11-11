@@ -73,7 +73,7 @@ Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 
 **Google sign-in for the apps**
 - Web client ID (Google Cloud project `transitpro-514302`, client "TransitPro Web"): `556994393607-5l8a2rpeb7qv82ql30mu3pbrn56404c6.apps.googleusercontent.com`. It is public (it ships in the apps), not a secret.
-- Web: Google Identity Services button with this client ID, send `credential` as `idToken`. Allowed origins: `http://localhost:5173`, `http://localhost:8081`.
+- Web: done in `web/src/modules/auth/GoogleButton.tsx` (Google Identity Services button, sends `credential` as `idToken`). Allowed origins: `http://localhost:5173`, `http://localhost:8081`. A new domain must be added to the client's origins first.
 - Mobile: use the **same web client ID** as `webClientId` in the Google sign-in library; the Android/iOS clients are created when the app has its package name (needs a development build, not Expo Go).
 - The Google app is in **Testing**: only test users can sign in (Google Cloud > Google Auth Platform > Audience > Test users). Publishing needs a home page and privacy policy on our own domain.
 

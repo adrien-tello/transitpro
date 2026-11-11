@@ -6,6 +6,7 @@ import { AppRoutes } from './app/router';
 import { ToastProvider } from './components/ui/Toast';
 import { queryClient } from './lib/queryClient';
 import './styles/index.css';
+import './lib/theme'; // keeps the theme in sync (system changes, printing)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

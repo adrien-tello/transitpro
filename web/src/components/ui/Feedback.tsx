@@ -77,7 +77,7 @@ export function Badge({ tone = 'grey', children }: { tone?: Tone; children: Reac
 // Dashboard tile of the design: white, 22 px corners, no border (the Card above is for forms and details)
 export function Panel({ title, actions, children, className = '', label }: { title?: ReactNode; actions?: ReactNode; children: ReactNode; className?: string; label?: string }) {
   return (
-    <section aria-label={label} className={`flex min-w-0 flex-col gap-3 rounded-[22px] bg-white px-5 py-[18px] ${className}`}>
+    <section aria-label={label} className={`flex min-w-0 flex-col gap-3 rounded-[22px] bg-surface px-5 py-[18px] ${className}`}>
       {(title || actions) && (
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           {title && <h2 className="text-[17px] font-bold text-ink">{title}</h2>}
@@ -98,7 +98,7 @@ export function Card({ title, subtitle, actions, children, className = '', padde
   padded?: boolean;
 }) {
   return (
-    <section className={`rounded-2xl border border-line bg-white ${padded ? 'p-5' : ''} ${className}`}>
+    <section className={`rounded-2xl border border-line bg-surface ${padded ? 'p-5' : ''} ${className}`}>
       {(title || actions) && (
         <div className={`mb-4 flex flex-wrap items-start justify-between gap-3 ${padded ? '' : 'px-5 pt-5'}`}>
           <div>

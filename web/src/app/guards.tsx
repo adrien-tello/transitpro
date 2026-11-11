@@ -23,7 +23,7 @@ export function homeFor(me: Me): string {
 export function AppSkeleton() {
   return (
     <div role="status" aria-label="Loading" className="flex min-h-screen gap-5 bg-canvas p-5">
-      <div className="flex w-[232px] shrink-0 flex-col gap-4 rounded-3xl bg-white p-5 max-[900px]:hidden">
+      <div className="flex w-[232px] shrink-0 flex-col gap-4 rounded-3xl bg-surface p-5 max-[900px]:hidden">
         <Skeleton className="h-9 w-36" />
         <Skeleton className="h-16 w-full" />
         {Array.from({ length: 7 }).map((_, i) => (

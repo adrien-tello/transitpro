@@ -52,7 +52,7 @@ export function ParcelsPage() {
         title="Parcels"
         subtitle="Parcels leaving from or arriving at your branch. Click one to see its full history."
         actions={
-          <Link to="/parcels/new" className="flex h-11 items-center gap-2 rounded-full bg-primary px-[18px] text-sm font-bold text-white hover:bg-primary-dark hover:text-white">
+          <Link to="/parcels/new" className="flex h-11 items-center gap-2 rounded-full bg-primary px-[18px] text-sm font-bold text-white hover:bg-primary-hover hover:text-white">
             <Icon name="plus" size={18} /> Register parcel
           </Link>
         }
@@ -69,7 +69,7 @@ export function ParcelsPage() {
                   aria-selected={active}
                   type="button"
                   onClick={() => set({ status: t.status })}
-                  className={`h-9 rounded-full px-3.5 text-[13px] font-bold transition-colors ${active ? 'bg-ink text-white' : 'bg-soft text-body hover:bg-chip'}`}
+                  className={`h-9 rounded-full px-3.5 text-[13px] font-bold transition-colors ${active ? 'bg-inverse text-white' : 'bg-soft text-body hover:bg-chip'}`}
                 >
                   {t.label}
                 </button>

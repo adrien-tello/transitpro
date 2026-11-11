@@ -103,7 +103,7 @@ function Detail({ p, me }: { p: ParcelDetail; me: Me }) {
                 {p.delivery.photoUrl && (
                   <a href={p.delivery.photoUrl} target="_blank" rel="noreferrer" className="relative block h-[104px] w-[140px] overflow-hidden rounded-xl bg-chip">
                     <img src={p.delivery.photoUrl} alt="Proof of delivery" loading="lazy" className="h-full w-full object-cover" />
-                    <span className="absolute inset-x-0 bottom-0 bg-success px-2 py-0.5 text-[11px] font-bold text-white">Proof of delivery</span>
+                    <span className="absolute inset-x-0 bottom-0 bg-success-solid px-2 py-0.5 text-[11px] font-bold text-white">Proof of delivery</span>
                   </a>
                 )}
               </div>
@@ -259,7 +259,7 @@ function NextStep({ p, me }: { p: ParcelDetail; me: Me }) {
 function Panel({ icon, title, tone, children }: { icon: 'bus' | 'alert' | 'pin' | 'check'; title: string; tone: 'blue' | 'red' | 'amber' | 'green'; children: ReactNode }) {
   const t = { blue: 'bg-primary-tint text-primary-dark', red: 'bg-danger-tint text-danger', amber: 'bg-warning-tint text-warning', green: 'bg-success-tint text-success' }[tone];
   return (
-    <section className="flex gap-3.5 rounded-2xl border border-line bg-white p-5">
+    <section className="flex gap-3.5 rounded-2xl border border-line bg-surface p-5">
       <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${t}`}>
         <Icon name={icon} />
       </span>
@@ -273,7 +273,7 @@ function Panel({ icon, title, tone, children }: { icon: 'bus' | 'alert' | 'pin' 
 
 function ActionCard({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
-    <section className="rounded-2xl border-2 border-primary/30 bg-white p-5">
+    <section className="rounded-2xl border-2 border-primary/30 bg-surface p-5">
       <div className="mb-1 text-xs font-extrabold uppercase tracking-[0.6px] text-primary">Next step</div>
       <h2 className="text-[17px] font-bold text-ink">{title}</h2>
       <p className="mb-4 mt-0.5 text-sm text-muted">{subtitle}</p>
@@ -452,9 +452,9 @@ function ReleaseHold({ p }: { p: ParcelDetail }) {
   const held = [...p.events].reverse().find((e) => e.type === 'HELD');
   if (release.data)
     return (
-      <section className="rounded-2xl bg-ink p-5 text-white">
+      <section className="rounded-2xl bg-inverse p-5 text-white">
         <div className="text-sm font-bold">Released. New delivery code, for the sender only</div>
-        <p className="mt-1 text-[13px] text-[#DCE3EE]">The old code no longer works. Give this one to the sender (shown once).</p>
+        <p className="mt-1 text-[13px] text-white/80">The old code no longer works. Give this one to the sender (shown once).</p>
         <div className="mt-3 w-fit rounded-2xl bg-white/10 px-5 py-3 font-mono text-[36px] font-extrabold tracking-[10px]">{release.data.deliveryCode}</div>
       </section>
     );

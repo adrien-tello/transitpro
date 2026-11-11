@@ -10,6 +10,8 @@ import { useToast } from '../../components/ui/Toast';
 import { errorMessage, fieldError } from '../../lib/api';
 import { initials, phone } from '../../lib/format';
 import { useChangePassword } from './auth.api';
+import { Icon, type IconName } from '../../components/ui/Icon';
+import { useTheme, type ThemePref } from '../../lib/theme';
 
 // Settings for every web account: my profile, change my password, and (agency staff) the agency.
 // Agency settings (prices, documents, notifications) come later: listed at the bottom, not faked.
@@ -56,11 +58,46 @@ export function SettingsPage({ me }: { me: Me }) {
             </Card>
           )}
         </div>
-        <div className="flex min-w-0 flex-[1_1_340px] flex-col">
+        <div className="flex min-w-0 flex-[1_1_340px] flex-col gap-4">
+          <Appearance />
           <ChangePassword />
         </div>
       </div>
     </>
+  );
+}
+
+// Light / Dark / System, saved on this device (each computer at the counter keeps its own choice)
+function Appearance() {
+  const { pref, setTheme } = useTheme();
+  const options: { value: ThemePref; label: string; icon: IconName }[] = [
+    { value: 'light', label: 'Light', icon: 'sun' },
+    { value: 'dark', label: 'Dark', icon: 'moon' },
+    { value: 'system', label: 'System', icon: 'monitor' },
+  ];
+  return (
+    <Card title="Appearance" subtitle="System follows your computer's setting. Saved on this device.">
+      <div role="radiogroup" aria-label="Theme" className="grid grid-cols-3 gap-2.5">
+        {options.map((o) => {
+          const on = pref === o.value;
+          return (
+            <button
+              key={o.value}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              onClick={() => setTheme(o.value)}
+              className={`flex flex-col items-center gap-2 rounded-xl border px-3 py-3.5 text-sm font-bold transition-colors duration-200 ${
+                on ? 'border-primary bg-primary-tint text-primary-dark' : 'border-line bg-surface text-body hover:border-field hover:bg-soft'
+              }`}
+            >
+              <Icon name={o.icon} size={22} />
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    </Card>
   );
 }
 

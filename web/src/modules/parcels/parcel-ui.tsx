@@ -74,7 +74,7 @@ export function WaitingForPhone({ p }: { p: PaymentView }) {
   }, []);
   return (
     <div role="status" className="flex items-center gap-4 rounded-2xl border border-warning/25 bg-warning-tint p-4">
-      <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-warning">
+      <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-surface text-warning">
         <Icon name="phone" size={22} />
         <span className="absolute -right-1 -top-1 h-3 w-3 animate-ping rounded-full bg-accent motion-reduce:animate-none" />
         <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-accent" />

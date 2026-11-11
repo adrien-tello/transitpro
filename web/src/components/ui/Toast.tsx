@@ -24,9 +24,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="pointer-events-auto flex items-center gap-3 rounded-2xl bg-ink px-4 py-3 text-sm font-semibold text-white shadow-[0_8px_30px_rgba(14,23,38,0.25)]"
+            className="pointer-events-auto flex items-center gap-3 rounded-2xl bg-inverse px-4 py-3 text-sm font-semibold text-white shadow-[0_8px_30px_rgba(14,23,38,0.25)]"
           >
-            <span className={`flex h-6 w-6 items-center justify-center rounded-full ${t.tone === 'success' ? 'bg-success' : 'bg-danger'}`}>
+            <span className={`flex h-6 w-6 items-center justify-center rounded-full ${t.tone === 'success' ? 'bg-success-solid' : 'bg-danger-solid'}`}>
               <Icon name={t.tone === 'success' ? 'check' : 'x'} size={14} strokeWidth={2.6} />
             </span>
             {t.text}

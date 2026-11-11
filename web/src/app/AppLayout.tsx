@@ -5,6 +5,7 @@ import type { Me } from '@contracts/api-types';
 import { Icon } from '../components/ui/Icon';
 import { Logo } from '../components/ui/Logo';
 import { ago, initials } from '../lib/format';
+import { useTheme } from '../lib/theme';
 import { useLogout } from '../modules/auth/auth.api';
 import { useBranches, usePendingAgencies } from '../modules/agencies/agencies.api';
 import { parcelsFirstPage, useParcelStats } from '../modules/parcels/parcels.api';
@@ -86,7 +87,7 @@ function Sidebar({ me, items, bottom, badges, admin, open, onClose }: {
             <Icon name={item.icon} />
             <span className="flex-1">{item.label}</span>
             {count > 0 && (
-              <span className={`tp-fade rounded-md px-[7px] py-px text-[11px] font-extrabold ${isActive ? 'bg-white text-primary' : 'bg-primary text-white'}`} aria-label={`${count} to look at`}>
+              <span className={`tp-fade rounded-md px-[7px] py-px text-[11px] font-extrabold ${isActive ? 'bg-surface text-primary' : 'bg-primary text-white'}`} aria-label={`${count} to look at`}>
                 {count}
               </span>
             )}
@@ -99,12 +100,12 @@ function Sidebar({ me, items, bottom, badges, admin, open, onClose }: {
   return (
     <>
       <div
-        className={`fixed inset-0 z-30 bg-ink/40 transition-opacity duration-200 min-[901px]:hidden ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        className={`fixed inset-0 z-30 bg-black/50 transition-opacity duration-200 min-[901px]:hidden ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         onClick={onClose}
         aria-hidden="true"
       />
       <aside
-        className={`tp-scroll flex w-[232px] shrink-0 flex-col gap-[26px] overflow-y-auto rounded-3xl bg-white px-4 pb-5 pt-7 min-[901px]:sticky min-[901px]:top-5 min-[901px]:h-[calc(100vh-40px)] max-[900px]:fixed max-[900px]:inset-y-3 max-[900px]:left-3 max-[900px]:z-40 max-[900px]:shadow-2xl max-[900px]:transition-transform max-[900px]:duration-300 ${
+        className={`tp-scroll flex w-[232px] shrink-0 flex-col gap-[26px] overflow-y-auto rounded-3xl bg-surface px-4 pb-5 pt-7 min-[901px]:sticky min-[901px]:top-5 min-[901px]:h-[calc(100vh-40px)] max-[900px]:fixed max-[900px]:inset-y-3 max-[900px]:left-3 max-[900px]:z-40 max-[900px]:shadow-2xl max-[900px]:transition-transform max-[900px]:duration-300 ${
           open ? 'max-[900px]:translate-x-0' : 'max-[900px]:-translate-x-[110%]'
         }`}
       >
@@ -112,7 +113,7 @@ function Sidebar({ me, items, bottom, badges, admin, open, onClose }: {
           <Logo size={38} />
         </Link>
 
-        <div className="flex items-center gap-2.5 rounded-[14px] border border-line bg-[#f7f8fc] px-3 py-2.5">
+        <div className="flex items-center gap-2.5 rounded-[14px] border border-line bg-soft px-3 py-2.5">
           <span
             className={`flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] text-[13px] font-extrabold ${
               admin ? 'bg-primary-tint text-primary-dark' : 'bg-warning-tint text-warning'
@@ -172,6 +173,7 @@ function TopBar({ me, admin, office, onMenu }: { me: Me; admin: boolean; office:
   const [q, setQ] = useState('');
   const user = usePopover();
   const logout = useLogout();
+  const theme = useTheme();
 
   // Tracking codes and phones: the parcel list does the search
   function search(e: FormEvent) {
@@ -182,11 +184,11 @@ function TopBar({ me, admin, office, onMenu }: { me: Me; admin: boolean; office:
 
   return (
     <header className="flex flex-wrap items-center gap-3">
-      <button type="button" onClick={onMenu} aria-label="Open menu" className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-white text-ink min-[901px]:hidden">
+      <button type="button" onClick={onMenu} aria-label="Open menu" className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-surface text-ink min-[901px]:hidden">
         <Icon name="menu" />
       </button>
       {office && (
-        <form onSubmit={search} role="search" className="flex h-[50px] min-w-0 flex-[0_1_420px] items-center gap-2.5 rounded-full bg-white px-[18px] ring-primary/30 transition-shadow focus-within:ring-2">
+        <form onSubmit={search} role="search" className="flex h-[50px] min-w-0 flex-[0_1_420px] items-center gap-2.5 rounded-full bg-surface px-[18px] ring-primary/30 transition-shadow focus-within:ring-2">
           <Icon name="search" size={18} className="text-muted" />
           <label htmlFor="global-search" className="sr-only">
             Search parcels
@@ -210,7 +212,7 @@ function TopBar({ me, admin, office, onMenu }: { me: Me; admin: boolean; office:
           onClick={() => user.setOpen((v) => !v)}
           aria-expanded={user.open}
           aria-haspopup="menu"
-          className="flex h-[50px] items-center gap-2.5 rounded-full bg-white py-0 pl-1.5 pr-3.5 transition-shadow hover:shadow-[0_4px_14px_rgba(14,23,38,0.08)]"
+          className="flex h-[50px] items-center gap-2.5 rounded-full bg-surface py-0 pl-1.5 pr-3.5 transition-shadow hover:shadow-[0_4px_14px_rgba(14,23,38,0.08)]"
         >
           <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-primary-tint text-sm font-extrabold text-primary-dark">{initials(me.fullName)}</span>
           <span className="text-left max-sm:hidden">
@@ -220,12 +222,33 @@ function TopBar({ me, admin, office, onMenu }: { me: Me; admin: boolean; office:
           <Icon name="chevronDown" size={16} strokeWidth={2} className={`text-muted transition-transform duration-200 ${user.open ? 'rotate-180' : ''}`} />
         </button>
         {user.open && (
-          <div role="menu" className="tp-pop absolute right-0 top-[58px] z-20 w-64 rounded-2xl border border-line bg-white p-2 shadow-[0_12px_40px_rgba(14,23,38,0.14)]">
+          <div role="menu" className="tp-pop absolute right-0 top-[58px] z-20 w-64 rounded-2xl border border-line bg-surface p-2 shadow-[0_12px_40px_rgba(14,23,38,0.14)] dark-pop">
             <div className="px-3 py-2">
               <div className="truncate text-sm font-bold text-ink">{me.email}</div>
               <div className="text-xs text-muted">{ROLE_LABEL[me.role]}</div>
             </div>
             <div className="my-1 h-px bg-line" />
+            <button
+              role="menuitemcheckbox"
+              aria-checked={theme.dark}
+              type="button"
+              onClick={() => theme.setTheme(theme.dark ? 'light' : 'dark')}
+              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-body transition-colors hover:bg-soft"
+            >
+              <Icon name={theme.dark ? 'moon' : 'sun'} size={18} />
+              <span className="flex-1">Dark mode</span>
+              <span aria-hidden="true" className={`relative h-5 w-9 rounded-full transition-colors duration-200 ${theme.dark ? 'bg-primary' : 'bg-field'}`}>
+                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-[left] duration-200 ${theme.dark ? 'left-[18px]' : 'left-0.5'}`} />
+              </span>
+            </button>
+            <Link
+              role="menuitem"
+              to={admin ? '/admin/settings' : '/settings'}
+              onClick={() => user.setOpen(false)}
+              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-body transition-colors hover:bg-soft hover:text-ink"
+            >
+              <Icon name="gear" size={18} /> Settings
+            </Link>
             <button
               role="menuitem"
               type="button"
@@ -266,13 +289,13 @@ function Notifications({ admin }: { admin: boolean }) {
         onClick={() => pop.setOpen((v) => !v)}
         aria-expanded={pop.open}
         aria-label={items.length ? `Notifications, ${items.length} new` : 'Notifications'}
-        className="relative flex h-[50px] w-[50px] items-center justify-center rounded-full bg-white text-ink transition-shadow hover:shadow-[0_4px_14px_rgba(14,23,38,0.08)]"
+        className="relative flex h-[50px] w-[50px] items-center justify-center rounded-full bg-surface text-ink transition-shadow hover:shadow-[0_4px_14px_rgba(14,23,38,0.08)]"
       >
         <Icon name="bell" />
         {items.length > 0 && <span className="tp-fade absolute right-[14px] top-3 h-2 w-2 rounded-full bg-[#e5484d]" />}
       </button>
       {pop.open && (
-        <div className="tp-pop absolute right-0 top-[58px] z-20 w-[320px] max-w-[calc(100vw-24px)] rounded-2xl border border-line bg-white p-2 shadow-[0_12px_40px_rgba(14,23,38,0.14)]">
+        <div className="tp-pop absolute right-0 top-[58px] z-20 w-[320px] max-w-[calc(100vw-24px)] rounded-2xl border border-line bg-surface p-2 shadow-[0_12px_40px_rgba(14,23,38,0.14)] dark-pop">
           <div className="px-3 pb-1 pt-2 text-sm font-bold text-ink">{admin ? 'Agencies to verify' : 'Parcel alerts'}</div>
           {items.length === 0 ? (
             <p className="px-3 pb-3 pt-1 text-sm text-muted">Nothing needs you right now.</p>
@@ -310,12 +333,12 @@ function Messages() {
         onClick={() => pop.setOpen((v) => !v)}
         aria-expanded={pop.open}
         aria-label="Messages"
-        className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-white text-ink transition-shadow hover:shadow-[0_4px_14px_rgba(14,23,38,0.08)]"
+        className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-surface text-ink transition-shadow hover:shadow-[0_4px_14px_rgba(14,23,38,0.08)]"
       >
         <Icon name="chat" />
       </button>
       {pop.open && (
-        <div className="tp-pop absolute right-0 top-[58px] z-20 w-[300px] max-w-[calc(100vw-24px)] rounded-2xl border border-line bg-white p-2 shadow-[0_12px_40px_rgba(14,23,38,0.14)]">
+        <div className="tp-pop absolute right-0 top-[58px] z-20 w-[300px] max-w-[calc(100vw-24px)] rounded-2xl border border-line bg-surface p-2 shadow-[0_12px_40px_rgba(14,23,38,0.14)] dark-pop">
           <div className="px-3 pb-1 pt-2 text-sm font-bold text-ink">Messages</div>
           <p className="px-3 pb-3 pt-1 text-sm text-muted">No messages yet. Conversations with your branches and drivers will show here.</p>
         </div>

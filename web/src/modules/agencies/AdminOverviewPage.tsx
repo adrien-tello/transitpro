@@ -21,7 +21,7 @@ export function AdminOverviewPage({ me }: { me: Me }) {
         title={`Hello, ${first}`}
         subtitle="TransitPro team · every agency, parcel and payment on the platform"
         actions={
-          <Link to="/admin/verify" className="flex h-11 items-center gap-2 rounded-full bg-primary px-[18px] text-sm font-bold text-white transition-colors hover:bg-primary-dark hover:text-white">
+          <Link to="/admin/verify" className="flex h-11 items-center gap-2 rounded-full bg-primary px-[18px] text-sm font-bold text-white transition-colors hover:bg-primary-hover hover:text-white">
             <Icon name="shield" size={18} /> Verify agencies{pending > 0 ? ` (${pending})` : ''}
           </Link>
         }
@@ -105,7 +105,7 @@ function Content({ o }: { o: PlatformOverview }) {
                 Our commission
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-[3px] bg-[#9db4f2]" />
+                <span className="h-2.5 w-2.5 rounded-[3px] bg-series" />
                 Owed to agencies
               </span>
             </div>
@@ -118,7 +118,7 @@ function Content({ o }: { o: PlatformOverview }) {
               highlight: i === o.days.length - 1,
               parts: [
                 { value: d.commission, className: 'bg-primary', label: 'Our commission' },
-                { value: d.volume - d.commission, className: 'bg-[#9db4f2]', label: 'Owed to agencies' },
+                { value: d.volume - d.commission, className: 'bg-series', label: 'Owed to agencies' },
               ],
             }))}
           />
@@ -130,7 +130,7 @@ function Content({ o }: { o: PlatformOverview }) {
           ) : (
             <ul className="tp-fade flex flex-col">
               {o.latestAgencies.map((ag) => (
-                <li key={ag.id} className="flex items-center gap-3 border-t border-[#eef1f5] py-2.5 first:border-t-0">
+                <li key={ag.id} className="flex items-center gap-3 border-t border-line py-2.5 first:border-t-0">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-warning-tint text-[12px] font-extrabold text-warning">{initials(ag.name)}</span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold text-ink">{ag.name}</span>

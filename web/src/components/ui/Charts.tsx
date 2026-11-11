@@ -9,7 +9,7 @@ export function MiniBars({ values, label }: { values: number[]; label: string })
         <span
           key={i}
           title={String(v)}
-          className={`tp-bar w-[9px] rounded-full ${i === values.length - 1 ? 'bg-primary' : 'bg-[#c9d6f7]'}`}
+          className={`tp-bar w-[9px] rounded-full ${i === values.length - 1 ? 'bg-primary' : 'bg-bar-soft'}`}
           style={{ height: `${Math.max(6, Math.round((v / max) * 52))}px`, animationDelay: `${i * 40}ms` }}
         />
       ))}
