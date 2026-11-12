@@ -6,6 +6,7 @@ import { Icon } from '../components/ui/Icon';
 import { Logo } from '../components/ui/Logo';
 import { ago, initials } from '../lib/format';
 import { useTheme } from '../lib/theme';
+import { useRealtime } from '../lib/realtime';
 import { useLogout } from '../modules/auth/auth.api';
 import { useBranches, usePendingAgencies } from '../modules/agencies/agencies.api';
 import { parcelsFirstPage, useParcelStats } from '../modules/parcels/parcels.api';
@@ -25,6 +26,7 @@ export function AppLayout({ me, nav, bottom, admin = false }: { me: Me; nav: Nav
   }, [pathname]);
 
   const office = !admin && OFFICE.includes(me.role);
+  useRealtime(me);
   const stats = useParcelStats(office);
   const pending = usePendingAgencies(admin);
   const badges: Record<NonNullable<NavItem['badge']>, number> = {

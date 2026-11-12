@@ -16,6 +16,8 @@ import { financeRouter } from './modules/finance/finance.routes';
 import { paymentsRouter } from './modules/payments/payments.routes';
 import { uploadsRouter } from './modules/uploads/uploads.routes';
 import { payoutsRouter } from './modules/payouts/payouts.routes';
+import { requireAuth } from './middleware/auth';
+import { stream } from './lib/realtime';
 
 export const app = express();
 
@@ -60,6 +62,8 @@ app.use('/api/finance', financeRouter);
 app.use('/api/payments', paymentsRouter);
 app.use('/api/uploads', uploadsRouter);
 app.use('/api/payouts', payoutsRouter);
+// Instant updates (Server-Sent Events): one open connection per dashboard tab
+app.get('/api/events', requireAuth, stream);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

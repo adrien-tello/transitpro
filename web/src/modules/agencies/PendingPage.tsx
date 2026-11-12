@@ -9,6 +9,7 @@ import { useToast } from '../../components/ui/Toast';
 import { errorMessage } from '../../lib/api';
 import { ago } from '../../lib/format';
 import { useLogout, useMe } from '../auth/auth.api';
+import { useRealtime } from '../../lib/realtime';
 import { documentFileUrl, useMyDocuments, useResubmit, useUploadDocument } from './agencies.api';
 
 // An agency that is not APPROVED lands here: upload the 5 documents, see the decision, what happens next.
@@ -27,6 +28,7 @@ export function PendingPage({ me }: { me: Me }) {
   const refresh = useMe();
   const toast = useToast();
   const docs = useMyDocuments(me.role === 'AGENCY_OWNER');
+  useRealtime(me); // approved / rejected while this page is open: it changes by itself
   const resubmit = useResubmit();
   const rejected = me.agency?.status === 'REJECTED';
   const suspended = me.agency?.status === 'SUSPENDED';

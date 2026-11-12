@@ -4,6 +4,7 @@ import { env } from '../../config/env';
 import { prisma } from '../../lib/prisma';
 import { HttpError, notFound } from '../../lib/http-error';
 import { ProviderError, chargeMobileMoney, getTransaction, notchpayEnabled, type ProviderStatus } from '../../lib/notchpay';
+import { publish } from '../../lib/realtime';
 
 // Owner: Lead (Fanyi Charllson). Every payment of the platform goes through here.
 //
@@ -112,17 +113,25 @@ async function applyProviderStatus(paymentId: string, status: ProviderStatus): P
 
 // PENDING → SUCCEEDED / FAILED exactly once, even if the webhook, the app and the sweep arrive together
 async function settle(paymentId: string, outcome: Outcome) {
-  await prisma.$transaction(async (tx) => {
+  const settled = await prisma.$transaction(async (tx) => {
     const { count } = await tx.payment.updateMany({
       where: { id: paymentId, status: 'PENDING' },
       data: outcome.ok
         ? { status: 'SUCCEEDED', settledAt: new Date(), failureReason: null }
         : { status: 'FAILED', settledAt: new Date(), failureReason: outcome.reason },
     });
-    if (count !== 1) return; // already settled by someone else
+    if (count !== 1) return null; // already settled by someone else
     const payment = await tx.payment.findUniqueOrThrow({ where: { id: paymentId } });
     await handlers.get(payment.purpose)?.(tx, payment, outcome.ok);
+    return payment;
   });
+  // After the commit: dashboards waiting for this payment update at once
+  if (settled) {
+    publish(
+      { team: true, agencyId: settled.agencyId, userId: settled.payerId },
+      { type: 'payment.settled', paymentId: settled.id, status: settled.status, purpose: settled.purpose, amount: settled.amount, agencyId: settled.agencyId },
+    );
+  }
 }
 
 // Ask Notch Pay for the truth about a pending payment

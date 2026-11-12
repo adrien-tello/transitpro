@@ -19,6 +19,7 @@ import * as documents from './agencies.documents';
 import * as payouts from '../payouts/payouts.service';
 import * as agencies from './agencies.service';
 import type { z } from 'zod';
+import { publish } from '../../lib/realtime';
 
 // Owner: Lead (Fanyi Charllson). SaaS layer: agency sign-up, verification, public profiles.
 // Screens: web "Register your agency" + platform admin; customer app Verified agencies + Agency profile.
@@ -37,6 +38,7 @@ agenciesRouter.get('/:slug', async () => {
 agenciesRouter.post('/register', authLimiter, validate({ body: registerAgencySchema }), async (req, res) => {
   const { tokenVersion, ...result } = await agencies.registerAgency(req.body);
   setSessionCookie(res, { id: result.user.id, tokenVersion });
+  publish({ team: true }, { type: 'agency.registered', agencyId: result.agency.id, name: result.agency.name });
   res.status(201).json({ data: result });
 });
 
@@ -71,6 +73,7 @@ agenciesRouter.put(
     const agency = ownerAgency(req);
     const type = String(req.params.type) as z.infer<typeof documentTypeParams>['type'];
     res.json({ data: await documents.upload(agency.id, agency.status, type, String(req.headers['content-type'] ?? ''), req.body) });
+    publish({ team: true }, { type: 'agency.documents', agencyId: agency.id, name: '' });
   },
 );
 // Opens the file: the agency's owner or the TransitPro team only
@@ -84,7 +87,9 @@ agenciesRouter.get('/documents/:id/file', validate({ params: agencyIdParams }), 
 });
 // Rejected agency: documents fixed, ask the team to check again
 agenciesRouter.post('/me/resubmit', async (req, res) => {
-  res.json({ data: await agencies.resubmit(ownerAgency(req).id) });
+  const a = await agencies.resubmit(ownerAgency(req).id);
+  res.json({ data: a });
+  publish({ team: true, agencyId: a.id }, { type: 'agency.status', agencyId: a.id, name: a.name, status: a.status });
 });
 
 // Where TransitPro sends the agency's money (owner)
@@ -117,19 +122,27 @@ agenciesRouter.get('/admin/:id', requirePlatformAdmin, validate({ params: agency
   res.json({ data: await admin.detail(String(req.params.id)) });
 });
 agenciesRouter.post('/admin/:id/suspend', requirePlatformAdmin, validate({ params: agencyIdParams, body: rejectAgencySchema }), async (req, res) => {
-  res.json({ data: await admin.suspend(String(req.params.id), req.body.reason) });
+  const a = await admin.suspend(String(req.params.id), req.body.reason);
+  res.json({ data: a });
+  publish({ team: true, agencyId: a.id }, { type: 'agency.status', agencyId: a.id, name: a.name, status: a.status });
 });
 agenciesRouter.post('/admin/:id/reactivate', requirePlatformAdmin, validate({ params: agencyIdParams }), async (req, res) => {
-  res.json({ data: await admin.reactivate(String(req.params.id)) });
+  const a = await admin.reactivate(String(req.params.id));
+  res.json({ data: a });
+  publish({ team: true, agencyId: a.id }, { type: 'agency.status', agencyId: a.id, name: a.name, status: a.status });
 });
 agenciesRouter.post('/admin/:id/approve', requirePlatformAdmin, validate({ params: agencyIdParams }), async (req, res) => {
-  res.json({ data: await agencies.approve(String(req.params.id)) });
+  const a = await agencies.approve(String(req.params.id));
+  res.json({ data: a });
+  publish({ team: true, agencyId: a.id }, { type: 'agency.status', agencyId: a.id, name: a.name, status: a.status });
 });
 agenciesRouter.post(
   '/admin/:id/reject',
   requirePlatformAdmin,
   validate({ params: agencyIdParams, body: rejectAgencySchema }),
   async (req, res) => {
-    res.json({ data: await agencies.reject(String(req.params.id), req.body.reason) });
+    const a = await agencies.reject(String(req.params.id), req.body.reason);
+    res.json({ data: a });
+    publish({ team: true, agencyId: a.id }, { type: 'agency.status', agencyId: a.id, name: a.name, status: a.status });
   },
 );

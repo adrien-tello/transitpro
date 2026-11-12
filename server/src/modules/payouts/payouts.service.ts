@@ -6,6 +6,7 @@ import { queueEmail } from '../../lib/email';
 import { HttpError, badRequest, notFound } from '../../lib/http-error';
 import { ProviderError, getTransfer, notchpayEnabled, operatorOf, sendTransfer, type PayoutChannel } from '../../lib/notchpay';
 import { codSentEmail, payoutSentEmail } from './payouts.emails';
+import { publish } from '../../lib/realtime';
 
 // Owner: Lead (Fanyi Charllson). Money going OUT of TransitPro, with Notch Pay transfers.
 //
@@ -236,13 +237,20 @@ async function start(payoutId: string): Promise<Payout> {
       channel: payout.channel as PayoutChannel,
       description: payout.kind === 'AGENCY_PAYOUT' ? 'TransitPro payout' : 'TransitPro cash on delivery',
     });
-    await prisma.payout.update({ where: { id: payout.id }, data: { providerRef: t.reference } });
+    announce(await prisma.payout.update({ where: { id: payout.id }, data: { providerRef: t.reference } }));
     return settleFrom(payout.id, t.status);
   } catch (err) {
     const message = err instanceof ProviderError ? err.message : 'Notch Pay could not be reached';
     console.error(`[payouts] transfer ${payout.id} not sent: ${message}`);
     return finish(payout.id, false, 'PROVIDER_ERROR');
   }
+}
+
+function announce(p: Payout) {
+  publish(
+    { team: true, agencyId: p.agencyId, roles: ['ACCOUNTANT'] },
+    { type: 'payout.changed', payoutId: p.id, status: p.status, amount: p.amount, kind: p.kind, agencyId: p.agencyId },
+  );
 }
 
 async function settleFrom(payoutId: string, status: string): Promise<Payout> {
@@ -266,6 +274,7 @@ async function finish(payoutId: string, ok: boolean, reason?: string): Promise<P
     else if (p.escrow?.parcel.senderEmail) queueEmail(codSentEmail(p.escrow.parcel.senderEmail, p, p.escrow.parcel.trackingCode));
   }
   if (done.count === 1 && !ok) console.error(`[payouts] ${p.kind} ${p.id} failed: ${p.failureReason}`);
+  if (done.count === 1) announce(p);
   return p;
 }
 

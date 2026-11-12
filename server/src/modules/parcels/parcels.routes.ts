@@ -14,6 +14,7 @@ import {
   scanSchema,
 } from './parcels.schemas';
 import * as parcels from './parcels.service';
+import { publish } from '../../lib/realtime';
 
 // Owner: Lead (Fanyi Charllson). Parcels & Courier.
 // Route style every module copies: validate -> role check -> call service -> { data }.
@@ -29,6 +30,19 @@ parcelsRouter.get('/track/:code', validate({ params: codeParam }), async (req, r
 });
 
 parcelsRouter.use(requireAuth);
+
+// Every successful change (register, scan, payment, delivery, refusal, hold released) is pushed to the agency's
+// dashboards at once: lists, counters and the parcel page refresh by themselves.
+parcelsRouter.use((req, res, next) => {
+  if (req.method !== 'GET') {
+    const code = req.path.split('/')[1] || null; // "/TP-DOU-XXXXX/scan" → the parcel; "/" (register) → null
+    res.on('finish', () => {
+      if (res.statusCode < 400 && req.user?.agencyId) // the team too: a cash sale is paid at once, its overview numbers move with this message
+        publish({ agencyId: req.user.agencyId, team: true }, { type: 'parcel.changed', trackingCode: code });
+    });
+  }
+  next();
+});
 
 // Counter agent registers, weighs, photographs and seals the parcel; the answer holds the delivery code ONCE
 parcelsRouter.post('/', requireRole('COUNTER_AGENT', 'BRANCH_MANAGER'), validate({ body: registerParcelSchema }), async (req, res) => {
