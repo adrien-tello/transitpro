@@ -1,0 +1,7 @@
+
+# Never touch line endings inside documents and images
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
