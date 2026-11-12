@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { useNavigate } from 'react-router';
 import type { AgencyDocumentView, DocumentType, Me } from '@contracts/api-types';
 import { Badge, Skeleton } from '../../components/ui/Feedback';
@@ -134,36 +134,80 @@ export function PendingPage({ me }: { me: Me }) {
   );
 }
 
-// One document: empty (dashed, Upload) or uploaded (green, Open + Replace). The file picker accepts photos and PDFs;
-// on a phone it also offers the camera.
+// One document: empty (dashed, Upload) or uploaded (green, Open + Replace).
+// Drop a file on the row, or click the button (on a phone the picker also offers the camera).
+// While sending: a progress bar with the real percentage. A file dropped outside the rows is ignored
+// (otherwise the browser would leave the page to show the file).
 export function DocumentRow({ doc, file, canUpload }: { doc: (typeof DOCS)[number]; file?: AgencyDocumentView; canUpload: boolean }) {
   const input = useRef<HTMLInputElement>(null);
   const upload = useUploadDocument();
   const toast = useToast();
+  const [dragging, setDragging] = useState(false);
+  const [progress, setProgress] = useState<number | null>(null);
   const busy = upload.isPending;
+  useIgnoreStrayDrops();
 
   const pick = (f: File | undefined) => {
-    if (!f) return;
-    upload.mutate({ type: doc.type, file: f }, { onSuccess: () => toast(`${doc.t} uploaded`) });
+    if (!f || busy) return;
+    setProgress(0);
+    upload.mutate(
+      { type: doc.type, file: f, onProgress: setProgress },
+      {
+        onSuccess: () => toast(`${doc.t} uploaded`),
+        onSettled: () => setProgress(null),
+      },
+    );
   };
+
+  const drop = canUpload
+    ? {
+        onDragEnter: (e: DragEvent) => (e.preventDefault(), setDragging(true)),
+        onDragOver: (e: DragEvent) => (e.preventDefault(), (e.dataTransfer.dropEffect = 'copy')),
+        onDragLeave: (e: DragEvent) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false);
+        },
+        onDrop: (e: DragEvent) => {
+          e.preventDefault();
+          setDragging(false);
+          pick(e.dataTransfer.files?.[0]);
+        },
+      }
+    : {};
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-3.5 rounded-2xl p-3.5 transition-colors duration-200 ${
-        file ? 'border border-success/25 bg-success-tint' : 'border-[1.5px] border-dashed border-primary/60 bg-primary-soft'
+      {...drop}
+      className={`relative flex flex-wrap items-center gap-3.5 overflow-hidden rounded-2xl p-3.5 transition-[background-color,border-color,box-shadow] duration-200 ${
+        dragging
+          ? 'border-[1.5px] border-dashed border-primary bg-primary-tint shadow-[0_0_0_4px_rgba(30,79,216,0.15)]'
+          : file
+            ? 'border border-success/25 bg-success-tint'
+            : 'border-[1.5px] border-dashed border-primary/60 bg-primary-soft'
       }`}
     >
-      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${file ? 'bg-surface text-success' : 'bg-primary-tint text-primary-dark'}`}>
-        <Icon name={file ? 'check' : 'file'} strokeWidth={file ? 2.4 : 1.8} />
+      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${dragging ? 'bg-primary text-white' : file ? 'bg-surface text-success' : 'bg-primary-tint text-primary-dark'}`}>
+        <Icon name={dragging ? 'plus' : file ? 'check' : 'file'} strokeWidth={file && !dragging ? 2.4 : 1.8} />
       </span>
       <span className="min-w-0 flex-[1_1_220px]">
         <span className="block text-[15px] font-bold text-ink">{doc.t}</span>
         <span className="block text-[13px] text-muted">
-          {upload.isError ? <span className="font-semibold text-danger">{errorMessage(upload.error)}</span> : file ? `${file.mime === 'application/pdf' ? 'PDF' : 'Photo'} · uploaded ${ago(file.uploadedAt)}` : doc.sub}
+          {dragging ? (
+            <span className="font-semibold text-primary-dark">Drop to upload {file ? '(replaces the current file)' : ''}</span>
+          ) : busy ? (
+            <span className="font-semibold text-primary-dark">{progress === null || progress < 100 ? `Uploading… ${progress ?? 0} %` : 'Saving…'}</span>
+          ) : upload.isError ? (
+            <span className="font-semibold text-danger">{errorMessage(upload.error)}</span>
+          ) : file ? (
+            `${file.mime === 'application/pdf' ? 'PDF' : 'Photo'} · uploaded ${ago(file.uploadedAt)}`
+          ) : (
+            <>
+              {doc.sub} · <span className="max-sm:hidden">drag a file here or </span>use the button
+            </>
+          )}
         </span>
       </span>
       <div className="flex gap-2">
-        {file && (
+        {file && !busy && (
           <a href={documentFileUrl(file.id)} target="_blank" rel="noopener" className="flex h-10 items-center gap-1.5 rounded-xl border border-line bg-surface px-3.5 text-sm font-bold text-ink hover:bg-soft hover:text-ink">
             <Icon name="eye" size={16} /> Open
           </a>
@@ -177,8 +221,32 @@ export function DocumentRow({ doc, file, canUpload }: { doc: (typeof DOCS)[numbe
           </>
         )}
       </div>
+      {/* Progress along the bottom edge of the row */}
+      {busy && (
+        <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1 bg-primary/15">
+          <span className="block h-1 bg-primary transition-[width] duration-200 ease-out" style={{ width: `${Math.max(4, progress ?? 0)}%` }} />
+        </span>
+      )}
+      {busy && (
+        <span role="progressbar" aria-label={`Uploading ${doc.t}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress ?? 0} className="sr-only" />
+      )}
     </div>
   );
+}
+
+// A file dropped next to the rows must not open in the browser (the page would be lost)
+function useIgnoreStrayDrops() {
+  useEffect(() => {
+    const stop = (e: globalThis.DragEvent) => {
+      if (e.dataTransfer?.types.includes('Files')) e.preventDefault();
+    };
+    window.addEventListener('dragover', stop);
+    window.addEventListener('drop', stop);
+    return () => {
+      window.removeEventListener('dragover', stop);
+      window.removeEventListener('drop', stop);
+    };
+  }, []);
 }
 
 // Drivers, couriers and customers work in the mobile app

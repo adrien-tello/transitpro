@@ -68,7 +68,8 @@ export async function upload(agencyId: string, agencyStatus: string, type: Docum
     const agency = await prisma.agency.findUniqueOrThrow({ where: { id: agencyId }, select: { slug: true } });
     try {
       fileUrl = await uploadFile(body, MIME_OF[ext], agencyFolder(agency.slug, 'documents'), ext === 'pdf' ? 'raw' : 'image', FILE_NAME[type], 'private');
-    } catch {
+    } catch (err) {
+      console.error(`[uploads] document not stored: ${(err as Error).message}`);
       throw new HttpError(502, 'UPLOAD_FAILED', 'The document could not be saved, try again');
     }
   } else {

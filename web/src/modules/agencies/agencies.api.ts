@@ -72,13 +72,15 @@ export function useMyDocuments(enabled = true) {
 export function useUploadDocument() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ type, file }: { type: DocumentType; file: File }) => {
+    mutationFn: async ({ type, file, onProgress }: { type: DocumentType; file: File; onProgress?: (percent: number) => void }) => {
       const isPdf = file.type === 'application/pdf';
       if (!isPdf && !file.type.startsWith('image/')) throw new ApiError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Choose a photo or a PDF');
       if (isPdf && file.size > 5 * 1024 * 1024) throw new ApiError(413, 'TOO_LARGE', 'This PDF is bigger than 5 MB');
       const body = isPdf ? file : await shrinkImage(file);
       const res = await http.put<{ data: AgencyDocumentView }>(`/agencies/me/documents/${type}`, body, {
         headers: { 'Content-Type': isPdf ? 'application/pdf' : 'image/jpeg' },
+        // Real progress of the upload (bytes sent); the server then stores the file ("Saving…")
+        onUploadProgress: (e) => e.total && onProgress?.(Math.round((e.loaded / e.total) * 100)),
       });
       return res.data.data;
     },
