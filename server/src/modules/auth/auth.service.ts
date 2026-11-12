@@ -188,7 +188,7 @@ export async function me(userId: string): Promise<Me> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
-      agency: { select: { id: true, name: true, status: true, rejectionReason: true } },
+      agency: { select: { id: true, name: true, status: true, rejectionReason: true, suspensionReason: true } },
       employee: { select: { id: true, jobTitle: true, branchId: true, active: true } },
     },
   });

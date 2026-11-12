@@ -84,12 +84,20 @@ Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 | GET | `/agencies` | public | Verified agencies only, `?q=&sort=rating` | `Paginated<AgencyListItem>` | Customer · Verified agencies | 🧱 |
 | GET | `/agencies/:slug` | public | Profile, rating breakdown, today's departures | `AgencyProfile` | Customer · Agency profile | 🧱 |
 | POST | `/agencies/register` | public | `{ agency: { name, headOffice, phone, email, rccmNumber?, niuNumber? }, owner: { fullName, email, phone, password } }` | `201 AgencyRegistered` + cookie (owner logged in, agency `PENDING`) | Web · Register your agency | ✅ |
-| POST | `/agencies/me/documents` | AGENCY_OWNER | RCCM, NIU, CNI, licence files | | Web · Register (documents step) | 🧱 |
-| GET/POST | `/agencies/me/branches` | owner / manager | Branches | | Web · settings, register parcel | 🧱 |
+| GET | `/agencies/me/documents` | AGENCY_OWNER | The agency's documents (never the storage URL) | `AgencyDocumentView[]` | Web · Pending page, Settings | ✅ |
+| PUT | `/agencies/me/documents/:type` | AGENCY_OWNER (PENDING, REJECTED or APPROVED) | **Body = the file itself**, `Content-Type` image/jpeg, png, webp or application/pdf, max 5 MB. `:type` = RCCM, NIU, OWNER_CNI_FRONT, OWNER_CNI_BACK, TRANSPORT_LICENCE. Again = replaces (the old file is deleted) | `AgencyDocumentView` | Web · Pending page, Settings | ✅ |
+| GET | `/agencies/documents/:id/file` | the agency's owner, PLATFORM_ADMIN | Streams the file (anyone else: 404) | the file | Web · Open | ✅ |
+| POST | `/agencies/me/resubmit` | AGENCY_OWNER of a REJECTED agency | Documents fixed: back to PENDING | | Web · Pending page | ✅ |
+| PUT | `/agencies/me/payout-account` | AGENCY_OWNER | `{ name, phone, channel: cm.mtn \| cm.orange }` (operator must match the number). A new number starts a 24 h hold on withdrawals | `PayoutAccount` | Web · Settings | ✅ |
+| GET/POST | `/agencies/me/branches` | any staff / owner | Branches | `BranchRow[]` | Web · Branches, register parcel | ✅ |
 | GET | `/agencies/admin/overview` | PLATFORM_ADMIN | Agencies by status, parcels, payment volume and commission (7 days), latest sign-ups | `PlatformOverview` | Web · TransitPro overview | ✅ |
 | GET | `/agencies/admin/pending` | PLATFORM_ADMIN | Waiting for verification, oldest first | `PendingAgency[]` | Platform admin | ✅ |
 | POST | `/agencies/admin/:id/approve` | PLATFORM_ADMIN | – (email to the agency) | `{ id, name, slug, status }` | Platform admin | ✅ |
 | POST | `/agencies/admin/:id/reject` | PLATFORM_ADMIN | `{ reason }` (email to the agency) | `{ id, name, slug, status }` | Platform admin | ✅ |
+| GET | `/agencies/admin/list?status=&q=&page=` | PLATFORM_ADMIN | Every agency with counts (branches, staff, parcels, documents) | `Paginated<AdminAgencyRow>` | Web · All agencies | ✅ |
+| GET | `/agencies/admin/:id` | PLATFORM_ADMIN | Documents, owner, money, payout account | `AdminAgencyDetail` | Web · Agency detail | ✅ |
+| POST | `/agencies/admin/:id/suspend` · `/reactivate` | PLATFORM_ADMIN | `{ reason }` / – (email to the agency). Suspended = its staff blocked at once | `{ id, name, slug, status }` | Web · Agency detail | ✅ |
+| GET | `/agencies/admin/payments?status=&method=&purpose=&q=&page=` | PLATFORM_ADMIN | Every payment of the platform | `Paginated<AdminPaymentRow>` | Web · Payments | ✅ |
 
 Web dashboard after login: if `me.agency.status` is `PENDING`, show the "waiting for verification" page (documents upload), not the dashboard.
 
@@ -207,6 +215,24 @@ App ──▶ GET /payments/:id every 3 s  ──▶  PENDING … SUCCEEDED  or 
 The server learns the result 3 ways, whichever comes first: the webhook, the app's polling, and a check it runs by itself every 5 s (so it works on a laptop that Notch Pay cannot reach). In all cases the result is **read from Notch Pay's API**, never from the message, so a fake "payment complete" cannot get in.
 
 **Test numbers** (sandbox): `670000000` / `690000000` success · `…0002` refused · `…0003` no answer (EXPIRED) · `…0004` cancelled by the payer · (`…0001` "insufficient funds" completes in the sandbox: use `…0002` for failures). 67… = MTN, 69… = Orange.
+
+## Payouts · Lead (money going OUT: Notch Pay transfers)
+
+Customers' Mobile Money arrives on TransitPro's Notch Pay account. TransitPro sends each agency its part, and sends cash-on-delivery money to parcel senders.
+
+**What TransitPro owes an agency** (`AgencyBalance`): Mobile Money sales (tickets + parcel fees) minus our 10 % commission, minus our 10 % on CASH sales (the agency kept that cash), minus payouts already sent or on their way. Below `PAYOUT_MINIMUM` (5,000 FCFA by default, `.env`) no payout is sent.
+
+| Method | Path | Who | Purpose | Returns | Status |
+|---|---|---|---|---|---|
+| GET | `/payouts/mine` | AGENCY_OWNER, ACCOUNTANT | Balance, payout account, last payouts, `withdrawableAt` during the 24 h hold | `AgencyPayouts` | ✅ |
+| POST | `/payouts/mine/withdraw` | AGENCY_OWNER | `{ amount? }` (default: everything). From the minimum, not during the 24 h hold | `201 PayoutView` | ✅ |
+| GET | `/payouts/admin/agencies` | PLATFORM_ADMIN | Every verified agency with its balance, biggest first | `AdminPayoutAgencyRow[]` | ✅ |
+| POST | `/payouts/admin/agencies/:id` | PLATFORM_ADMIN | "Pay agency" `{ amount? }` | `201 PayoutView` | ✅ |
+| GET | `/payouts/admin/history?kind=&status=&page=` | PLATFORM_ADMIN | Every transfer (agency payouts, cash on delivery to senders) | `Paginated<PayoutView>` | ✅ |
+
+Payout life: `PENDING` → `PROCESSING` (transfer sent) → `SUCCEEDED` or `FAILED` (the money goes back to the balance). The agency row is locked while a payout is created, so two clicks never pay twice. The result is read from Notch Pay (5 s sweep or webhook `transfer.complete` / `transfer.failed`). **Cash on delivery** paid by Mobile Money is sent to the sender's number automatically when the receiver confirms with the code; paid in cash, the sender collects it at the counter.
+
+Measured on the sandbox (the public docs are wrong on two points): `POST /beneficiaries { name, phone, account_number, channel, country: "CM", currency: "XAF", type: "mobile_money" }`, then `POST /transfers { amount, currency, reference, recipient: <beneficiary id>, channel }`, both with the private key in `X-Grant`. Test numbers: `670000000` completes, `670000002` fails.
 
 **For module owners** (`payments.service.ts`): `payments.create(tx, {...})` inside your transaction (cash is settled there and then), `payments.start(id, description, payerName)` after the commit (sends the prompt), and `payments.onSettled('TICKET', handler)` to react to the result (mark the ticket PAID, or free the seat). Booking (Joy) plugs in this way.
 

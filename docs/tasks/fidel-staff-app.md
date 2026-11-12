@@ -247,7 +247,7 @@ Add any missing ones to `src/theme/colors.ts` under a `// Staff app` comment. Ne
   - wrong code: the server answers with the attempts left; show it under the boxes. After 5 wrong codes the parcel goes ON_HOLD.
 - **"Receiver refused the parcel"** (red outline button): reason field → `POST /parcels/:code/refuse { reason }`. This **already works**: it opens a claim and refunds a cash-on-delivery payment.
 - **Photo upload (works today):**
-  - `POST /api/uploads` with the **image bytes as the body**, `Content-Type: image/jpeg`, max 3 MB → `{ url }`.
+  - `POST /api/uploads?purpose=delivery` with the **image bytes as the body**, `Content-Type: image/jpeg`, max 3 MB → `{ url }`. (`purpose=delivery` files it under the agency's `deliveries` folder in Cloudinary.)
   - Resize to about 1600 px with `expo-image-manipulator` first.
   - Send the session cookie (`credentials: 'include'`).
   - Use the returned `url` as `photoUrl`.

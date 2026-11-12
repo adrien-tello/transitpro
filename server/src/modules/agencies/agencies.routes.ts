@@ -1,10 +1,24 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { agencyIdOf, requireAuth, requirePlatformAdmin, requireRole, setSessionCookie } from '../../middleware/auth';
 import { authLimiter } from '../../middleware/security';
 import { validate } from '../../middleware/validate';
-import { notImplemented } from '../../lib/http-error';
-import { agencyIdParams, branchSchema, registerAgencySchema, rejectAgencySchema } from './agencies.schemas';
+import { forbidden, notImplemented } from '../../lib/http-error';
+import {
+  adminListQuery,
+  adminPaymentsQuery,
+  agencyIdParams,
+  branchSchema,
+  documentTypeParams,
+  payoutAccountSchema,
+  registerAgencySchema,
+  rejectAgencySchema,
+} from './agencies.schemas';
+import * as admin from './agencies.admin';
+import * as documents from './agencies.documents';
+import * as payouts from '../payouts/payouts.service';
 import * as agencies from './agencies.service';
+import type { z } from 'zod';
 
 // Owner: Lead (Fanyi Charllson). SaaS layer: agency sign-up, verification, public profiles.
 // Screens: web "Register your agency" + platform admin; customer app Verified agencies + Agency profile.
@@ -28,8 +42,54 @@ agenciesRouter.post('/register', authLimiter, validate({ body: registerAgencySch
 
 agenciesRouter.use(requireAuth);
 
-agenciesRouter.post('/me/documents', requireRole('AGENCY_OWNER'), async () => {
-  throw notImplemented('Upload RCCM, NIU, CNI, transport licence');
+// ─── Documents (owner). Allowed while PENDING or REJECTED (to fix them) and once verified (renewed licence). ───
+const ownerAgency = (req: express.Request) => {
+  const id = req.user?.agencyId;
+  if (!id || req.user?.role !== 'AGENCY_OWNER') throw forbidden('Only the agency owner can do this');
+  return { id, status: req.user.agencyStatus ?? 'PENDING' };
+};
+const documentLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  handler: (_req, res) => {
+    res.status(429).json({ error: { code: 'TOO_MANY_REQUESTS', message: 'Too many uploads, wait a few minutes' } });
+  },
+});
+
+agenciesRouter.get('/me/documents', async (req, res) => {
+  res.json({ data: await documents.list(ownerAgency(req).id) });
+});
+// Body = the file itself (Content-Type image/jpeg | image/png | image/webp | application/pdf, max 5 MB)
+agenciesRouter.put(
+  '/me/documents/:type',
+  documentLimiter,
+  validate({ params: documentTypeParams }),
+  express.raw({ type: Object.keys(documents.DOCUMENT_MIME), limit: '5mb' }),
+  async (req, res) => {
+    const agency = ownerAgency(req);
+    const type = String(req.params.type) as z.infer<typeof documentTypeParams>['type'];
+    res.json({ data: await documents.upload(agency.id, agency.status, type, String(req.headers['content-type'] ?? ''), req.body) });
+  },
+);
+// Opens the file: the agency's owner or the TransitPro team only
+agenciesRouter.get('/documents/:id/file', validate({ params: agencyIdParams }), async (req, res) => {
+  const file = await documents.readFileFor(String(req.params.id), { role: req.user!.role, agencyId: req.user!.agencyId ?? null });
+  res.setHeader('Content-Type', file.mime);
+  res.setHeader('Content-Disposition', 'inline');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Cache-Control', 'private, no-store');
+  res.send(file.bytes);
+});
+// Rejected agency: documents fixed, ask the team to check again
+agenciesRouter.post('/me/resubmit', async (req, res) => {
+  res.json({ data: await agencies.resubmit(ownerAgency(req).id) });
+});
+
+// Where TransitPro sends the agency's money (owner)
+agenciesRouter.put('/me/payout-account', requireRole('AGENCY_OWNER'), validate({ body: payoutAccountSchema }), async (req, res) => {
+  res.json({ data: await payouts.setAccount(agencyIdOf(req), req.body) });
 });
 // Every staff member of the agency (destination lists, filters). Works while the agency is PENDING
 // so the owner can prepare branches before the approval.
@@ -46,6 +106,21 @@ agenciesRouter.get('/admin/overview', requirePlatformAdmin, async (_req, res) =>
 });
 agenciesRouter.get('/admin/pending', requirePlatformAdmin, async (_req, res) => {
   res.json({ data: await agencies.listPending() });
+});
+agenciesRouter.get('/admin/list', requirePlatformAdmin, validate({ query: adminListQuery }), async (req, res) => {
+  res.json({ data: await admin.list(req.query as unknown as z.infer<typeof adminListQuery>) });
+});
+agenciesRouter.get('/admin/payments', requirePlatformAdmin, validate({ query: adminPaymentsQuery }), async (req, res) => {
+  res.json({ data: await admin.payments(req.query as unknown as z.infer<typeof adminPaymentsQuery>) });
+});
+agenciesRouter.get('/admin/:id', requirePlatformAdmin, validate({ params: agencyIdParams }), async (req, res) => {
+  res.json({ data: await admin.detail(String(req.params.id)) });
+});
+agenciesRouter.post('/admin/:id/suspend', requirePlatformAdmin, validate({ params: agencyIdParams, body: rejectAgencySchema }), async (req, res) => {
+  res.json({ data: await admin.suspend(String(req.params.id), req.body.reason) });
+});
+agenciesRouter.post('/admin/:id/reactivate', requirePlatformAdmin, validate({ params: agencyIdParams }), async (req, res) => {
+  res.json({ data: await admin.reactivate(String(req.params.id)) });
 });
 agenciesRouter.post('/admin/:id/approve', requirePlatformAdmin, validate({ params: agencyIdParams }), async (req, res) => {
   res.json({ data: await agencies.approve(String(req.params.id)) });

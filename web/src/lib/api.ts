@@ -42,6 +42,7 @@ export const api = {
   get: async <T>(url: string, params?: Record<string, unknown>) => (await http.get<{ data: T }>(url, { params })).data.data,
   post: async <T>(url: string, body?: unknown) => (await http.post<{ data: T }>(url, body ?? {})).data.data,
   patch: async <T>(url: string, body?: unknown) => (await http.patch<{ data: T }>(url, body ?? {})).data.data,
+  put: async <T>(url: string, body?: unknown) => (await http.put<{ data: T }>(url, body ?? {})).data.data,
 };
 
 // First message of a field from a 400 VALIDATION_ERROR, to show under the input

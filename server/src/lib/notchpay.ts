@@ -32,12 +32,18 @@ export class ProviderError extends Error {
 
 export const notchpayEnabled = () => env.NOTCHPAY_PUBLIC_KEY.length > 0;
 
-async function call(method: 'GET' | 'POST' | 'PUT', path: string, body?: unknown): Promise<Record<string, unknown>> {
+// grant = true adds the private key (X-Grant): Notch Pay requires it for money going OUT (beneficiaries, transfers)
+async function call(method: 'GET' | 'POST' | 'PUT', path: string, body?: unknown, grant = false): Promise<Record<string, unknown>> {
   let res: Response;
   try {
     res = await fetch(BASE + path, {
       method,
-      headers: { Authorization: env.NOTCHPAY_PUBLIC_KEY, Accept: 'application/json', 'Content-Type': 'application/json' },
+      headers: {
+        Authorization: env.NOTCHPAY_PUBLIC_KEY,
+        ...(grant ? { 'X-Grant': env.NOTCHPAY_PRIVATE_KEY } : {}),
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
       body: body ? JSON.stringify(body) : undefined,
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
@@ -111,4 +117,74 @@ export function isValidWebhookSignature(rawBody: Buffer | undefined, signature: 
   const expected = Buffer.from(createHmac('sha256', env.NOTCHPAY_HASH_KEY).update(rawBody).digest('hex'), 'utf8');
   const given = Buffer.from(signature.trim().toLowerCase(), 'utf8');
   return expected.length === given.length && timingSafeEqual(expected, given);
+}
+
+// ─────────────── Money going out: transfers (payouts to agencies, cash on delivery to senders) ───────────────
+// Measured on the sandbox (Nov 2026). The public docs are wrong on two points, these calls are the ones that work:
+//   POST /beneficiaries { name, phone, account_number, channel, country: "CM", currency: "XAF", type: "mobile_money" }
+//        → beneficiary.id "bn.test_..."
+//   POST /transfers { amount, currency, description, reference, recipient: <beneficiary id>, channel }
+//        (the field is "recipient", not "beneficiary"; inline beneficiary_data is refused)
+//        → transfer.reference "trf.test_...", status "processing"
+//   GET  /transfers/{ref} → status "complete" | "failed" | "canceled" | "pending" | "processing"
+//   Test numbers: 670000000 → complete · 670000002 → failed. Both calls need the private key (X-Grant).
+
+export type PayoutChannel = 'cm.mtn' | 'cm.orange';
+
+// Cameroon prefixes: MTN 67x, 650-654, 680-684 · Orange 69x, 655-659, 685-689
+export function operatorOf(phone: string): PayoutChannel | null {
+  const d = phone.replace(/\D/g, '').replace(/^237/, '');
+  if (d.length !== 9 || d[0] !== '6') return null;
+  const two = Number(d.slice(1, 2));
+  const three = Number(d.slice(1, 3));
+  if (two === 7) return 'cm.mtn';
+  if (two === 9) return 'cm.orange';
+  if (three >= 50 && three <= 54) return 'cm.mtn';
+  if (three >= 55 && three <= 59) return 'cm.orange';
+  if (three >= 80 && three <= 84) return 'cm.mtn';
+  if (three >= 85 && three <= 89) return 'cm.orange';
+  return null;
+}
+
+export interface ProviderTransfer {
+  reference: string;
+  status: ProviderStatus;
+}
+
+function toTransfer(json: Record<string, unknown>): ProviderTransfer {
+  const t = (json.transfer ?? {}) as Record<string, unknown>;
+  if (typeof t.reference !== 'string') throw new ProviderError(502, 'Unexpected answer from Notch Pay');
+  return { reference: t.reference, status: String(t.status ?? 'pending') };
+}
+
+// Send Mobile Money to someone: create the beneficiary, then the transfer
+export async function sendTransfer(input: {
+  ourReference: string; // the Payout id
+  amount: number;
+  name: string;
+  phone: string;
+  channel: PayoutChannel;
+  description: string;
+}): Promise<ProviderTransfer> {
+  const phone = toInternationalPhone(input.phone);
+  const ben = await call(
+    'POST',
+    '/beneficiaries',
+    { name: input.name.slice(0, 80), phone, account_number: phone, channel: input.channel, country: 'CM', currency: 'XAF', type: 'mobile_money' },
+    true,
+  );
+  const beneficiaryId = (ben.beneficiary as Record<string, unknown> | undefined)?.id;
+  if (typeof beneficiaryId !== 'string') throw new ProviderError(502, 'Unexpected answer from Notch Pay');
+  return toTransfer(
+    await call(
+      'POST',
+      '/transfers',
+      { amount: input.amount, currency: 'XAF', description: input.description.slice(0, 120), reference: input.ourReference, recipient: beneficiaryId, channel: input.channel },
+      true,
+    ),
+  );
+}
+
+export async function getTransfer(providerRef: string): Promise<ProviderTransfer> {
+  return toTransfer(await call('GET', `/transfers/${encodeURIComponent(providerRef)}`, undefined, true));
 }

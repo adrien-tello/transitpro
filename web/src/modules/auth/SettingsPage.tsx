@@ -10,6 +10,7 @@ import { useToast } from '../../components/ui/Toast';
 import { errorMessage, fieldError } from '../../lib/api';
 import { initials, phone } from '../../lib/format';
 import { useChangePassword } from './auth.api';
+import { AgencyMoneyCards } from '../agencies/AgencyMoney';
 import { Icon, type IconName } from '../../components/ui/Icon';
 import { useTheme, type ThemePref } from '../../lib/theme';
 
@@ -52,7 +53,7 @@ export function SettingsPage({ me }: { me: Me }) {
               </div>
               {me.role === 'AGENCY_OWNER' && (
                 <p className="mt-2 text-[13px] text-body">
-                  Manage your <Link to="/branches" className="font-bold">branches</Link>. Prices, documents and notifications arrive in the next version.
+                  Manage your <Link to="/branches" className="font-bold">branches</Link>. Your payouts, payout account and legal documents are below.
                 </p>
               )}
             </Card>
@@ -63,6 +64,11 @@ export function SettingsPage({ me }: { me: Me }) {
           <ChangePassword />
         </div>
       </div>
+      {(me.role === 'AGENCY_OWNER' || me.role === 'ACCOUNTANT') && me.agency && (
+        <div className="flex flex-col gap-4">
+          <AgencyMoneyCards me={me} />
+        </div>
+      )}
     </>
   );
 }

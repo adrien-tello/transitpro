@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import { badRequest, notImplemented } from '../../lib/http-error';
+import * as payouts from '../payouts/payouts.service';
 
 // Owner: Sweet (Finance & Reporting).
 //
@@ -25,12 +26,27 @@ export async function holdInEscrow(
   return tx.escrow.create({ data: { ...input, status: 'HELD' } });
 }
 
-// Called by Parcels when the receiver's code is correct: the money goes to the sender
+// Called by Parcels when the receiver's code is correct: the money goes to the sender.
+//   paid by Mobile Money → TransitPro holds it: a transfer to the sender's number is queued (Payouts sends it)
+//   paid in cash         → the cash is at the branch: the sender collects it at the counter
 export async function releaseEscrowForParcel(tx: Tx, parcelId: string) {
-  const escrow = await tx.escrow.findUnique({ where: { parcelId } });
+  const escrow = await tx.escrow.findUnique({
+    where: { parcelId },
+    include: { payment: { select: { method: true } }, parcel: { select: { agencyId: true, senderName: true } } },
+  });
   if (!escrow) return null; // no cash on delivery for this parcel
   if (escrow.status !== 'HELD') throw badRequest('The cash-on-delivery money is not held any more');
-  return tx.escrow.update({ where: { id: escrow.id }, data: { status: 'RELEASED', releasedAt: new Date() } });
+  const released = await tx.escrow.update({ where: { id: escrow.id }, data: { status: 'RELEASED', releasedAt: new Date() } });
+  if (escrow.payment.method !== 'CASH') {
+    await payouts.queueCodToSender(tx, {
+      escrowId: escrow.id,
+      agencyId: escrow.parcel.agencyId,
+      amount: escrow.amount,
+      phone: escrow.beneficiaryPhone,
+      senderName: escrow.parcel.senderName,
+    });
+  }
+  return released;
 }
 
 // Called by Parcels when the receiver refuses: the money goes back to the receiver

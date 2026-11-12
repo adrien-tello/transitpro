@@ -167,11 +167,11 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  employee Employee?
-  tickets  Ticket[]
-  payments Payment[]
-  reviews  Review[]
-  claims   ParcelClaim[]
+  employee       Employee?
+  tickets        Ticket[]
+  payments       Payment[]
+  reviews        Review[]
+  claims         ParcelClaim[]
   passwordResets PasswordReset[]
 }
 
@@ -191,35 +191,44 @@ model PasswordReset {
 }
 
 model Agency {
-  id              String       @id @default(cuid())
-  name            String
-  slug            String       @unique
-  status          AgencyStatus @default(PENDING)
-  rccmNumber      String?
-  niuNumber       String?
-  headOffice      String
-  phone           String
-  email           String
-  verifiedAt      DateTime?
-  rejectionReason String?
+  id                     String       @id @default(cuid())
+  name                   String
+  slug                   String       @unique
+  status                 AgencyStatus @default(PENDING)
+  rccmNumber             String?
+  niuNumber              String?
+  headOffice             String
+  phone                  String
+  email                  String
+  verifiedAt             DateTime?
+  rejectionReason        String?
+  // Set when the TransitPro team suspends a verified agency (shown to the owner)
+  suspensionReason       String?
+  // Where TransitPro sends the agency's money (Mobile Money), set by the owner
+  payoutName             String?
+  payoutPhone            String?
+  payoutChannel          String? // "cm.mtn" | "cm.orange"
+  // Security: withdrawals wait 24 h after the payout number changes (a stolen login cannot redirect the money at once)
+  payoutAccountUpdatedAt DateTime?
   // Platform commission on parcel fees, in percent (e.g. 10 = 10%)
-  commissionRate  Int          @default(10)
-  ratingAvg       Float        @default(0)
-  ratingCount     Int          @default(0)
-  createdAt       DateTime     @default(now())
+  commissionRate         Int          @default(10)
+  ratingAvg              Float        @default(0)
+  ratingCount            Int          @default(0)
+  createdAt              DateTime     @default(now())
 
-  documents  AgencyDocument[]
-  users      User[]
-  branches   Branch[]
-  routes     Route[]
-  buses      Bus[]
-  trips      Trip[]
-  parcels    Parcel[]
-  employees  Employee[]
-  invites    StaffInvite[]
-  payments   Payment[]
-  expenses   Expense[]
-  reviews    Review[]
+  documents AgencyDocument[]
+  users     User[]
+  branches  Branch[]
+  routes    Route[]
+  buses     Bus[]
+  trips     Trip[]
+  parcels   Parcel[]
+  employees Employee[]
+  invites   StaffInvite[]
+  payments  Payment[]
+  expenses  Expense[]
+  reviews   Review[]
+  payouts   Payout[]
 }
 
 model AgencyDocument {
@@ -227,9 +236,14 @@ model AgencyDocument {
   agencyId   String
   agency     Agency       @relation(fields: [agencyId], references: [id])
   type       DocumentType
+  // Private: never sent to the apps. Opened through GET /agencies/documents/:id/file (owner or TransitPro team)
   fileUrl    String
+  mime       String       @default("image/jpeg")
   verified   Boolean      @default(false)
   uploadedAt DateTime     @default(now())
+
+  // One file per document type: uploading again replaces it
+  @@unique([agencyId, type])
 }
 
 model Branch {
@@ -240,14 +254,14 @@ model Branch {
   city     String
   address  String
 
-  employees        Employee[]
-  tripsFrom        Trip[]           @relation("TripOrigin")
-  tripsTo          Trip[]           @relation("TripDestination")
-  parcelsFrom      Parcel[]         @relation("ParcelOrigin")
-  parcelsTo        Parcel[]         @relation("ParcelDestination")
-  parcelEvents     ParcelEvent[]
-  expenses         Expense[]
-  cashRemittances  CashRemittance[]
+  employees       Employee[]
+  tripsFrom       Trip[]           @relation("TripOrigin")
+  tripsTo         Trip[]           @relation("TripDestination")
+  parcelsFrom     Parcel[]         @relation("ParcelOrigin")
+  parcelsTo       Parcel[]         @relation("ParcelDestination")
+  parcelEvents    ParcelEvent[]
+  expenses        Expense[]
+  cashRemittances CashRemittance[]
 }
 
 // ──────────────── Module 1: Booking & Ticketing ────────────────
@@ -383,24 +397,24 @@ model FuelLog {
 // ──────────────── Module 3: Parcel & Courier ────────────────
 
 model Parcel {
-  id                     String       @id @default(cuid())
-  trackingCode           String       @unique
-  agencyId               String
-  agency                 Agency       @relation(fields: [agencyId], references: [id])
-  originBranchId         String
-  originBranch           Branch       @relation("ParcelOrigin", fields: [originBranchId], references: [id])
-  destinationBranchId    String
-  destinationBranch      Branch       @relation("ParcelDestination", fields: [destinationBranchId], references: [id])
-  tripId                 String?
-  trip                   Trip?        @relation(fields: [tripId], references: [id])
+  id                  String  @id @default(cuid())
+  trackingCode        String  @unique
+  agencyId            String
+  agency              Agency  @relation(fields: [agencyId], references: [id])
+  originBranchId      String
+  originBranch        Branch  @relation("ParcelOrigin", fields: [originBranchId], references: [id])
+  destinationBranchId String
+  destinationBranch   Branch  @relation("ParcelDestination", fields: [destinationBranchId], references: [id])
+  tripId              String?
+  trip                Trip?   @relation(fields: [tripId], references: [id])
 
-  senderName             String
-  senderPhone            String
+  senderName    String
+  senderPhone   String
   // Optional: the delivery code and status emails go there (no SMS budget)
-  senderEmail            String?
-  receiverName           String
-  receiverPhone          String
-  receiverEmail          String?
+  senderEmail   String?
+  receiverName  String
+  receiverPhone String
+  receiverEmail String?
 
   // Anti-tampering: what was sent must be what is received
   declaredContents       String
@@ -410,41 +424,41 @@ model Parcel {
   sealNumber             String
   photoUrls              String[]
 
-  homeDelivery           Boolean      @default(false)
-  deliveryAddress        String?
-  insured                Boolean      @default(false)
-  fee                    Int
-  insuranceFee           Int          @default(0)
+  homeDelivery    Boolean @default(false)
+  deliveryAddress String?
+  insured         Boolean @default(false)
+  fee             Int
+  insuranceFee    Int     @default(0)
   // Cash on delivery: amount the receiver pays, released to the sender through escrow
-  codAmount              Int?
+  codAmount       Int?
 
-  status                 ParcelStatus @default(REGISTERED)
+  status ParcelStatus @default(REGISTERED)
 
   // Chain of custody: the employee who has the parcel right now is responsible for it
-  currentHolderId        String?
-  currentHolder          Employee?    @relation("ParcelHolder", fields: [currentHolderId], references: [id])
-  courierId              String?
-  courier                Employee?    @relation("ParcelCourier", fields: [courierId], references: [id])
-  registeredById         String
-  registeredBy           Employee     @relation("ParcelRegisteredBy", fields: [registeredById], references: [id])
+  currentHolderId String?
+  currentHolder   Employee? @relation("ParcelHolder", fields: [currentHolderId], references: [id])
+  courierId       String?
+  courier         Employee? @relation("ParcelCourier", fields: [courierId], references: [id])
+  registeredById  String
+  registeredBy    Employee  @relation("ParcelRegisteredBy", fields: [registeredById], references: [id])
 
   // Delivery proof: only a hash of the receiver's code is stored
-  deliveryOtpHash        String?
-  deliveryOtpExpiresAt   DateTime?
-  deliveryAttempts       Int          @default(0)
-  deliveredAt            DateTime?
-  deliveryPhotoUrl       String?
-  deliveryLat            Float?
-  deliveryLng            Float?
+  deliveryOtpHash      String?
+  deliveryOtpExpiresAt DateTime?
+  deliveryAttempts     Int       @default(0)
+  deliveredAt          DateTime?
+  deliveryPhotoUrl     String?
+  deliveryLat          Float?
+  deliveryLng          Float?
 
-  createdAt              DateTime     @default(now())
-  updatedAt              DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  events  ParcelEvent[]
-  claims  ParcelClaim[]
+  events   ParcelEvent[]
+  claims   ParcelClaim[]
   escrow   Escrow?
   reviews  Review[]
-  payments Payment[] @relation("ParcelPayments")
+  payments Payment[]     @relation("ParcelPayments")
 
   // A numbered seal is used once per agency (anti-tampering)
   @@unique([agencyId, sealNumber])
@@ -522,35 +536,38 @@ model StaffInvite {
   tokenHash   String    @unique
   expiresAt   DateTime
   acceptedAt  DateTime?
+  cancelledAt DateTime?
   invitedById String
   createdAt   DateTime  @default(now())
+
+  @@index([agencyId, email])
 }
 
 // ──────────────── Module 5: Finance & Reporting ────────────────
 
 model Payment {
-  id          String         @id @default(cuid())
-  agencyId    String?
-  agency      Agency?        @relation(fields: [agencyId], references: [id])
-  payerId     String?
-  payer       User?          @relation(fields: [payerId], references: [id])
-  purpose     PaymentPurpose
-  method      PaymentMethod
-  status      PaymentStatus  @default(PENDING)
-  amount      Int
+  id            String         @id @default(cuid())
+  agencyId      String?
+  agency        Agency?        @relation(fields: [agencyId], references: [id])
+  payerId       String?
+  payer         User?          @relation(fields: [payerId], references: [id])
+  purpose       PaymentPurpose
+  method        PaymentMethod
+  status        PaymentStatus  @default(PENDING)
+  amount        Int
   // TransitPro's share of this payment
-  platformFee Int            @default(0)
+  platformFee   Int            @default(0)
   // Mobile Money through Notch Pay. Cash payments have no provider.
-  provider      String?   // "NOTCHPAY"
-  providerRef   String?   @unique // Notch Pay's reference (trx.test_...)
-  payerPhone    String?   // the Mobile Money number that pays
-  failureReason String?   // FAILED | EXPIRED | CANCELED | PROVIDER_ERROR
+  provider      String? // "NOTCHPAY"
+  providerRef   String?        @unique // Notch Pay's reference (trx.test_...)
+  payerPhone    String? // the Mobile Money number that pays
+  failureReason String? // FAILED | EXPIRED | CANCELED | PROVIDER_ERROR
   settledAt     DateTime? // when it became SUCCEEDED or FAILED
   lastCheckedAt DateTime? // last time we asked Notch Pay
   // Set for parcel payments (fee, cash on delivery). Ticket payments link through Ticket.paymentId.
-  parcelId    String?
-  parcel      Parcel?        @relation("ParcelPayments", fields: [parcelId], references: [id])
-  createdAt   DateTime       @default(now())
+  parcelId      String?
+  parcel        Parcel?        @relation("ParcelPayments", fields: [parcelId], references: [id])
+  createdAt     DateTime       @default(now())
 
   ticket Ticket?
   escrow Escrow?
@@ -569,6 +586,45 @@ model Escrow {
   beneficiaryPhone String
   status           EscrowStatus @default(HELD)
   releasedAt       DateTime?
+  payout           Payout?
+}
+
+// Money TransitPro sends out with Notch Pay transfers (Lead):
+//   AGENCY_PAYOUT ... what an agency is owed (Mobile Money sales minus our commission), sent by the TransitPro team
+//   COD_TO_SENDER ... cash-on-delivery money paid by Mobile Money, sent to the parcel's sender once delivered
+enum PayoutKind {
+  AGENCY_PAYOUT
+  COD_TO_SENDER
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+}
+
+model Payout {
+  id            String       @id @default(cuid())
+  agencyId      String
+  agency        Agency       @relation(fields: [agencyId], references: [id])
+  kind          PayoutKind
+  amount        Int
+  recipientName String
+  phone         String
+  channel       String // "cm.mtn" | "cm.orange"
+  status        PayoutStatus @default(PENDING)
+  providerRef   String?      @unique // Notch Pay's transfer reference (trf.test_...)
+  failureReason String?
+  escrowId      String?      @unique
+  escrow        Escrow?      @relation(fields: [escrowId], references: [id])
+  createdById   String?
+  createdAt     DateTime     @default(now())
+  settledAt     DateTime?
+  lastCheckedAt DateTime?
+
+  @@index([status])
+  @@index([agencyId, kind])
 }
 
 model Expense {

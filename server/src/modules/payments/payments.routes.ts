@@ -4,6 +4,7 @@ import { requireAuth } from '../../middleware/auth';
 import { validate } from '../../middleware/validate';
 import { isValidWebhookSignature } from '../../lib/notchpay';
 import * as payments from './payments.service';
+import * as payouts from '../payouts/payouts.service';
 
 // Owner: Lead (Fanyi Charllson)
 export const paymentsRouter = Router();
@@ -23,10 +24,13 @@ paymentsRouter.post('/webhooks/notchpay', async (req, res) => {
     body.reference,
     body.data?.merchant_reference,
     body.data?.trxref,
+    body.data?.transfer?.reference,
+    body.transfer?.reference,
   ].filter((v): v is string => typeof v === 'string' && v.length > 0 && v.length < 100);
   let known = false;
   for (const ref of candidates) {
-    if (await payments.syncByReference(ref)) {
+    // Payments (money in) or transfers (money out: transfer.complete / transfer.failed)
+    if ((await payments.syncByReference(ref)) || (await payouts.syncByReference(ref))) {
       known = true;
       break;
     }

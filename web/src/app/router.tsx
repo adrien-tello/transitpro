@@ -9,6 +9,10 @@ import { SettingsPage } from '../modules/auth/SettingsPage';
 import { MobileOnlyPage, PendingPage } from '../modules/agencies/PendingPage';
 import { AdminAgenciesPage } from '../modules/agencies/AdminAgenciesPage';
 import { AdminOverviewPage } from '../modules/agencies/AdminOverviewPage';
+import { AdminAgencyListPage } from '../modules/agencies/AdminAgencyListPage';
+import { AdminAgencyDetailPage } from '../modules/agencies/AdminAgencyDetailPage';
+import { AdminPaymentsPage } from '../modules/agencies/AdminPaymentsPage';
+import { AdminPayoutsPage } from '../modules/agencies/AdminPayoutsPage';
 import { BranchesPage } from '../modules/agencies/BranchesPage';
 import { DashboardPage } from '../modules/dashboard/DashboardPage';
 import { ComingSoonPage } from '../modules/dashboard/ComingSoonPage';
@@ -31,9 +35,10 @@ export function AppRoutes() {
       <Route path="/admin" element={<RequireUser area="admin">{(me) => <AppLayout me={me} nav={ADMIN_NAV} bottom={ADMIN_BOTTOM} admin />}</RequireUser>}>
         <Route index element={<RequireUser area="admin">{(me) => <AdminOverviewPage me={me} />}</RequireUser>} />
         <Route path="verify" element={<AdminAgenciesPage />} />
-        <Route path="agencies" element={<ComingSoonPage by="Lead + Adrien" title="All agencies" icon="building" text="Every agency with its status, branches and activity; suspend or reactivate an agency." />} />
-        <Route path="payments" element={<ComingSoonPage by="Lead + Adrien" title="Payments" icon="wallet" text="Every payment on the platform (tickets, parcel fees, cash on delivery) with its Notch Pay status." />} />
-        <Route path="payouts" element={<ComingSoonPage by="Lead" title="Payouts" icon="send" text="What each agency is owed after our 10 % commission, and the “Pay agency” button (Notch Pay transfers)." />} />
+        <Route path="agencies" element={<AdminAgencyListPage />} />
+        <Route path="agencies/:id" element={<AdminAgencyDetailPage />} />
+        <Route path="payments" element={<AdminPaymentsPage />} />
+        <Route path="payouts" element={<AdminPayoutsPage />} />
         <Route path="customers" element={<ComingSoonPage by="Lead + Adrien" title="Customers" icon="users" text="Customer accounts from the mobile app, and blocking an account if needed." />} />
         <Route path="reports" element={<ComingSoonPage by="Lead" title="Reports" icon="chart" text="Monthly volume, commission and growth per agency." />} />
         <Route path="settings" element={<RequireUser area="admin">{(me) => <SettingsPage me={me} />}</RequireUser>} />

@@ -11,7 +11,7 @@ Rules (data hooks, skeleton / empty / error states, design tokens): `web/README.
 | Dashboard | `/` | Done: parcels, alerts and revenue are live. Tickets, buses, trip on the road, departures and bus tiles show "—" until Booking / Fleet send data | Lead (Booking and Fleet tiles: Joy, Sweet) |
 | Parcels (list, register, detail) | `/parcels` | Done | Lead |
 | Branches | `/branches` | Done (owner) | Lead |
-| Settings (profile, change password) | `/settings` | Done | Lead |
+| Settings (profile, password, theme; owner: payouts + withdraw, payout account, documents) | `/settings` | Done | Lead |
 | Trips & booking | `/trips` | Coming soon | Joy (Booking) |
 | Schedule | `/schedule` | Coming soon | Joy (Booking) |
 | Staff | `/staff` | Coming soon | Joy (HR) |
@@ -29,9 +29,9 @@ Rules (data hooks, skeleton / empty / error states, design tokens): `web/README.
 | Overview | `/admin` | Done: agencies, payments, commission, parcels | Lead |
 | Agencies to verify | `/admin/verify` | Done | Lead |
 | Settings | `/admin/settings` | Done (profile, password) | Lead |
-| All agencies | `/admin/agencies` | Coming soon | Lead + Adrien |
-| Payments | `/admin/payments` | Coming soon | Lead + Adrien |
-| Payouts | `/admin/payouts` | Coming soon (next after the dashboard) | Lead |
+| All agencies (+ agency detail: documents, money, suspend) | `/admin/agencies` | Done | Lead |
+| Payments | `/admin/payments` | Done | Lead |
+| Payouts (Pay agency, every transfer) | `/admin/payouts` | Done | Lead |
 | Customers | `/admin/customers` | Coming soon | Lead + Adrien |
 | Reports | `/admin/reports` | Coming soon | Lead |
 

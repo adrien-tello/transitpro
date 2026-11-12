@@ -164,11 +164,20 @@ function Content({ o }: { o: PlatformOverview }) {
           <p className="text-[13px] text-muted">Across every agency. Each agency sees only its own parcels.</p>
         </Panel>
 
-        <Panel label="Payouts" title="Payouts to agencies" className="h-full">
-          <p className="text-[13px] text-body">
-            What each agency is owed after our commission, paid by Mobile Money once it passes a threshold, with a “Pay agency” button here.
-          </p>
-          <p className="mt-auto rounded-[14px] bg-primary-tint px-3 py-2.5 text-[13px] text-primary-dark">Next step after the dashboard: balances and Notch Pay transfers.</p>
+        <Panel label="TransitPro money" title="Our money, all time" className="h-full" actions={<Link to="/admin/payouts" className="text-[13px] font-bold">Payouts</Link>}>
+          <div className="tp-fade grid grid-cols-1 gap-2.5">
+            {[
+              ['Our 10 % commission', o.money.commissionAllTime, 'text-success'],
+              ['We still owe agencies', o.money.owedToAgencies, 'text-warning'],
+              ['Sent to agencies', o.money.paidOutAllTime, 'text-ink'],
+            ].map(([k, v, c]) => (
+              <div key={k as string} className="flex items-center justify-between rounded-[14px] bg-soft px-3 py-2.5">
+                <span className="text-[13px] text-body">{k}</span>
+                <span className={`text-[17px] font-extrabold ${c}`}>{fcfa(v as number)}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-auto text-[13px] text-muted">Agencies withdraw from {fcfa(o.money.minimumPayout)}; you can also pay them from Payouts.</p>
         </Panel>
       </Row>
     </>

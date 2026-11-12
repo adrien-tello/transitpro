@@ -28,4 +28,11 @@ export const keys = {
   parcelStats: ['parcels', 'stats'] as const, // under 'parcels': refreshed with the lists after every change
   pendingAgencies: ['admin', 'pending-agencies'] as const,
   overview: ['admin', 'overview'] as const,
+  myDocuments: ['documents', 'mine'] as const,
+  myPayouts: ['payouts', 'mine'] as const,
+  adminAgencies: (filters?: object) => (filters ? (['admin', 'agencies', filters] as const) : (['admin', 'agencies'] as const)),
+  adminAgency: (id: string) => ['admin', 'agency', id] as const,
+  adminPayments: (filters: object) => ['admin', 'payments', filters] as const,
+  payoutAgencies: ['admin', 'payouts', 'agencies'] as const,
+  payoutHistory: (filters: object) => ['admin', 'payouts', 'history', filters] as const,
 };

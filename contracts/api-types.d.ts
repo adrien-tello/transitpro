@@ -66,7 +66,7 @@ export interface SessionResponse {
 
 // GET /auth/me  → the app opens the customer screens or the staff screens from `role`
 export interface Me extends PublicUser {
-  agency: { id: string; name: string; status: AgencyStatus; rejectionReason: string | null } | null;
+  agency: { id: string; name: string; status: AgencyStatus; rejectionReason: string | null; suspensionReason: string | null } | null;
   employee: { id: string; jobTitle: string; branchId: string | null; active: boolean } | null;
 }
 
@@ -113,7 +113,8 @@ export interface PendingAgency {
   email: string;
   rccmNumber: string | null;
   niuNumber: string | null;
-  documentTypes: string[]; // RCCM, NIU, OWNER_ID, TRANSPORT_LICENCE already uploaded
+  documentTypes: string[]; // RCCM, NIU, OWNER_CNI_FRONT, OWNER_CNI_BACK, TRANSPORT_LICENCE already uploaded
+  documents: { id: string; type: string; mime: string; uploadedAt: string }[]; // open with GET /agencies/documents/:id/file
   owner: { fullName: string; email: string; phone: string | null } | null;
   createdAt: string;
 }
@@ -228,6 +229,20 @@ export interface CreateInviteInput {
 export interface InviteCreated {
   inviteId: string;
   expiresAt: string;
+}
+
+// GET /hr/invites (not accepted, not cancelled)   Screen: Web · Staff "Waiting for the person"
+export interface PendingInviteRow {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  role: Role;
+  branchName: string | null;
+  invitedBy: string;
+  createdAt: string;
+  expiresAt: string;
+  expired: boolean;
 }
 
 // GET /hr/invites/:token                          Screen: Staff · Invite, set password
@@ -439,6 +454,123 @@ export interface ParcelStats {
   alerts: ParcelAlert[]; // at most 5, newest first
 }
 
+// ─── Agency documents (Lead) ───
+export type DocumentType = 'RCCM' | 'NIU' | 'OWNER_CNI_FRONT' | 'OWNER_CNI_BACK' | 'TRANSPORT_LICENCE';
+
+// GET /agencies/me/documents, PUT /agencies/me/documents/:type (raw image or PDF body)
+// The file itself: GET /agencies/documents/:id/file (owner of the agency or TransitPro team only)
+export interface AgencyDocumentView {
+  id: string;
+  type: DocumentType;
+  mime: string; // image/jpeg, image/png, image/webp, application/pdf
+  uploadedAt: string;
+}
+
+// ─── TransitPro team: agencies (Lead) ───
+// GET /agencies/admin/list?status=&q=&page=        Screen: Web · All agencies
+export interface AdminAgencyRow {
+  id: string;
+  name: string;
+  slug: string;
+  status: AgencyStatus;
+  headOffice: string;
+  phone: string;
+  email: string;
+  createdAt: string;
+  verifiedAt: string | null;
+  branches: number;
+  staff: number;
+  parcels: number;
+  documents: number; // of 5
+}
+
+// GET /agencies/admin/:id                          Screen: Web · All agencies > agency
+export interface AdminAgencyDetail extends AdminAgencyRow {
+  rccmNumber: string | null;
+  niuNumber: string | null;
+  rejectionReason: string | null;
+  suspensionReason: string | null;
+  owner: { fullName: string; email: string; phone: string | null } | null;
+  documents: AgencyDocumentView[];
+  payoutAccount: PayoutAccount | null;
+  balance: AgencyBalance;
+}
+
+// ─── TransitPro team: payments (Lead) ───
+// GET /agencies/admin/payments?status=&method=&purpose=&q=&page=   Screen: Web · Payments
+export interface AdminPaymentRow {
+  id: string;
+  createdAt: string;
+  settledAt: string | null;
+  agencyName: string | null;
+  purpose: 'TICKET' | 'PARCEL_FEE' | 'COD_COLLECTION' | 'SUBSCRIPTION';
+  method: PaymentMethod;
+  amount: number;
+  platformFee: number;
+  status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'REFUNDED';
+  failureReason: string | null;
+  providerRef: string | null;
+  payerPhone: string | null;
+  parcelCode: string | null;
+}
+
+// ─── Payouts (Lead): TransitPro sends money out with Notch Pay transfers ───
+export type PayoutChannel = 'cm.mtn' | 'cm.orange';
+
+// PUT /agencies/me/payout-account (owner)          Screen: Web · Settings "Payout account"
+export interface PayoutAccount {
+  name: string;
+  phone: string;
+  channel: PayoutChannel;
+}
+
+// What TransitPro owes the agency, in FCFA
+//   mobileMoneyNet = Mobile Money sales (tickets + parcel fees) minus our commission (TransitPro holds this money)
+//   cashCommission = our commission on cash sales (the agency kept that cash, so it owes us this part)
+//   paidOut        = payouts sent or on their way
+//   available      = mobileMoneyNet - cashCommission - paidOut
+export interface AgencyBalance {
+  mobileMoneyNet: number;
+  cashCommission: number;
+  paidOut: number;
+  available: number;
+  minimumPayout: number; // threshold: no payout below it
+}
+
+export interface PayoutView {
+  id: string;
+  kind: 'AGENCY_PAYOUT' | 'COD_TO_SENDER';
+  amount: number;
+  recipientName: string;
+  phone: string;
+  channel: PayoutChannel;
+  status: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED';
+  failureReason: string | null;
+  createdAt: string;
+  settledAt: string | null;
+  agencyName?: string;
+  parcelCode?: string | null;
+}
+
+// GET /payouts/mine (owner, accountant)            Screen: Web · Settings "Payouts"
+// POST /payouts/mine/withdraw { amount? } (owner) → PayoutView
+export interface AgencyPayouts {
+  balance: AgencyBalance;
+  account: PayoutAccount | null;
+  payouts: PayoutView[];
+  withdrawableAt: string | null; // set while the 24 h hold after a payout-number change runs
+}
+
+// GET /payouts/admin/agencies                      Screen: Web · TransitPro Payouts
+export interface AdminPayoutAgencyRow {
+  agencyId: string;
+  agencyName: string;
+  status: AgencyStatus;
+  account: PayoutAccount | null;
+  balance: AgencyBalance;
+  lastPayoutAt: string | null;
+}
+
 // GET /agencies/admin/overview   Screen: Web · TransitPro team overview
 export interface PlatformOverview {
   agencies: { pending: number; approved: number; rejected: number; suspended: number };
@@ -446,4 +578,6 @@ export interface PlatformOverview {
   days: { date: string; volume: number; commission: number; signups: number }[]; // last 7 days, oldest first
   week: { volume: number; commission: number; payments: number; failed: number };
   latestAgencies: { id: string; name: string; headOffice: string; status: AgencyStatus; createdAt: string }[];
+  // TransitPro's own money, all time: our 10 % commission, what we still owe agencies, what we sent them
+  money: { commissionAllTime: number; owedToAgencies: number; paidOutAllTime: number; minimumPayout: number };
 }

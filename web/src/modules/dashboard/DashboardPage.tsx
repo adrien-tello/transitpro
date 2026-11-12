@@ -5,9 +5,10 @@ import { PageHeader } from '../../app/AppLayout';
 import { MiniBars, WeekChart } from '../../components/ui/Charts';
 import { EmptyState, ErrorState, Panel, Skeleton, SkeletonRows } from '../../components/ui/Feedback';
 import { Icon, type IconName } from '../../components/ui/Icon';
-import { ago, compact, fcfa, weekday } from '../../lib/format';
+import { ago, compact, dateTime, fcfa, weekday } from '../../lib/format';
 import { StatusBadge, statusLabel } from '../parcels/parcel-ui';
 import { useParcelStats, useParcels } from '../parcels/parcels.api';
+import { useMyPayouts } from '../agencies/agencies.api';
 
 // Agency dashboard, laid out like the design canvas ("Web · Agency dashboard"):
 // greeting + actions, 4 key figures, live map + alerts, latest parcels + statuses, week revenue + trips.
@@ -78,6 +79,7 @@ export function DashboardPage({ me }: { me: Me }) {
       ) : (
         <>
           <Kpis stats={stats.data} period={period} />
+          {me.role === 'AGENCY_OWNER' && <MoneyStrip />}
           {/* Same order as the design. Booking / Fleet tiles show their empty, first-day state until those modules are connected. */}
           <Row>
             <LiveMap />
@@ -538,5 +540,38 @@ function BusAttention() {
         : a bus due for service shows here, and its trips are blocked from sale.
       </p>
     </Panel>
+  );
+}
+
+// Owner only: what TransitPro owes the agency, with the way to withdraw it (Settings)
+function MoneyStrip() {
+  const q = useMyPayouts();
+  if (q.isPending) return <Skeleton className="h-[74px] rounded-[22px]" />;
+  if (q.isError) return null;
+  const b = q.data.balance;
+  const ready = b.available >= b.minimumPayout && !!q.data.account && !q.data.withdrawableAt;
+  return (
+    <section aria-label="Your money" className="tp-fade flex flex-wrap items-center gap-4 rounded-[22px] bg-inverse px-5 py-4 text-white">
+      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15">
+        <Icon name="wallet" size={18} />
+      </span>
+      <div className="min-w-0 flex-[1_1_220px]">
+        <div className="text-xs font-semibold text-white/70">TransitPro owes your agency</div>
+        <div className="text-[22px] font-extrabold">{fcfa(b.available)}</div>
+      </div>
+      <div className="text-xs text-white/70">
+        Mobile Money sales after our 10 % ·{' '}
+        {ready
+          ? 'ready to withdraw'
+          : !q.data.account
+            ? 'add a payout account to withdraw'
+            : q.data.withdrawableAt
+              ? `withdrawals open ${dateTime(q.data.withdrawableAt)}`
+              : `withdrawals from ${fcfa(b.minimumPayout)}`}
+      </div>
+      <Link to="/settings" className="flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-bold text-[#0e1726] hover:text-[#0e1726]">
+        {ready ? 'Withdraw' : 'See details'} <Icon name="chevronRight" size={16} />
+      </Link>
+    </section>
   );
 }

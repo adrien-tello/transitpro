@@ -56,3 +56,30 @@ export function rejectedEmail(agency: AgencyContact, reason: string): Email {
     footnote: `You get this email because ${agency.email} is the contact of ${agency.name}.`,
   };
 }
+
+export function suspendedEmail(agency: AgencyContact, reason: string): Email {
+  return {
+    to: agency.email,
+    subject: `${agency.name} is suspended on TransitPro`,
+    preheader: `Reason: ${reason}`,
+    greeting: 'Hello,',
+    paragraphs: [
+      `The TransitPro team suspended ${agency.name}. While it is suspended, customers cannot book your trips or send parcels with you, and your staff cannot use the dashboard or the staff app.`,
+    ],
+    quote: { label: 'Reason', text: reason },
+    after: ['Reply to the TransitPro team through your usual contact to fix this. Money we already owe you is still paid.'],
+    footnote: `You get this email because ${agency.email} is the contact of ${agency.name}.`,
+  };
+}
+
+export function reactivatedEmail(agency: AgencyContact): Email {
+  return {
+    to: agency.email,
+    subject: `${agency.name} is active again on TransitPro`,
+    preheader: 'Your staff and your customers can use TransitPro again.',
+    greeting: 'Hello,',
+    paragraphs: [`Good news: ${agency.name} is active again. Customers can book your trips and your staff can log in as before.`],
+    button: { label: 'Open your dashboard', url: env.WEB_URL },
+    footnote: `You get this email because ${agency.email} is the contact of ${agency.name}.`,
+  };
+}

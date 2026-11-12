@@ -1,0 +1,1 @@
+-- Empty on purpose (recorded by mistake before the schema change; the change is in the next migration).

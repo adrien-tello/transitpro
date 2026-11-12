@@ -46,6 +46,8 @@ export function requireJson(req: Request, _res: Response, next: NextFunction) {
   if (!WRITE_METHODS.has(req.method)) return next();
   // Photo uploads send the image itself; the uploads route checks the type and the bytes
   if (req.method === 'POST' && req.path === '/api/uploads') return next();
+  // Agency documents: same, the documents route checks the type (image or PDF) and the bytes
+  if (req.method === 'PUT' && /^\/api\/agencies\/me\/documents\/[A-Z_]+$/.test(req.path)) return next();
   const hasBody = Number(req.headers['content-length'] ?? 0) > 0 || req.headers['transfer-encoding'] !== undefined;
   if (hasBody && !req.is('application/json')) {
     return next(new HttpError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Send the body as JSON (Content-Type: application/json)'));

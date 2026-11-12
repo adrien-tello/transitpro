@@ -5,7 +5,8 @@ import path from 'path';
 import { requireAuth } from '../../middleware/auth';
 import rateLimit from 'express-rate-limit';
 import { HttpError, badRequest, notFound } from '../../lib/http-error';
-import { cloudinaryEnabled, isCloudinaryUrl, uploadImage } from '../../lib/cloudinary';
+import { agencyFolder, cloudinaryEnabled, isCloudinaryUrl, uploadImage, userFolder } from '../../lib/cloudinary';
+import { prisma } from '../../lib/prisma';
 
 // Owner: Lead (Fanyi Charllson). Photos (parcel contents, proof of delivery, agency documents later).
 //
@@ -57,11 +58,14 @@ uploadsRouter.post(
     if (!Buffer.isBuffer(body) || body.length === 0) throw badRequest('The image is empty');
     if (!looksLike(ext, body)) throw badRequest('This file is not a valid image');
 
-    // Cloudinary when configured (folder per agency); local disk while developing without it
+    // Cloudinary when configured: transitpro/agencies/<slug>/parcels (or /deliveries with ?purpose=delivery).
+    // Local disk while developing without it.
     if (cloudinaryEnabled()) {
-      const folder = `transitpro/${req.user!.agencyId ?? 'users'}`;
+      const delivery = req.query.purpose === 'delivery';
+      const agency = req.user!.agencyId ? await prisma.agency.findUnique({ where: { id: req.user!.agencyId }, select: { slug: true } }) : null;
+      const folder = agency ? agencyFolder(agency.slug, delivery ? 'deliveries' : 'parcels') : userFolder(req.user!.id);
       try {
-        const url = await uploadImage(body, MIME[ext], folder);
+        const url = await uploadImage(body, MIME[ext], folder, delivery ? 'delivery' : 'parcel');
         res.status(201).json({ data: { url } });
       } catch {
         throw new HttpError(502, 'UPLOAD_FAILED', 'The photo could not be saved, try again');

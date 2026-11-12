@@ -39,6 +39,8 @@ const schema = z
     NOTCHPAY_HASH_KEY: z.string().trim().default(''), // checks that a webhook really comes from Notch Pay
     // Minutes a Mobile Money payment may stay PENDING before we give up (the phone prompt expires)
     PAYMENT_TIMEOUT_MINUTES: z.coerce.number().int().min(2).max(60).default(15),
+    // Smallest payout TransitPro sends to an agency (FCFA): fewer, bigger transfers = fewer fees
+    PAYOUT_MINIMUM: z.coerce.number().int().min(100).max(10_000_000).default(5000),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   })
   .refine((e) => e.NODE_ENV !== 'production' || !/localhost/.test(e.CORS_ORIGINS), {

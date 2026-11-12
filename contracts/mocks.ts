@@ -55,7 +55,7 @@ export const meCourier: Me = {
   phone: '+237690000005',
   role: 'COURIER',
   agencyId: 'ag_etoile',
-  agency: { id: 'ag_etoile', name: 'Étoile Voyages', status: 'APPROVED', rejectionReason: null },
+  agency: { id: 'ag_etoile', name: 'Étoile Voyages', status: 'APPROVED', rejectionReason: null, suspensionReason: null },
   employee: { id: 'emp_bernard', jobTitle: 'Courier', branchId: 'br_mvan', active: true },
 };
 

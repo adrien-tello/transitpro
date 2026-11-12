@@ -7,7 +7,8 @@ import { FormError, TextArea } from '../../components/ui/Field';
 import { useToast } from '../../components/ui/Toast';
 import { errorMessage } from '../../lib/api';
 import { ago, initials, phone } from '../../lib/format';
-import { useDecideAgency, usePendingAgencies } from './agencies.api';
+import { documentFileUrl, useDecideAgency, usePendingAgencies } from './agencies.api';
+import { Icon } from '../../components/ui/Icon';
 
 // TransitPro team: agencies waiting for verification, oldest first. Approve, or reject with a reason
 // (the agency gets an email either way).
@@ -86,11 +87,26 @@ function AgencyRow({ agency: a }: { agency: PendingAgency }) {
             ))}
           </dl>
           <div className="mt-3 flex flex-wrap gap-1.5">
-            {Object.keys(DOC_LABEL).map((t) => (
-              <Badge key={t} tone={a.documentTypes.includes(t) ? 'green' : 'grey'}>
-                {a.documentTypes.includes(t) ? '✓' : '·'} {DOC_LABEL[t]}
-              </Badge>
-            ))}
+            {Object.keys(DOC_LABEL).map((t) => {
+              const file = a.documents.find((d) => d.type === t);
+              return file ? (
+                <a
+                  key={t}
+                  href={documentFileUrl(file.id)}
+                  target="_blank"
+                  rel="noopener"
+                  title="Open the document"
+                  className="inline-flex items-center gap-1 rounded-full bg-success-tint px-2.5 py-1 text-xs font-bold text-success transition-[filter] hover:brightness-95 hover:text-success"
+                >
+                  <Icon name="eye" size={13} strokeWidth={2.2} /> {DOC_LABEL[t]}
+                </a>
+              ) : (
+                <Badge key={t} tone="grey">
+                  · {DOC_LABEL[t]}
+                </Badge>
+              );
+            })}
+            {a.documents.length < 5 && <span className="text-xs font-semibold text-warning">{5 - a.documents.length} missing</span>}
           </div>
         </div>
         {!rejecting && (
