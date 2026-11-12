@@ -42,15 +42,23 @@ export async function uploadImage(bytes: Buffer, mime: string, folder: string, n
 
 // PDFs go as "raw" files: Cloudinary's free plan blocks PDF delivery from the image endpoint.
 // `name` is the readable start of the file name ("rccm"); a random part is always added.
-export async function uploadFile(bytes: Buffer, mime: string, folder: string, resource: 'image' | 'raw', name: string): Promise<string> {
+// access "private" = Cloudinary "authenticated" delivery: the file is refused to EVERYONE, even with its exact address,
+// except signed requests made with our secret (only this server). Used for agency documents (ID cards, RCCM...).
+export async function uploadFile(
+  bytes: Buffer,
+  mime: string,
+  folder: string,
+  resource: 'image' | 'raw',
+  name: string,
+  access: 'public' | 'private' = 'public',
+): Promise<string> {
   const publicId = `${folderName(name)}-${randomBytes(6).toString('hex')}${resource === 'raw' && mime === 'application/pdf' ? '.pdf' : ''}`;
-  const params = { folder, public_id: publicId, timestamp: String(Math.floor(Date.now() / 1000)) };
+  const params: Record<string, string> = { folder, public_id: publicId, timestamp: String(Math.floor(Date.now() / 1000)) };
+  if (access === 'private') params.type = 'authenticated';
   const form = new FormData();
   form.append('file', new Blob([new Uint8Array(bytes)], { type: mime }), resource === 'raw' ? 'document.pdf' : 'photo');
   form.append('api_key', env.CLOUDINARY_API_KEY);
-  form.append('timestamp', params.timestamp);
-  form.append('folder', params.folder);
-  form.append('public_id', params.public_id);
+  for (const [k, v] of Object.entries(params)) form.append(k, v);
   form.append('signature', sign(params));
 
   const res = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(env.CLOUDINARY_CLOUD_NAME)}/${resource}/upload`, {
@@ -64,18 +72,35 @@ export async function uploadFile(bytes: Buffer, mime: string, folder: string, re
     console.error(`[uploads] Cloudinary refused an upload (HTTP ${res.status}): ${json.error?.message ?? 'no message'}`);
     throw new Error('Storage refused the upload');
   }
+  // Private files: Cloudinary answers with a SIGNED address ("/s--abc--/"), which would open the file forever.
+  // We keep the address without the signature: useless on its own, the server downloads with a fresh signed request.
+  if (access === 'private') return json.secure_url.replace(/\/s--[^/]+--\//, '/');
   return json.secure_url; // https://res.cloudinary.com/<cloud>/image/upload/v.../transitpro/agencies/<slug>/parcels/photo-xxxx.jpg
 }
 
-// Reads a file we stored, for the server only. PDFs are NOT publicly delivered by Cloudinary (free plans block
-// PDF delivery, which suits ID documents), so they are fetched through the signed download API (needs our secret).
+// Splits one of our Cloudinary URLs: resource (image | raw), delivery type (upload | authenticated), public id, format
+function parse(url: string) {
+  const m = new RegExp(
+    `^https://res\\.cloudinary\\.com/${env.CLOUDINARY_CLOUD_NAME}/(image|raw)/(upload|authenticated)/(?:s--[^/]+--/)?(?:v\\d+/)?(.+)$`,
+  ).exec(url);
+  if (!m) return null;
+  const resource = m[1] as 'image' | 'raw';
+  const ext = /\.([a-z0-9]+)$/i.exec(m[3])?.[1] ?? '';
+  // Images: the public id has no extension (it is the format); raw files: the extension is part of the id
+  const publicId = resource === 'image' ? m[3].replace(/\.[a-z0-9]+$/i, '') : m[3];
+  return { resource, type: m[2] as 'upload' | 'authenticated', publicId, format: ext };
+}
+
+// Reads a file we stored, for the server only. Private documents and PDFs (Cloudinary does not deliver PDFs
+// publicly on this plan) go through the signed download API, which needs our secret.
 export async function downloadFile(url: string): Promise<Buffer | null> {
-  const m = new RegExp(`^https://res\\.cloudinary\\.com/${env.CLOUDINARY_CLOUD_NAME}/(image|raw)/upload/(?:v\\d+/)?(.+)$`).exec(url);
+  const f = parse(url);
   let target = url;
-  if (m && m[1] === 'raw' && cloudinaryEnabled()) {
-    const params = { public_id: m[2], timestamp: String(Math.floor(Date.now() / 1000)), type: 'upload' };
+  if (f && cloudinaryEnabled() && (f.type === 'authenticated' || f.resource === 'raw')) {
+    const params: Record<string, string> = { public_id: f.publicId, timestamp: String(Math.floor(Date.now() / 1000)), type: f.type };
+    if (f.resource === 'image' && f.format) params.format = f.format;
     const q = new URLSearchParams({ ...params, api_key: env.CLOUDINARY_API_KEY, signature: sign(params) });
-    target = `https://api.cloudinary.com/v1_1/${encodeURIComponent(env.CLOUDINARY_CLOUD_NAME)}/raw/download?${q}`;
+    target = `https://api.cloudinary.com/v1_1/${encodeURIComponent(env.CLOUDINARY_CLOUD_NAME)}/${f.resource}/download?${q}`;
   }
   const res = await fetch(target, { signal: AbortSignal.timeout(20_000) }).catch(() => null);
   if (!res || !res.ok) {
@@ -87,19 +112,15 @@ export async function downloadFile(url: string): Promise<Buffer | null> {
 
 // Deletes a file we stored (a replaced document). Best effort: a failure is logged, never shown to the user.
 export async function deleteFile(url: string): Promise<void> {
-  const m = new RegExp(`^https://res\\.cloudinary\\.com/${env.CLOUDINARY_CLOUD_NAME}/(image|raw)/upload/(?:v\\d+/)?(.+)$`).exec(url);
-  if (!m || !cloudinaryEnabled()) return;
-  const resource = m[1] as 'image' | 'raw';
-  // Images: the public id has no extension; raw files: the extension is part of it
-  const publicId = resource === 'image' ? m[2].replace(/\.[a-z0-9]+$/i, '') : m[2];
-  const params = { public_id: publicId, timestamp: String(Math.floor(Date.now() / 1000)) };
+  const f = parse(url);
+  if (!f || !cloudinaryEnabled()) return;
+  const params = { public_id: f.publicId, timestamp: String(Math.floor(Date.now() / 1000)), type: f.type };
   const form = new FormData();
   form.append('api_key', env.CLOUDINARY_API_KEY);
-  form.append('public_id', params.public_id);
-  form.append('timestamp', params.timestamp);
+  for (const [k, v] of Object.entries(params)) form.append(k, v);
   form.append('signature', sign(params));
   try {
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(env.CLOUDINARY_CLOUD_NAME)}/${resource}/destroy`, {
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(env.CLOUDINARY_CLOUD_NAME)}/${f.resource}/destroy`, {
       method: 'POST',
       body: form,
       signal: AbortSignal.timeout(15_000),

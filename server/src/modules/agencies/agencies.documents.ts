@@ -10,7 +10,8 @@ import { agencyFolder, cloudinaryEnabled, deleteFile, downloadFile, uploadFile }
 // Owner: Lead (Fanyi Charllson). The papers that prove an agency is a real, licensed company.
 //
 // They hold personal data (the owner's ID card), so the file is PRIVATE:
-//   - stored on Cloudinary under a random name (or server/uploads/docs/ while developing without Cloudinary)
+//   - stored on Cloudinary as "authenticated" files: refused to everyone, even with the exact address, except signed
+//     requests from this server (or server/uploads/docs/ while developing without Cloudinary)
 //   - its storage URL is never sent to any app
 //   - GET /agencies/documents/:id/file streams it, only to the agency's owner or the TransitPro team
 
@@ -66,7 +67,7 @@ export async function upload(agencyId: string, agencyStatus: string, type: Docum
   if (cloudinaryEnabled()) {
     const agency = await prisma.agency.findUniqueOrThrow({ where: { id: agencyId }, select: { slug: true } });
     try {
-      fileUrl = await uploadFile(body, MIME_OF[ext], agencyFolder(agency.slug, 'documents'), ext === 'pdf' ? 'raw' : 'image', FILE_NAME[type]);
+      fileUrl = await uploadFile(body, MIME_OF[ext], agencyFolder(agency.slug, 'documents'), ext === 'pdf' ? 'raw' : 'image', FILE_NAME[type], 'private');
     } catch {
       throw new HttpError(502, 'UPLOAD_FAILED', 'The document could not be saved, try again');
     }
