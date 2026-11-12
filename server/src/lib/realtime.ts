@@ -1,6 +1,9 @@
 import type { Request, Response } from 'express';
 import type { Role } from '@prisma/client';
 import { prisma } from './prisma';
+import { env } from '../config/env';
+
+const allowedOrigins = new Set(env.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean));
 
 // Instant updates for the dashboards (Server-Sent Events): GET /api/events keeps one connection open per tab;
 // the server pushes a small message when something changes, the page refreshes the right numbers and may pop
@@ -19,7 +22,7 @@ export type RealtimeEvent =
   | { type: 'agency.status'; agencyId: string; name: string; status: string }
   | { type: 'parcel.changed'; trackingCode: string | null }
   | { type: 'payment.settled'; paymentId: string; status: string; purpose: string; amount: number; agencyId: string | null }
-  | { type: 'payout.changed'; payoutId: string; status: string; amount: number; kind: string; agencyId: string };
+  | { type: 'payout.changed'; payoutId: string; status: string; amount: number; kind: string; agencyId: string | null };
 
 export interface Audience {
   team?: boolean;
@@ -38,6 +41,7 @@ interface Client {
 
 const clients = new Set<Client>();
 const MAX_PER_USER = 5;
+const MAX_TOTAL = 2000; // memory guard for one server
 const HEARTBEAT_MS = 30_000;
 
 function matches(c: Client, a: Audience): boolean {
@@ -65,6 +69,11 @@ export async function stream(req: Request, res: Response) {
   const user = req.user!;
   const account = await prisma.user.findUnique({ where: { id: user.id }, select: { tokenVersion: true } });
   if (!account) return void res.status(401).end();
+  // Only our own web apps may open a stream (another website could not read it anyway, CORS blocks that,
+  // but it could keep connections open in a logged-in user's browser)
+  const origin = req.headers.origin;
+  if (origin && !allowedOrigins.has(origin)) return void res.status(403).json({ error: { code: 'BAD_ORIGIN', message: 'Not allowed from this website' } });
+  if (clients.size >= MAX_TOTAL) return void res.status(503).json({ error: { code: 'BUSY', message: 'Live updates are busy, the page still works' } });
   const mine = [...clients].filter((c) => c.userId === user.id);
   if (mine.length >= MAX_PER_USER) mine[0].res.end(); // oldest tab gives way
 
@@ -81,9 +90,14 @@ export async function stream(req: Request, res: Response) {
 
   // Heartbeat keeps proxies from closing the connection, and re-checks the account:
   // logged out everywhere, password changed or account disabled → the stream ends.
+  // Also: staff deactivated, moved to another agency or given another role → the stream ends (the page reconnects
+  // with the new rights, or not at all).
   const beat = setInterval(async () => {
-    const u = await prisma.user.findUnique({ where: { id: user.id }, select: { isActive: true, tokenVersion: true } }).catch(() => undefined);
-    if (u === null || (u && (!u.isActive || u.tokenVersion !== client.tokenVersion))) return void res.end();
+    const u = await prisma.user
+      .findUnique({ where: { id: user.id }, select: { isActive: true, tokenVersion: true, role: true, agencyId: true, employee: { select: { active: true } } } })
+      .catch(() => undefined);
+    const changed = u && (!u.isActive || u.tokenVersion !== client.tokenVersion || u.role !== client.role || u.agencyId !== client.agencyId || u.employee?.active === false);
+    if (u === null || changed) return void res.end();
     try {
       res.write(`: ping\n\n`);
     } catch {

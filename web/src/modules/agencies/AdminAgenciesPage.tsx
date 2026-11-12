@@ -9,6 +9,7 @@ import { errorMessage } from '../../lib/api';
 import { ago, initials, phone } from '../../lib/format';
 import { documentFileUrl, useDecideAgency, usePendingAgencies } from './agencies.api';
 import { Icon } from '../../components/ui/Icon';
+import { VerifiedSeal } from '../../components/ui/VerifiedBadge';
 
 // TransitPro team: agencies waiting for verification, oldest first. Approve, or reject with a reason
 // (the agency gets an email either way).
@@ -16,7 +17,7 @@ export function AdminAgenciesPage() {
   const list = usePendingAgencies();
   return (
     <>
-      <PageHeader title="Agencies to verify" subtitle="Check each agency's documents and numbers before it can sell tickets or carry parcels." />
+      <PageHeader title="Agencies to verify" subtitle="Agencies that paid for the Verified badge come first, then the oldest requests." />
       {list.isPending ? (
         <div className="flex flex-col gap-3">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -69,6 +70,11 @@ function AgencyRow({ agency: a }: { agency: PendingAgency }) {
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-[17px] font-extrabold text-ink">{a.name}</h2>
             <Badge tone="amber">Signed up {ago(a.createdAt)}</Badge>
+            {a.badgeUntil && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary py-0.5 pl-0.5 pr-2 text-[11px] font-extrabold text-white">
+                <VerifiedSeal size={16} /> Priority · badge paid
+              </span>
+            )}
           </div>
           <p className="text-[13px] text-muted">
             {a.headOffice} · {phone(a.phone)} · {a.email}

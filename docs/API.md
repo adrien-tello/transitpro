@@ -88,6 +88,8 @@ Status: ✅ built · 🧱 stub (returns 501, owner builds it)
 | PUT | `/agencies/me/documents/:type` | AGENCY_OWNER (PENDING, REJECTED or APPROVED) | **Body = the file itself**, `Content-Type` image/jpeg, png, webp or application/pdf, max 5 MB. `:type` = RCCM, NIU, OWNER_CNI_FRONT, OWNER_CNI_BACK, TRANSPORT_LICENCE. Again = replaces (the old file is deleted) | `AgencyDocumentView` | Web · Pending page, Settings | ✅ |
 | GET | `/agencies/documents/:id/file` | the agency's owner, PLATFORM_ADMIN | Streams the file (anyone else: 404) | the file | Web · Open | ✅ |
 | POST | `/agencies/me/resubmit` | AGENCY_OWNER of a REJECTED agency | Documents fixed: back to PENDING | | Web · Pending page | ✅ |
+| GET | `/agencies/me/badge` | AGENCY_OWNER | Optional paid Verified badge: price, months, active until, last payment | `BadgeStatus` | Web · Settings, pending page | ✅ |
+| POST | `/agencies/me/badge` | AGENCY_OWNER (not suspended) | `{ method: MTN_MOMO \| ORANGE_MONEY, payerPhone }` → MoMo prompt. Confirmed = badge for `BADGE_MONTHS` (12). Bought while PENDING = checked first. Renew in the last 2 months | `201 BadgeStatus` | Web · Settings, pending page | ✅ |
 | PUT | `/agencies/me/payout-account` | AGENCY_OWNER | `{ name, phone, channel: cm.mtn \| cm.orange }` (operator must match the number). A new number starts a 24 h hold on withdrawals | `PayoutAccount` | Web · Settings | ✅ |
 | GET/POST | `/agencies/me/branches` | any staff / owner | Branches | `BranchRow[]` | Web · Branches, register parcel | ✅ |
 | GET | `/agencies/admin/overview` | PLATFORM_ADMIN | Agencies by status, parcels, payment volume and commission (7 days), latest sign-ups | `PlatformOverview` | Web · TransitPro overview | ✅ |
@@ -227,6 +229,8 @@ Customers' Mobile Money arrives on TransitPro's Notch Pay account. TransitPro se
 | GET | `/payouts/mine` | AGENCY_OWNER, ACCOUNTANT | Balance, payout account, last payouts, `withdrawableAt` during the 24 h hold | `AgencyPayouts` | ✅ |
 | POST | `/payouts/mine/withdraw` | AGENCY_OWNER | `{ amount? }` (default: everything). From the minimum, not during the 24 h hold | `201 PayoutView` | ✅ |
 | GET | `/payouts/admin/agencies` | PLATFORM_ADMIN | Every verified agency with its balance, biggest first | `AdminPayoutAgencyRow[]` | ✅ |
+| GET | `/payouts/admin/revenue` | PLATFORM_ADMIN | TransitPro's money: totals by source, 30 days, top agencies, latest earnings, wallet (what is really ours), withdrawals | `PlatformRevenue` | ✅ |
+| POST | `/payouts/admin/withdraw` | **master admin only** (`User.isMasterAdmin`) | `{ amount? }` → transfer to TransitPro's account (`TRANSITPRO_PAYOUT_NAME/_PHONE/_CHANNEL` in `.env`, not editable from the web) | `201 PayoutView` | ✅ |
 | POST | `/payouts/admin/agencies/:id` | PLATFORM_ADMIN | "Pay agency" `{ amount? }` | `201 PayoutView` | ✅ |
 | GET | `/payouts/admin/history?kind=&status=&page=` | PLATFORM_ADMIN | Every transfer (agency payouts, cash on delivery to senders) | `Paginated<PayoutView>` | ✅ |
 
@@ -235,6 +239,14 @@ Payout life: `PENDING` → `PROCESSING` (transfer sent) → `SUCCEEDED` or `FAIL
 Measured on the sandbox (the public docs are wrong on two points): `POST /beneficiaries { name, phone, account_number, channel, country: "CM", currency: "XAF", type: "mobile_money" }`, then `POST /transfers { amount, currency, reference, recipient: <beneficiary id>, channel }`, both with the private key in `X-Grant`. Test numbers: `670000000` completes, `670000002` fails.
 
 **For module owners** (`payments.service.ts`): `payments.create(tx, {...})` inside your transaction (cash is settled there and then), `payments.start(id, description, payerName)` after the commit (sends the prompt), and `payments.onSettled('TICKET', handler)` to react to the result (mark the ticket PAID, or free the seat). Booking (Joy) plugs in this way.
+
+## Live updates · Lead
+
+`GET /api/events` (logged in) keeps a Server-Sent Events connection open. The server pushes `event: <type>` + JSON:
+`agency.registered`, `agency.documents`, `agency.status`, `parcel.changed`, `payment.settled`, `payout.changed`.
+Each message goes only to who may know it (TransitPro team / that agency's staff / that payer) and holds ids and names only:
+the page re-reads the details through the normal API. Own limit (60 connections / 15 min / IP), other websites refused (403),
+max 5 per user, the account is re-checked every 30 s. Web: `web/src/lib/realtime.ts`. Mobile apps can poll instead.
 
 ## 5. Finance & Reporting · Sweet
 

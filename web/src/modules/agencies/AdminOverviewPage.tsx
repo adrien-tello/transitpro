@@ -4,6 +4,7 @@ import { PageHeader } from '../../app/AppLayout';
 import { WeekChart } from '../../components/ui/Charts';
 import { Badge, ErrorState, Panel, Skeleton } from '../../components/ui/Feedback';
 import { Icon } from '../../components/ui/Icon';
+import { VerifiedSeal } from '../../components/ui/VerifiedBadge';
 import { ago, compact, fcfa, initials, weekday } from '../../lib/format';
 import { Kpi, Row } from '../dashboard/DashboardPage';
 import { usePlatformOverview } from './agencies.api';
@@ -78,7 +79,7 @@ function Content({ o }: { o: PlatformOverview }) {
           barsLabel="Payment volume per day, last 7 days"
         />
         <Kpi
-          to="/admin/payouts"
+          to="/admin/revenue"
           icon="chart"
           tint="bg-violet-tint text-violet"
           label="Our commission, 7 days"
@@ -164,7 +165,7 @@ function Content({ o }: { o: PlatformOverview }) {
           <p className="text-[13px] text-muted">Across every agency. Each agency sees only its own parcels.</p>
         </Panel>
 
-        <Panel label="TransitPro money" title="Our money, all time" className="h-full" actions={<Link to="/admin/payouts" className="text-[13px] font-bold">Payouts</Link>}>
+        <Panel label="TransitPro money" title="Our money, all time" className="h-full" actions={<Link to="/admin/revenue" className="text-[13px] font-bold">Revenue</Link>}>
           <div className="tp-fade grid grid-cols-1 gap-2.5">
             {[
               ['Our 10 % commission', o.money.commissionAllTime, 'text-success'],
@@ -176,6 +177,12 @@ function Content({ o }: { o: PlatformOverview }) {
                 <span className={`text-[17px] font-extrabold ${c}`}>{fcfa(v as number)}</span>
               </div>
             ))}
+          </div>
+          <div className="flex items-center gap-3 rounded-[14px] bg-primary-tint px-3 py-2.5">
+            <VerifiedSeal size={22} />
+            <span className="text-[13px] text-primary-dark">
+              <b>{o.badges.active}</b> verified agencies with the badge · <b>{o.badges.waitingVerification}</b> paid and waiting (checked first)
+            </span>
           </div>
           <p className="mt-auto text-[13px] text-muted">Agencies withdraw from {fcfa(o.money.minimumPayout)}; you can also pay them from Payouts.</p>
         </Panel>

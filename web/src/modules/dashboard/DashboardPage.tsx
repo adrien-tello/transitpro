@@ -80,6 +80,7 @@ export function DashboardPage({ me }: { me: Me }) {
         <>
           <Kpis stats={stats.data} period={period} />
           {me.role === 'AGENCY_OWNER' && <MoneyStrip />}
+          {me.role === 'AGENCY_OWNER' && !(me.agency?.badgeUntil && new Date(me.agency.badgeUntil) > new Date()) && <BadgeSuggestion />}
           {/* Same order as the design. Booking / Fleet tiles show their empty, first-day state until those modules are connected. */}
           <Row>
             <LiveMap />
@@ -571,6 +572,44 @@ function MoneyStrip() {
       </div>
       <Link to="/settings" className="flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-bold text-[#0e1726] hover:text-[#0e1726]">
         {ready ? 'Withdraw' : 'See details'} <Icon name="chevronRight" size={16} />
+      </Link>
+    </section>
+  );
+}
+
+// Owner without the optional badge: a short suggestion, hidden for 30 days on "Not now" (a per-device convenience)
+const HIDE_KEY = 'tp-badge-hint-hidden-until';
+function BadgeSuggestion() {
+  const [hidden, setHidden] = useState(() => {
+    try {
+      return Number(localStorage.getItem(HIDE_KEY) ?? 0) > Date.now();
+    } catch {
+      return false;
+    }
+  });
+  if (hidden) return null;
+  const hide = () => {
+    try {
+      localStorage.setItem(HIDE_KEY, String(Date.now() + 30 * 86_400_000));
+    } catch {
+      /* private window: hidden until the page reloads */
+    }
+    setHidden(true);
+  };
+  return (
+    <section aria-label="Verified badge" className="tp-fade flex flex-wrap items-center gap-4 rounded-[22px] border border-primary/25 bg-primary-tint px-5 py-4">
+      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
+        <Icon name="shield" size={18} />
+      </span>
+      <div className="min-w-0 flex-[1_1_260px]">
+        <div className="text-[15px] font-extrabold text-ink">Show customers your agency is verified</div>
+        <div className="text-[13px] text-body">An optional badge next to your name in the app. Customers book with more confidence.</div>
+      </div>
+      <button type="button" onClick={hide} className="text-sm font-semibold text-muted hover:text-body">
+        Not now
+      </button>
+      <Link to="/settings#badge" className="flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-white hover:bg-primary-hover hover:text-white">
+        See the advantages <Icon name="chevronRight" size={16} />
       </Link>
     </section>
   );

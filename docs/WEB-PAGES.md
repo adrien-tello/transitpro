@@ -32,6 +32,7 @@ Rules (data hooks, skeleton / empty / error states, design tokens): `web/README.
 | All agencies (+ agency detail: documents, money, suspend) | `/admin/agencies` | Done | Lead |
 | Payments | `/admin/payments` | Done | Lead |
 | Payouts (Pay agency, every transfer) | `/admin/payouts` | Done | Lead |
+| Revenue (our 10 %, badges, wallet, withdraw = master admin) | `/admin/revenue` | Done | Lead |
 | Customers | `/admin/customers` | Coming soon | Lead + Adrien |
 | Reports | `/admin/reports` | Coming soon | Lead |
 

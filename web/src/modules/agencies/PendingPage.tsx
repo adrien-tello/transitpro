@@ -11,6 +11,7 @@ import { ago } from '../../lib/format';
 import { useLogout, useMe } from '../auth/auth.api';
 import { useRealtime } from '../../lib/realtime';
 import { documentFileUrl, useMyDocuments, useResubmit, useUploadDocument } from './agencies.api';
+import { BadgeCard } from './BadgeCard';
 
 // An agency that is not APPROVED lands here: upload the 5 documents, see the decision, what happens next.
 // The server refuses every agency action (403) until approval, whatever this page shows.
@@ -109,6 +110,11 @@ export function PendingPage({ me }: { me: Me }) {
             {docs.isError && <p className="text-sm font-semibold text-danger">{errorMessage(docs.error)}</p>}
           </section>
 
+          {owner && !suspended && (
+            <div className="flex min-w-0 flex-[1_1_100%] flex-col">
+              <BadgeCard me={me} />
+            </div>
+          )}
           <section aria-label="What happens next" className="flex min-w-0 flex-[2_1_340px] flex-col gap-3.5 rounded-[22px] bg-inverse p-[22px] text-white">
             <h2 className="text-[17px] font-bold">What happens next</h2>
             {[

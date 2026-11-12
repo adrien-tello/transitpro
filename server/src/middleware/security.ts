@@ -10,10 +10,21 @@ function tooMany(_req: Request, res: Response) {
   res.status(429).json({ error: { code: 'TOO_MANY_REQUESTS', message: 'Too many requests, slow down and try again later' } });
 }
 
-// Whole API: 300 requests per 15 minutes per IP (stops scraping and floods)
+// Whole API: 300 requests per 15 minutes per IP (stops scraping and floods).
+// The live-updates stream has its own limit (below): its reconnections must not eat the normal API budget.
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 300,
+  skip: (req) => req.path === '/api/events',
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  handler: tooMany,
+});
+
+// Live-updates stream: 60 connections per 15 minutes per IP (a few tabs reconnecting after cuts)
+export const eventsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   handler: tooMany,

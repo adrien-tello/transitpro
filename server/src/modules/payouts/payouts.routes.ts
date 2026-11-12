@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { validate } from '../../middleware/validate';
-import { agencyIdOf, requireAuth, requirePlatformAdmin, requireRole } from '../../middleware/auth';
+import { agencyIdOf, requireAuth, requireMasterAdmin, requirePlatformAdmin, requireRole } from '../../middleware/auth';
+import { prisma } from '../../lib/prisma';
 import * as payouts from './payouts.service';
 
 // Owner: Lead (Fanyi Charllson). Money TransitPro sends out (payouts to agencies, cash on delivery to senders).
@@ -45,5 +46,19 @@ payoutsRouter.post(
   validate({ params: z.object({ id: z.string().min(1).max(40) }), body: z.object({ amount: z.number().int().positive().max(100_000_000).optional() }) }),
   async (req, res) => {
     res.status(201).json({ data: await payouts.payAgency(String(req.params.id), req.body.amount, req.user!.id) });
+  },
+);
+
+// TransitPro's own money: everybody in the team sees it, only the master admin withdraws
+payoutsRouter.get('/admin/revenue', requirePlatformAdmin, async (req, res) => {
+  const u = await prisma.user.findUnique({ where: { id: req.user!.id }, select: { isMasterAdmin: true } });
+  res.json({ data: await payouts.revenue(!!u?.isMasterAdmin) });
+});
+payoutsRouter.post(
+  '/admin/withdraw',
+  requireMasterAdmin,
+  validate({ body: z.object({ amount: z.number().int().positive().max(1_000_000_000).optional() }) }),
+  async (req, res) => {
+    res.status(201).json({ data: await payouts.withdrawPlatform(req.body.amount, req.user!.id) });
   },
 );

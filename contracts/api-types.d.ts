@@ -66,7 +66,9 @@ export interface SessionResponse {
 
 // GET /auth/me  → the app opens the customer screens or the staff screens from `role`
 export interface Me extends PublicUser {
-  agency: { id: string; name: string; status: AgencyStatus; rejectionReason: string | null; suspensionReason: string | null } | null;
+  // badgeUntil: the optional paid "Verified" badge is shown until this date (null = no badge)
+  agency: { id: string; name: string; status: AgencyStatus; rejectionReason: string | null; suspensionReason: string | null; badgeUntil: string | null } | null;
+  masterAdmin: boolean; // TransitPro team: only the master admin withdraws the platform's money
   employee: { id: string; jobTitle: string; branchId: string | null; active: boolean } | null;
 }
 
@@ -117,6 +119,7 @@ export interface PendingAgency {
   documents: { id: string; type: string; mime: string; uploadedAt: string }[]; // open with GET /agencies/documents/:id/file
   owner: { fullName: string; email: string; phone: string | null } | null;
   createdAt: string;
+  badgeUntil: string | null; // paid the Verified badge: checked first (priority)
 }
 
 // GET /agencies → Paginated<AgencyListItem>      Screen: Customer · Verified agencies, Home avatars
@@ -473,6 +476,7 @@ export interface AdminAgencyRow {
   name: string;
   slug: string;
   status: AgencyStatus;
+  badgeUntil: string | null; // optional paid badge
   headOffice: string;
   phone: string;
   email: string;
@@ -539,7 +543,7 @@ export interface AgencyBalance {
 
 export interface PayoutView {
   id: string;
-  kind: 'AGENCY_PAYOUT' | 'COD_TO_SENDER';
+  kind: 'AGENCY_PAYOUT' | 'COD_TO_SENDER' | 'PLATFORM_WITHDRAWAL';
   amount: number;
   recipientName: string;
   phone: string;
@@ -571,6 +575,37 @@ export interface AdminPayoutAgencyRow {
   lastPayoutAt: string | null;
 }
 
+// ─── Optional "Verified" badge (Lead) ───
+// GET /agencies/me/badge, POST /agencies/me/badge { method: MTN_MOMO | ORANGE_MONEY, payerPhone }   Screen: Web · Settings
+export interface BadgeStatus {
+  price: number; // FCFA
+  months: number; // how long one payment lasts
+  activeUntil: string | null; // the badge shows until this date
+  active: boolean;
+  payment: PaymentView | null; // the last badge payment (PENDING while the owner approves on the phone)
+}
+
+// ─── TransitPro's own money (Lead) ───
+// GET /payouts/admin/revenue                         Screen: Web · Revenue (from the commission card)
+export interface PlatformRevenue {
+  totals: { allTime: number; last30Days: number; fromTickets: number; fromParcels: number; fromBadges: number };
+  days: { date: string; amount: number }[]; // last 30 days, oldest first
+  byAgency: { agencyId: string; name: string; sales: number; commission: number }[]; // top 10
+  recent: { id: string; at: string; agencyName: string | null; purpose: string; method: PaymentMethod; amount: number; ourPart: number }[];
+  // Money in TransitPro's Notch Pay account and what part of it is really ours
+  wallet: {
+    mobileMoneyIn: number; // every successful Mobile Money payment
+    sentOut: number; // transfers sent or on their way (agencies, senders, our withdrawals)
+    owedToAgencies: number;
+    codHeld: number; // cash on delivery paid by MoMo, waiting for delivery
+    available: number; // ours, can be withdrawn
+    providerBalance: number | null; // what Notch Pay says (null if it cannot be read)
+  };
+  account: { name: string; phone: string; channel: PayoutChannel } | null; // TRANSITPRO_PAYOUT_* in the server .env
+  canWithdraw: boolean; // master admin only
+  withdrawals: PayoutView[];
+}
+
 // GET /agencies/admin/overview   Screen: Web · TransitPro team overview
 export interface PlatformOverview {
   agencies: { pending: number; approved: number; rejected: number; suspended: number };
@@ -580,4 +615,5 @@ export interface PlatformOverview {
   latestAgencies: { id: string; name: string; headOffice: string; status: AgencyStatus; createdAt: string }[];
   // TransitPro's own money, all time: our 10 % commission, what we still owe agencies, what we sent them
   money: { commissionAllTime: number; owedToAgencies: number; paidOutAllTime: number; minimumPayout: number };
+  badges: { active: number; waitingVerification: number }; // paid badges: verified agencies / paid and waiting (priority)
 }

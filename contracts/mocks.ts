@@ -46,6 +46,7 @@ export const meCustomer: Me = {
   agencyId: null,
   agency: null,
   employee: null,
+  masterAdmin: false,
 };
 
 export const meCourier: Me = {
@@ -55,8 +56,9 @@ export const meCourier: Me = {
   phone: '+237690000005',
   role: 'COURIER',
   agencyId: 'ag_etoile',
-  agency: { id: 'ag_etoile', name: 'Étoile Voyages', status: 'APPROVED', rejectionReason: null, suspensionReason: null },
+  agency: { id: 'ag_etoile', name: 'Étoile Voyages', status: 'APPROVED', rejectionReason: null, suspensionReason: null, badgeUntil: null },
   employee: { id: 'emp_bernard', jobTitle: 'Courier', branchId: 'br_mvan', active: true },
+  masterAdmin: false,
 };
 
 // ── Agencies ──

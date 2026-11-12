@@ -13,6 +13,7 @@ import { AdminAgencyListPage } from '../modules/agencies/AdminAgencyListPage';
 import { AdminAgencyDetailPage } from '../modules/agencies/AdminAgencyDetailPage';
 import { AdminPaymentsPage } from '../modules/agencies/AdminPaymentsPage';
 import { AdminPayoutsPage } from '../modules/agencies/AdminPayoutsPage';
+import { AdminRevenuePage } from '../modules/agencies/AdminRevenuePage';
 import { BranchesPage } from '../modules/agencies/BranchesPage';
 import { DashboardPage } from '../modules/dashboard/DashboardPage';
 import { ComingSoonPage } from '../modules/dashboard/ComingSoonPage';
@@ -39,6 +40,7 @@ export function AppRoutes() {
         <Route path="agencies/:id" element={<AdminAgencyDetailPage />} />
         <Route path="payments" element={<AdminPaymentsPage />} />
         <Route path="payouts" element={<AdminPayoutsPage />} />
+        <Route path="revenue" element={<AdminRevenuePage />} />
         <Route path="customers" element={<ComingSoonPage by="Lead + Adrien" title="Customers" icon="users" text="Customer accounts from the mobile app, and blocking an account if needed." />} />
         <Route path="reports" element={<ComingSoonPage by="Lead" title="Reports" icon="chart" text="Monthly volume, commission and growth per agency." />} />
         <Route path="settings" element={<RequireUser area="admin">{(me) => <SettingsPage me={me} />}</RequireUser>} />

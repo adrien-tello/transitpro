@@ -1,10 +1,10 @@
 import type { Payout, PaymentMethod, Prisma } from '@prisma/client';
-import type { AdminPayoutAgencyRow, AgencyBalance, AgencyPayouts, Paginated, PayoutAccount, PayoutView } from '@contracts/api-types';
+import type { AdminPayoutAgencyRow, AgencyBalance, AgencyPayouts, Paginated, PayoutAccount, PayoutView, PlatformRevenue } from '@contracts/api-types';
 import { env } from '../../config/env';
 import { prisma } from '../../lib/prisma';
 import { queueEmail } from '../../lib/email';
 import { HttpError, badRequest, notFound } from '../../lib/http-error';
-import { ProviderError, getTransfer, notchpayEnabled, operatorOf, sendTransfer, type PayoutChannel } from '../../lib/notchpay';
+import { ProviderError, getBalance, getTransfer, notchpayEnabled, operatorOf, sendTransfer, type PayoutChannel } from '../../lib/notchpay';
 import { codSentEmail, payoutSentEmail } from './payouts.emails';
 import { publish } from '../../lib/realtime';
 
@@ -54,7 +54,7 @@ async function sumsFor(agencyIds: string[] | null, db: Tx | typeof prisma = pris
     if ((s.method as PaymentMethod) === 'CASH') row.cashCommission += fee;
     else row.mobileMoneyNet += amount - fee;
   }
-  for (const p of payouts) get(p.agencyId).paidOut += p._sum.amount ?? 0;
+  for (const p of payouts) if (p.agencyId) get(p.agencyId).paidOut += p._sum.amount ?? 0;
   return out;
 }
 
@@ -235,7 +235,7 @@ async function start(payoutId: string): Promise<Payout> {
       name: payout.recipientName,
       phone: payout.phone,
       channel: payout.channel as PayoutChannel,
-      description: payout.kind === 'AGENCY_PAYOUT' ? 'TransitPro payout' : 'TransitPro cash on delivery',
+      description: payout.kind === 'AGENCY_PAYOUT' ? 'TransitPro payout' : payout.kind === 'PLATFORM_WITHDRAWAL' ? 'TransitPro withdrawal' : 'TransitPro cash on delivery',
     });
     announce(await prisma.payout.update({ where: { id: payout.id }, data: { providerRef: t.reference } }));
     return settleFrom(payout.id, t.status);
@@ -270,7 +270,7 @@ async function finish(payoutId: string, ok: boolean, reason?: string): Promise<P
     include: { agency: { select: { name: true, email: true } }, escrow: { select: { parcel: { select: { trackingCode: true, senderEmail: true } } } } },
   });
   if (done.count === 1 && ok) {
-    if (p.kind === 'AGENCY_PAYOUT') queueEmail(payoutSentEmail(p.agency, p));
+    if (p.kind === 'AGENCY_PAYOUT' && p.agency) queueEmail(payoutSentEmail(p.agency, p));
     else if (p.escrow?.parcel.senderEmail) queueEmail(codSentEmail(p.escrow.parcel.senderEmail, p, p.escrow.parcel.trackingCode));
   }
   if (done.count === 1 && !ok) console.error(`[payouts] ${p.kind} ${p.id} failed: ${p.failureReason}`);
@@ -318,4 +318,104 @@ export async function sweep(): Promise<number> {
   for (const p of queued) await start(p.id);
   for (const p of moving) await sync(p.id);
   return queued.length + moving.length;
+}
+
+// ─────────────── TransitPro's own money ───────────────
+//
+// Notch Pay holds ALL the Mobile Money that came in. Part of it is not ours:
+//   ours = every successful Mobile Money payment
+//        − transfers sent or on their way (payouts to agencies, cash on delivery to senders, our past withdrawals)
+//        − what we still owe agencies (their available balance)
+//        − cash on delivery paid by Mobile Money and still held until the parcel is delivered
+// (Cash payments never reach Notch Pay: our commission on them is taken from the agency's payouts instead.)
+
+async function platformWallet(db: Tx | typeof prisma = prisma) {
+  const [moneyIn, out, held, owed] = await Promise.all([
+    db.payment.aggregate({ where: { status: 'SUCCEEDED', method: { not: 'CASH' } }, _sum: { amount: true } }),
+    db.payout.aggregate({ where: { status: { in: OPEN } }, _sum: { amount: true } }),
+    db.escrow.aggregate({ where: { status: 'HELD', payment: { method: { not: 'CASH' } } }, _sum: { amount: true } }),
+    sumsFor(null, db),
+  ]);
+  const mobileMoneyIn = moneyIn._sum.amount ?? 0;
+  const sentOut = out._sum.amount ?? 0;
+  const codHeld = held._sum.amount ?? 0;
+  const owedToAgencies = [...owed.values()].reduce((n, s) => n + toBalance(s).available, 0);
+  return { mobileMoneyIn, sentOut, owedToAgencies, codHeld, available: Math.max(0, mobileMoneyIn - sentOut - owedToAgencies - codHeld) };
+}
+
+const platformAccount = () =>
+  env.TRANSITPRO_PAYOUT_NAME && env.TRANSITPRO_PAYOUT_PHONE && env.TRANSITPRO_PAYOUT_CHANNEL
+    ? { name: env.TRANSITPRO_PAYOUT_NAME, phone: env.TRANSITPRO_PAYOUT_PHONE, channel: env.TRANSITPRO_PAYOUT_CHANNEL as PayoutChannel }
+    : null;
+
+const DOUALA_MS = 3600_000;
+const dayKey = (d: Date) => new Date(d.getTime() + DOUALA_MS).toISOString().slice(0, 10);
+
+// GET /payouts/admin/revenue: where our money comes from, and what can be withdrawn
+export async function revenue(masterAdmin: boolean): Promise<PlatformRevenue> {
+  const today = dayKey(new Date());
+  const start = new Date(Date.parse(`${today}T00:00:00+01:00`) - 29 * 86_400_000);
+  const earned = { status: 'SUCCEEDED' as const, platformFee: { gt: 0 } };
+  const [byPurpose, last30, byAgencyRaw, recent, wallet, providerBalance, withdrawals] = await Promise.all([
+    prisma.payment.groupBy({ by: ['purpose'], where: earned, _sum: { platformFee: true } }),
+    prisma.payment.findMany({ where: { ...earned, settledAt: { gte: start } }, select: { platformFee: true, settledAt: true } }),
+    prisma.payment.groupBy({ by: ['agencyId'], where: { ...earned, agencyId: { not: null } }, _sum: { platformFee: true, amount: true }, orderBy: { _sum: { platformFee: 'desc' } }, take: 10 }),
+    prisma.payment.findMany({ where: earned, orderBy: { settledAt: 'desc' }, take: 15, include: { agency: { select: { name: true } } } }),
+    platformWallet(),
+    getBalance(),
+    prisma.payout.findMany({ where: { kind: 'PLATFORM_WITHDRAWAL' }, orderBy: { createdAt: 'desc' }, take: 10 }),
+  ]);
+  const sum = (purpose: string) => byPurpose.find((g) => g.purpose === purpose)?._sum.platformFee ?? 0;
+  const days = Array.from({ length: 30 }, (_, i) => ({ date: dayKey(new Date(start.getTime() + i * 86_400_000 + 12 * 3600_000)), amount: 0 }));
+  const byDay = new Map(days.map((d) => [d.date, d]));
+  for (const p of last30) {
+    const d = p.settledAt && byDay.get(dayKey(p.settledAt));
+    if (d) d.amount += p.platformFee;
+  }
+  const names = new Map(
+    (await prisma.agency.findMany({ where: { id: { in: byAgencyRaw.map((a) => a.agencyId!).filter(Boolean) } }, select: { id: true, name: true } })).map((a) => [a.id, a.name]),
+  );
+  return {
+    totals: {
+      allTime: byPurpose.reduce((n, g) => n + (g._sum.platformFee ?? 0), 0),
+      last30Days: days.reduce((n, d) => n + d.amount, 0),
+      fromTickets: sum('TICKET'),
+      fromParcels: sum('PARCEL_FEE'),
+      fromBadges: sum('SUBSCRIPTION'),
+    },
+    days,
+    byAgency: byAgencyRaw.map((a) => ({ agencyId: a.agencyId!, name: names.get(a.agencyId!) ?? '—', sales: a._sum.amount ?? 0, commission: a._sum.platformFee ?? 0 })),
+    recent: recent.map((p) => ({
+      id: p.id,
+      at: (p.settledAt ?? p.createdAt).toISOString(),
+      agencyName: p.agency?.name ?? null,
+      purpose: p.purpose,
+      method: p.method,
+      amount: p.amount,
+      ourPart: p.platformFee,
+    })),
+    wallet: { ...wallet, providerBalance },
+    account: platformAccount(),
+    canWithdraw: masterAdmin,
+    withdrawals: withdrawals.map((p) => toView(p)),
+  };
+}
+
+// POST /payouts/admin/withdraw { amount? }: the master admin sends TransitPro's money to TransitPro's own account
+// (TRANSITPRO_PAYOUT_* in the server .env, so it cannot be changed from the web). One withdrawal at a time.
+export async function withdrawPlatform(amount: number | undefined, adminId: string): Promise<PayoutView> {
+  if (!notchpayEnabled()) throw new HttpError(503, 'MOBILE_MONEY_UNAVAILABLE', 'Mobile Money is not configured on this server');
+  const account = platformAccount();
+  if (!account) throw badRequest("TransitPro's payout account is not set: add TRANSITPRO_PAYOUT_NAME, _PHONE and _CHANNEL to the server .env");
+  const payout = await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(424242)`; // one platform withdrawal at a time
+    const wallet = await platformWallet(tx);
+    const send = amount ?? wallet.available;
+    if (send < env.PAYOUT_MINIMUM) throw badRequest(`The minimum withdrawal is ${env.PAYOUT_MINIMUM.toLocaleString('en-US')} FCFA`);
+    if (send > wallet.available) throw badRequest(`Only ${wallet.available.toLocaleString('en-US')} FCFA is TransitPro's to withdraw`);
+    return tx.payout.create({
+      data: { kind: 'PLATFORM_WITHDRAWAL', amount: send, recipientName: account.name, phone: account.phone, channel: account.channel, createdById: adminId },
+    });
+  });
+  return toView(await start(payout.id));
 }

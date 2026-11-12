@@ -19,7 +19,7 @@ Agency: **Étoile Voyages** (verified). Branches: **Douala · Akwa** and **Yaoun
 
 | Email | Name | Role | Branch | App | What they see |
 |---|---|---|---|---|---|
-| `admin@transitpro.test` | Platform Admin | TransitPro team | — | Web | Overview, agencies to verify, the whole platform |
+| `admin@transitpro.test` | Platform Admin | TransitPro team (**master admin**) | — | Web | Overview, agencies to verify, the whole platform, Revenue + withdraw |
 | `owner@etoile.test` | Agency Owner | Agency owner | all branches | Web | The full sidebar, every branch, Branches page |
 | `manager@etoile.test` | Alice Ngo | Branch manager | Douala · Akwa | Web | Dashboard, parcels, trips, fleet, staff, finance, reports |
 | `mvan.manager@etoile.test` | Grace Mballa | Branch manager | Yaoundé · Mvan | Web | Same, for Mvan (releases parcels on hold there) |
@@ -54,6 +54,14 @@ Each person sees only the menu entries of their job; the server checks the role 
 ## Demo data already in the database
 
 Parcels `TP-DOU-UFUMV` (paid cash) and `TP-DOU-FCKDY` (paid MTN MoMo), both registered in Douala for Yaoundé.
+
+## Money settings (server `.env`, optional)
+
+| Variable | Default | What |
+|---|---|---|
+| `PAYOUT_MINIMUM` | 5000 | Smallest payout / withdrawal (FCFA) |
+| `BADGE_PRICE` / `BADGE_MONTHS` | 25000 / 12 | Optional Verified badge |
+| `TRANSITPRO_PAYOUT_NAME`, `TRANSITPRO_PAYOUT_PHONE`, `TRANSITPRO_PAYOUT_CHANNEL` | empty | TransitPro's own Mobile Money account for the master admin's withdrawals (`cm.mtn` or `cm.orange`; sandbox: `670000000`) |
 
 ## Google sign-in
 

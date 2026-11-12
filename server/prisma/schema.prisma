@@ -151,21 +151,23 @@ enum RemittanceStatus {
 // ──────────────── Shared: users and agencies (Lead) ────────────────
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  phone        String?  @unique
-  passwordHash String?
-  googleId     String?  @unique
-  fullName     String
-  role         Role     @default(CUSTOMER)
+  id            String   @id @default(cuid())
+  email         String   @unique
+  phone         String?  @unique
+  passwordHash  String?
+  googleId      String?  @unique
+  fullName      String
+  role          Role     @default(CUSTOMER)
   // Security: a disabled account is logged out everywhere on its next request
-  isActive     Boolean  @default(true)
+  isActive      Boolean  @default(true)
+  // TransitPro team: the master admin can withdraw TransitPro's money (other team members cannot)
+  isMasterAdmin Boolean  @default(false)
   // Security: +1 = every existing session of this user stops working (logout everywhere, password change)
-  tokenVersion Int      @default(0)
-  agencyId     String?
-  agency       Agency?  @relation(fields: [agencyId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  tokenVersion  Int      @default(0)
+  agencyId      String?
+  agency        Agency?  @relation(fields: [agencyId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   employee       Employee?
   tickets        Ticket[]
@@ -210,6 +212,8 @@ model Agency {
   payoutChannel          String? // "cm.mtn" | "cm.orange"
   // Security: withdrawals wait 24 h after the payout number changes (a stolen login cannot redirect the money at once)
   payoutAccountUpdatedAt DateTime?
+  // Optional paid "Verified" badge shown to customers: active until this date (yearly)
+  badgeUntil             DateTime?
   // Platform commission on parcel fees, in percent (e.g. 10 = 10%)
   commissionRate         Int          @default(10)
   ratingAvg              Float        @default(0)
@@ -595,6 +599,7 @@ model Escrow {
 enum PayoutKind {
   AGENCY_PAYOUT
   COD_TO_SENDER
+  PLATFORM_WITHDRAWAL // TransitPro takes its own money (master admin only)
 }
 
 enum PayoutStatus {
@@ -606,8 +611,8 @@ enum PayoutStatus {
 
 model Payout {
   id            String       @id @default(cuid())
-  agencyId      String
-  agency        Agency       @relation(fields: [agencyId], references: [id])
+  agencyId      String? // empty for PLATFORM_WITHDRAWAL
+  agency        Agency?      @relation(fields: [agencyId], references: [id])
   kind          PayoutKind
   amount        Int
   recipientName String

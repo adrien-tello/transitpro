@@ -64,6 +64,9 @@ async function main() {
     });
   }
 
+  // The first TransitPro admin is the master admin (can withdraw the platform's money)
+  await prisma.user.update({ where: { email: 'admin@transitpro.test' }, data: { isMasterAdmin: true } });
+
   console.log('Seed done. Password for every account: Password123');
 }
 

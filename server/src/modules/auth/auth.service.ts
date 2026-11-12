@@ -188,10 +188,15 @@ export async function me(userId: string): Promise<Me> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
-      agency: { select: { id: true, name: true, status: true, rejectionReason: true, suspensionReason: true } },
+      agency: { select: { id: true, name: true, status: true, rejectionReason: true, suspensionReason: true, badgeUntil: true } },
       employee: { select: { id: true, jobTitle: true, branchId: true, active: true } },
     },
   });
   if (!user) throw notFound('User');
-  return { ...publicUser(user), agency: user.agency, employee: user.employee };
+  return {
+    ...publicUser(user),
+    agency: user.agency ? { ...user.agency, badgeUntil: user.agency.badgeUntil?.toISOString() ?? null } : null,
+    employee: user.employee,
+    masterAdmin: user.role === 'PLATFORM_ADMIN' && user.isMasterAdmin,
+  };
 }

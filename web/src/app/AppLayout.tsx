@@ -4,9 +4,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { Me } from '@contracts/api-types';
 import { Icon } from '../components/ui/Icon';
 import { Logo } from '../components/ui/Logo';
+import { VerifiedSeal } from '../components/ui/VerifiedBadge';
 import { ago, initials } from '../lib/format';
 import { useTheme } from '../lib/theme';
-import { useRealtime } from '../lib/realtime';
+import { useLiveState, useRealtime } from '../lib/realtime';
 import { useLogout } from '../modules/auth/auth.api';
 import { useBranches, usePendingAgencies } from '../modules/agencies/agencies.api';
 import { parcelsFirstPage, useParcelStats } from '../modules/parcels/parcels.api';
@@ -124,7 +125,10 @@ function Sidebar({ me, items, bottom, badges, admin, open, onClose }: {
             {admin ? <Icon name="shield" size={18} /> : initials(me.agency?.name ?? '?')}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-bold text-ink">{admin ? 'TransitPro team' : me.agency?.name}</span>
+            <span className="flex items-center gap-1 truncate text-sm font-bold text-ink">
+              <span className="truncate">{admin ? 'TransitPro team' : me.agency?.name}</span>
+              {!admin && me.agency?.badgeUntil && new Date(me.agency.badgeUntil) > new Date() && <VerifiedSeal size={15} />}
+            </span>
             <span className="block truncate text-xs text-muted">
               {admin ? 'Platform admin' : branch ? `${branch.city} · ${branch.name} branch` : me.role === 'AGENCY_OWNER' ? 'All branches' : ROLE_LABEL[me.role]}
             </span>
@@ -177,11 +181,11 @@ function TopBar({ me, admin, office, onMenu }: { me: Me; admin: boolean; office:
   const logout = useLogout();
   const theme = useTheme();
 
-  // Tracking codes and phones: the parcel list does the search
+  // Agency staff search parcels (tracking code, phone); the TransitPro team searches agencies (name, city, email)
   function search(e: FormEvent) {
     e.preventDefault();
     const v = q.trim();
-    if (v) navigate(`/parcels?q=${encodeURIComponent(v)}`);
+    if (v) navigate(admin ? `/admin/agencies?q=${encodeURIComponent(v)}` : `/parcels?q=${encodeURIComponent(v)}`);
   }
 
   return (
@@ -189,23 +193,24 @@ function TopBar({ me, admin, office, onMenu }: { me: Me; admin: boolean; office:
       <button type="button" onClick={onMenu} aria-label="Open menu" className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-surface text-ink min-[901px]:hidden">
         <Icon name="menu" />
       </button>
-      {office && (
+      {(office || admin) && (
         <form onSubmit={search} role="search" className="flex h-[50px] min-w-0 flex-[0_1_420px] items-center gap-2.5 rounded-full bg-surface px-[18px] ring-primary/30 transition-shadow focus-within:ring-2">
           <Icon name="search" size={18} className="text-muted" />
           <label htmlFor="global-search" className="sr-only">
-            Search parcels
+            {admin ? 'Search agencies' : 'Search parcels'}
           </label>
           <input
             id="global-search"
             type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search tracking code or phone…"
+            placeholder={admin ? 'Search an agency by name, city or email…' : 'Search tracking code or phone…'}
             className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted"
           />
         </form>
       )}
       <div className="flex-1" />
+      <LiveBadge />
       {!admin && <Messages />}
       {(office || admin) && <Notifications admin={admin} />}
       <div ref={user.ref} className="relative">
@@ -321,6 +326,24 @@ function Notifications({ admin }: { admin: boolean }) {
         </div>
       )}
     </div>
+  );
+}
+
+// Shows that the instant updates are connected. Offline: the page still works, numbers refresh on reload.
+function LiveBadge() {
+  const live = useLiveState();
+  const label = live === 'live' ? 'Live' : live === 'connecting' ? 'Connecting' : 'Offline';
+  return (
+    <span
+      title={live === 'live' ? 'Updates arrive instantly' : live === 'connecting' ? 'Connecting to live updates' : 'No live updates: check your connection'}
+      className="flex h-[50px] items-center gap-2 rounded-full bg-surface px-4 text-[13px] font-bold text-body max-sm:hidden"
+    >
+      <span className="relative flex h-2.5 w-2.5">
+        {live === 'live' && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60 motion-reduce:hidden" />}
+        <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${live === 'live' ? 'bg-success' : live === 'connecting' ? 'bg-accent' : 'bg-danger'}`} />
+      </span>
+      {label}
+    </span>
   );
 }
 

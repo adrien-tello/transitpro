@@ -42,6 +42,7 @@ export const documentTypeParams = z.object({ type: z.enum(['RCCM', 'NIU', 'OWNER
 
 export const adminListQuery = z.object({
   status: z.enum(['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED']).optional(),
+  badge: z.enum(['active', 'none']).optional(),
   q: z.string().trim().max(60).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),

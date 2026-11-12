@@ -111,6 +111,14 @@ export function requireRole(...roles: Role[]) {
 // TransitPro team only: agency verification, commission rates
 export const requirePlatformAdmin = requireRole('PLATFORM_ADMIN');
 
+// The master admin only (withdrawing TransitPro's money). Read from the database on every call.
+export async function requireMasterAdmin(req: Request, _res: Response, next: NextFunction) {
+  if (req.user?.role !== 'PLATFORM_ADMIN') throw forbidden('Only the TransitPro team can do this');
+  const u = await prisma.user.findUnique({ where: { id: req.user.id }, select: { isMasterAdmin: true } });
+  if (!u?.isMasterAdmin) throw forbidden('Only the master admin can withdraw the platform money');
+  next();
+}
+
 const AGENCY_BLOCKED: Record<Exclude<AgencyStatus, 'APPROVED'>, string> = {
   PENDING: 'Your agency is waiting for verification by TransitPro',
   REJECTED: 'Your agency was not approved by TransitPro',

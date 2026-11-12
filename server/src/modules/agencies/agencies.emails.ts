@@ -83,3 +83,19 @@ export function reactivatedEmail(agency: AgencyContact): Email {
     footnote: `You get this email because ${agency.email} is the contact of ${agency.name}.`,
   };
 }
+
+export function badgeActiveEmail(agency: AgencyContact, until: Date): Email {
+  const date = until.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Douala' });
+  return {
+    to: agency.email,
+    subject: `${agency.name} now has the Verified badge`,
+    preheader: `Customers see it next to your name until ${date}.`,
+    greeting: 'Hello,',
+    paragraphs: [
+      `Thank you: your payment is confirmed. Customers now see the Verified badge next to ${agency.name} in the app, in search results and on your profile.`,
+      `The badge is active until ${date}. We will remind you before it ends.`,
+    ],
+    button: { label: 'Open your dashboard', url: `${env.WEB_URL}/settings` },
+    footnote: `You get this email because ${agency.email} is the contact of ${agency.name}.`,
+  };
+}

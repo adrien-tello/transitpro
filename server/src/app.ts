@@ -5,7 +5,7 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { env } from './config/env';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
-import { globalLimiter, noStore, originCheck, requireJson } from './middleware/security';
+import { eventsLimiter, globalLimiter, noStore, originCheck, requireJson } from './middleware/security';
 import { authRouter } from './modules/auth/auth.routes';
 import { agenciesRouter } from './modules/agencies/agencies.routes';
 import { bookingRouter } from './modules/booking/booking.routes';
@@ -63,7 +63,7 @@ app.use('/api/payments', paymentsRouter);
 app.use('/api/uploads', uploadsRouter);
 app.use('/api/payouts', payoutsRouter);
 // Instant updates (Server-Sent Events): one open connection per dashboard tab
-app.get('/api/events', requireAuth, stream);
+app.get('/api/events', eventsLimiter, requireAuth, stream);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

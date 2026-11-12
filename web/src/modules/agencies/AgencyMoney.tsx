@@ -8,6 +8,7 @@ import { errorMessage, fieldError } from '../../lib/api';
 import { dateTime, fcfa, phone } from '../../lib/format';
 import { useMyDocuments, useMyPayouts, useSetPayoutAccount, useWithdraw } from './agencies.api';
 import { DOCS, DocumentRow } from './PendingPage';
+import { BadgeCard } from './BadgeCard';
 
 // Settings cards about the agency's money and papers (owner; the accountant sees the balance).
 
@@ -52,6 +53,7 @@ export function AgencyMoneyCards({ me }: { me: Me }) {
   const owner = me.role === 'AGENCY_OWNER';
   return (
     <>
+      {owner && me.agency?.status === 'APPROVED' && <BadgeCard me={me} />}
       <PayoutsCard owner={owner} />
       {owner && <PayoutAccountCard />}
       {owner && <DocumentsCard />}

@@ -30,6 +30,8 @@ export const keys = {
   overview: ['admin', 'overview'] as const,
   myDocuments: ['documents', 'mine'] as const,
   myPayouts: ['payouts', 'mine'] as const,
+  badge: ['badge'] as const,
+  revenue: ['admin', 'revenue'] as const,
   adminAgencies: (filters?: object) => (filters ? (['admin', 'agencies', filters] as const) : (['admin', 'agencies'] as const)),
   adminAgency: (id: string) => ['admin', 'agency', id] as const,
   adminPayments: (filters: object) => ['admin', 'payments', filters] as const,

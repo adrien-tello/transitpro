@@ -84,7 +84,8 @@ export async function addBranch(agencyId: string, input: { name: string; city: s
 export async function listPending(): Promise<PendingAgency[]> {
   const rows = await prisma.agency.findMany({
     where: { status: 'PENDING' },
-    orderBy: { createdAt: 'asc' }, // oldest request first
+    // Agencies that paid for the badge are checked first, then the oldest request
+    orderBy: [{ badgeUntil: { sort: 'desc', nulls: 'last' } }, { createdAt: 'asc' }],
     include: {
       documents: { select: { id: true, type: true, mime: true, uploadedAt: true } },
       users: { where: { role: 'AGENCY_OWNER' }, select: { fullName: true, email: true, phone: true }, take: 1 },
@@ -99,6 +100,7 @@ export async function listPending(): Promise<PendingAgency[]> {
     email: a.email,
     rccmNumber: a.rccmNumber,
     niuNumber: a.niuNumber,
+    badgeUntil: a.badgeUntil ? a.badgeUntil.toISOString() : null,
     documentTypes: a.documents.map((d) => d.type),
     documents: a.documents.map((d) => ({ id: d.id, type: d.type, mime: d.mime, uploadedAt: d.uploadedAt.toISOString() })),
     owner: a.users[0] ?? null,
@@ -205,6 +207,10 @@ export async function overview(): Promise<PlatformOverview> {
       failed,
     },
     latestAgencies: latest.map((a) => ({ ...a, createdAt: a.createdAt.toISOString() })),
+    badges: {
+      active: await prisma.agency.count({ where: { status: 'APPROVED', badgeUntil: { gt: new Date() } } }),
+      waitingVerification: await prisma.agency.count({ where: { status: 'PENDING', badgeUntil: { gt: new Date() } } }),
+    },
     money: await platformMoney(),
   };
 }

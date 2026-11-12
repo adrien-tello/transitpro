@@ -3,6 +3,7 @@ import type { AgencyStatus } from '@contracts/api-types';
 import { PageHeader } from '../../app/AppLayout';
 import { Badge, Card, EmptyState, ErrorState, SkeletonRows } from '../../components/ui/Feedback';
 import { FilterTabs, Pager, SearchBox, useUrlFilters } from '../../components/ui/ListTools';
+import { VerifiedSeal } from '../../components/ui/VerifiedBadge';
 import { ago, initials } from '../../lib/format';
 import { useAdminAgencies } from './agencies.api';
 
@@ -26,8 +27,9 @@ export function AdminAgencyListPage() {
   const navigate = useNavigate();
   const f = useUrlFilters();
   const status = f.get('status') as AgencyStatus | undefined;
+  const badge = f.get('badge') as 'active' | 'none' | undefined;
   const q = f.get('q');
-  const list = useAdminAgencies({ status, q, page: f.page });
+  const list = useAdminAgencies({ status, badge, q, page: f.page });
 
   return (
     <>
@@ -35,6 +37,12 @@ export function AdminAgencyListPage() {
       <Card padded={false}>
         <div className="flex flex-wrap items-center gap-3 border-b border-line p-4">
           <FilterTabs label="Status" tabs={TABS} value={status} onChange={(v) => f.set({ status: v })} />
+          <FilterTabs
+            label="Badge"
+            tabs={[{ label: 'Any badge' }, { label: 'With badge', value: 'active' as const }, { label: 'No badge', value: 'none' as const }]}
+            value={badge}
+            onChange={(v) => f.set({ badge: v })}
+          />
           <SearchBox value={q} onSearch={(v) => f.set({ q: v })} placeholder="Name, city or email" />
         </div>
         {list.isPending ? (
@@ -64,8 +72,9 @@ export function AdminAgencyListPage() {
                       <div className="flex items-center gap-3">
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-warning-tint text-[12px] font-extrabold text-warning">{initials(a.name)}</span>
                         <span className="min-w-0">
-                          <Link to={`/admin/agencies/${a.id}`} onClick={(e) => e.stopPropagation()} className="block font-bold text-ink hover:text-ink">
+                          <Link to={`/admin/agencies/${a.id}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5 font-bold text-ink hover:text-ink">
                             {a.name}
+                            {a.badgeUntil && new Date(a.badgeUntil) > new Date() && <VerifiedSeal size={16} title="Paid Verified badge" />}
                           </Link>
                           <span className="block text-xs text-muted">{a.headOffice}</span>
                         </span>

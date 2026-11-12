@@ -41,6 +41,13 @@ const schema = z
     PAYMENT_TIMEOUT_MINUTES: z.coerce.number().int().min(2).max(60).default(15),
     // Smallest payout TransitPro sends to an agency (FCFA): fewer, bigger transfers = fewer fees
     PAYOUT_MINIMUM: z.coerce.number().int().min(100).max(10_000_000).default(5000),
+    // Optional paid "Verified" badge for agencies (FCFA, for BADGE_MONTHS months). 100 % TransitPro's revenue.
+    BADGE_PRICE: z.coerce.number().int().min(100).max(10_000_000).default(25000),
+    BADGE_MONTHS: z.coerce.number().int().min(1).max(36).default(12),
+    // TransitPro's own Mobile Money account, where the master admin withdraws the platform's money
+    TRANSITPRO_PAYOUT_NAME: z.string().trim().default(''),
+    TRANSITPRO_PAYOUT_PHONE: z.string().trim().default(''),
+    TRANSITPRO_PAYOUT_CHANNEL: z.enum(['cm.mtn', 'cm.orange', '']).default(''),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   })
   .refine((e) => e.NODE_ENV !== 'production' || !/localhost/.test(e.CORS_ORIGINS), {

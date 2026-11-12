@@ -36,7 +36,7 @@ const FAIL_TEXT: Record<string, string> = {
 
 // One line per payment: waiting (with a live dot), paid, failed and why
 export function PaymentLine({ p }: { p: PaymentView }) {
-  const what = p.purpose === 'COD_COLLECTION' ? 'Cash on delivery' : 'Parcel fee';
+  const what = { COD_COLLECTION: 'Cash on delivery', PARCEL_FEE: 'Parcel fee', TICKET: 'Ticket', SUBSCRIPTION: 'Verified badge' }[p.purpose] ?? 'Payment';
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl bg-soft px-3.5 py-3">
       <span className="min-w-0 flex-[1_1_200px]">

@@ -20,6 +20,7 @@ const toRow = (a: RowSource): AdminAgencyRow => ({
   name: a.name,
   slug: a.slug,
   status: a.status,
+  badgeUntil: a.badgeUntil ? a.badgeUntil.toISOString() : null,
   headOffice: a.headOffice,
   phone: a.phone,
   email: a.email,
@@ -31,15 +32,16 @@ const toRow = (a: RowSource): AdminAgencyRow => ({
   documents: a._count.documents,
 });
 
-export async function list(q: { status?: AgencyStatus; q?: string; page: number; limit: number }): Promise<Paginated<AdminAgencyRow>> {
+export async function list(q: { status?: AgencyStatus; badge?: 'active' | 'none'; q?: string; page: number; limit: number }): Promise<Paginated<AdminAgencyRow>> {
   const where: Prisma.AgencyWhereInput = {
     ...(q.status ? { status: q.status } : {}),
+    ...(q.badge === 'active' ? { badgeUntil: { gt: new Date() } } : q.badge === 'none' ? { OR: [{ badgeUntil: null }, { badgeUntil: { lte: new Date() } }] } : {}),
     ...(q.q
       ? { OR: [{ name: { contains: q.q, mode: 'insensitive' } }, { headOffice: { contains: q.q, mode: 'insensitive' } }, { email: { contains: q.q, mode: 'insensitive' } }] }
       : {}),
   };
   const [items, total] = await Promise.all([
-    prisma.agency.findMany({ where, include: rowInclude, orderBy: { createdAt: 'desc' }, skip: (q.page - 1) * q.limit, take: q.limit }),
+    prisma.agency.findMany({ where, include: rowInclude, orderBy: q.badge === 'active' ? { badgeUntil: 'asc' } : { createdAt: 'desc' }, skip: (q.page - 1) * q.limit, take: q.limit }),
     prisma.agency.count({ where }),
   ]);
   return { items: items.map(toRow), page: q.page, limit: q.limit, total };

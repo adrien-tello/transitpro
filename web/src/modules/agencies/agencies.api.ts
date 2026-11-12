@@ -8,6 +8,7 @@ import type {
   AgencyPayouts,
   AgencyRegistered,
   AgencyStatus,
+  BadgeStatus,
   BranchRow,
   DocumentType,
   Paginated,
@@ -15,6 +16,7 @@ import type {
   PayoutView,
   PendingAgency,
   PlatformOverview,
+  PlatformRevenue,
 } from '@contracts/api-types';
 import { ApiError, api, http } from '../../lib/api';
 import { keys } from '../../lib/queryClient';
@@ -128,6 +130,7 @@ export function useSetPayoutAccount() {
 // ─── TransitPro team ───
 export interface AdminAgencyFilters {
   status?: AgencyStatus;
+  badge?: 'active' | 'none';
   q?: string;
   page: number;
 }
@@ -196,5 +199,41 @@ export function useWithdraw() {
   return useMutation({
     mutationFn: (amount?: number) => api.post<PayoutView>('/payouts/mine/withdraw', amount ? { amount } : {}),
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.myPayouts }),
+  });
+}
+
+// ─── Optional Verified badge (owner) ───
+export function useBadge(enabled = true) {
+  return useQuery({
+    queryKey: keys.badge,
+    queryFn: () => api.get<BadgeStatus>('/agencies/me/badge'),
+    enabled,
+    // While the owner approves on the phone: check every 3 s (live updates usually answer first)
+    refetchInterval: (q) => (q.state.data?.payment?.status === 'PENDING' ? 3000 : false),
+  });
+}
+
+export function useBuyBadge() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { method: 'MTN_MOMO' | 'ORANGE_MONEY'; payerPhone: string }) => api.post<BadgeStatus>('/agencies/me/badge', body),
+    onSuccess: (data) => qc.setQueryData(keys.badge, data),
+  });
+}
+
+// ─── TransitPro's own money (team; withdraw = master admin) ───
+export function usePlatformRevenue() {
+  return useQuery({
+    queryKey: keys.revenue,
+    queryFn: () => api.get<PlatformRevenue>('/payouts/admin/revenue'),
+    refetchInterval: (q) => (q.state.data?.withdrawals.some((w) => w.status === 'PENDING' || w.status === 'PROCESSING') ? 4000 : false),
+  });
+}
+
+export function useWithdrawPlatform() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (amount?: number) => api.post<PayoutView>('/payouts/admin/withdraw', amount ? { amount } : {}),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.revenue }),
   });
 }

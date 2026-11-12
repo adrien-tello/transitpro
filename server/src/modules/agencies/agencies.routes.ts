@@ -16,9 +16,12 @@ import {
 } from './agencies.schemas';
 import * as admin from './agencies.admin';
 import * as documents from './agencies.documents';
+import * as badge from './agencies.badge';
+import { prisma } from '../../lib/prisma';
+import { phoneSchema } from '../auth/auth.schemas';
 import * as payouts from '../payouts/payouts.service';
 import * as agencies from './agencies.service';
-import type { z } from 'zod';
+import { z } from 'zod';
 import { publish } from '../../lib/realtime';
 
 // Owner: Lead (Fanyi Charllson). SaaS layer: agency sign-up, verification, public profiles.
@@ -91,6 +94,20 @@ agenciesRouter.post('/me/resubmit', async (req, res) => {
   res.json({ data: a });
   publish({ team: true, agencyId: a.id }, { type: 'agency.status', agencyId: a.id, name: a.name, status: a.status });
 });
+
+// Optional paid "Verified" badge (owner)
+agenciesRouter.get('/me/badge', async (req, res) => {
+  res.json({ data: await badge.status(ownerAgency(req).id) });
+});
+agenciesRouter.post(
+  '/me/badge',
+  validate({ body: z.object({ method: z.enum(['MTN_MOMO', 'ORANGE_MONEY']), payerPhone: phoneSchema }) }),
+  async (req, res) => {
+    const a = ownerAgency(req);
+    const owner = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.id }, select: { id: true, fullName: true } });
+    res.status(201).json({ data: await badge.buy(a.id, a.status, req.body, owner) });
+  },
+);
 
 // Where TransitPro sends the agency's money (owner)
 agenciesRouter.put('/me/payout-account', requireRole('AGENCY_OWNER'), validate({ body: payoutAccountSchema }), async (req, res) => {

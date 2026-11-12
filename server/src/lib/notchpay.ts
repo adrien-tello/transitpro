@@ -188,3 +188,15 @@ export async function sendTransfer(input: {
 export async function getTransfer(providerRef: string): Promise<ProviderTransfer> {
   return toTransfer(await call('GET', `/transfers/${encodeURIComponent(providerRef)}`, undefined, true));
 }
+
+// What Notch Pay holds for us right now (all the money: ours, what we owe agencies, cash on delivery held).
+// Shown next to our own count on the Revenue page, to spot a difference early.
+export async function getBalance(): Promise<number | null> {
+  try {
+    const json = await call('GET', '/balance', undefined, true);
+    const b = (json.balance ?? {}) as Record<string, unknown>;
+    return typeof b.available === 'number' ? b.available : typeof b.total === 'number' ? b.total : null;
+  } catch {
+    return null;
+  }
+}

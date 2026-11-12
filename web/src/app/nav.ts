@@ -34,6 +34,7 @@ export const ADMIN_NAV: NavItem[] = [
   { label: 'Overview', to: '/admin', icon: 'dash' },
   { label: 'Agencies to verify', to: '/admin/verify', icon: 'shield', badge: 'pendingAgencies' },
   { label: 'All agencies', to: '/admin/agencies', icon: 'building' },
+  { label: 'Revenue', to: '/admin/revenue', icon: 'chart' },
   { label: 'Payments', to: '/admin/payments', icon: 'wallet' },
   { label: 'Payouts', to: '/admin/payouts', icon: 'send' },
   { label: 'Customers', to: '/admin/customers', icon: 'users' },
