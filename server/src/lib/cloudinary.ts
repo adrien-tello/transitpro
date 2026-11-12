@@ -67,6 +67,24 @@ export async function uploadFile(bytes: Buffer, mime: string, folder: string, re
   return json.secure_url; // https://res.cloudinary.com/<cloud>/image/upload/v.../transitpro/agencies/<slug>/parcels/photo-xxxx.jpg
 }
 
+// Reads a file we stored, for the server only. PDFs are NOT publicly delivered by Cloudinary (free plans block
+// PDF delivery, which suits ID documents), so they are fetched through the signed download API (needs our secret).
+export async function downloadFile(url: string): Promise<Buffer | null> {
+  const m = new RegExp(`^https://res\\.cloudinary\\.com/${env.CLOUDINARY_CLOUD_NAME}/(image|raw)/upload/(?:v\\d+/)?(.+)$`).exec(url);
+  let target = url;
+  if (m && m[1] === 'raw' && cloudinaryEnabled()) {
+    const params = { public_id: m[2], timestamp: String(Math.floor(Date.now() / 1000)), type: 'upload' };
+    const q = new URLSearchParams({ ...params, api_key: env.CLOUDINARY_API_KEY, signature: sign(params) });
+    target = `https://api.cloudinary.com/v1_1/${encodeURIComponent(env.CLOUDINARY_CLOUD_NAME)}/raw/download?${q}`;
+  }
+  const res = await fetch(target, { signal: AbortSignal.timeout(20_000) }).catch(() => null);
+  if (!res || !res.ok) {
+    console.error(`[uploads] stored file not readable (HTTP ${res?.status ?? 'no answer'}): ${res?.headers.get('x-cld-error') ?? ''}`);
+    return null;
+  }
+  return Buffer.from(await res.arrayBuffer());
+}
+
 // Deletes a file we stored (a replaced document). Best effort: a failure is logged, never shown to the user.
 export async function deleteFile(url: string): Promise<void> {
   const m = new RegExp(`^https://res\\.cloudinary\\.com/${env.CLOUDINARY_CLOUD_NAME}/(image|raw)/upload/(?:v\\d+/)?(.+)$`).exec(url);

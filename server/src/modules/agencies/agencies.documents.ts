@@ -5,7 +5,7 @@ import type { DocumentType } from '@prisma/client';
 import type { AgencyDocumentView } from '@contracts/api-types';
 import { prisma } from '../../lib/prisma';
 import { HttpError, badRequest, forbidden, notFound } from '../../lib/http-error';
-import { agencyFolder, cloudinaryEnabled, deleteFile, uploadFile } from '../../lib/cloudinary';
+import { agencyFolder, cloudinaryEnabled, deleteFile, downloadFile, uploadFile } from '../../lib/cloudinary';
 
 // Owner: Lead (Fanyi Charllson). The papers that prove an agency is a real, licensed company.
 //
@@ -97,7 +97,7 @@ export async function readFileFor(id: string, user: { role: string; agencyId: st
   const local = LOCAL_URL.exec(doc.fileUrl);
   if (local) return { mime: doc.mime, bytes: await readFile(path.join(LOCAL_DIR, local[1])).catch(() => Promise.reject(notFound('Document'))) };
 
-  const res = await fetch(doc.fileUrl, { signal: AbortSignal.timeout(20_000) }).catch(() => null);
-  if (!res || !res.ok) throw new HttpError(502, 'STORAGE_UNAVAILABLE', 'The document could not be loaded, try again');
-  return { mime: doc.mime, bytes: Buffer.from(await res.arrayBuffer()) };
+  const bytes = await downloadFile(doc.fileUrl);
+  if (!bytes) throw new HttpError(502, 'STORAGE_UNAVAILABLE', 'The document could not be loaded, try again');
+  return { mime: doc.mime, bytes };
 }
