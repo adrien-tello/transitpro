@@ -13,11 +13,56 @@ const schema = z
     JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
     JWT_EXPIRES_IN: z.string().default('7d'),
     CORS_ORIGINS: z.string().default('http://localhost:5173,http://localhost:8081'),
+    // Google sign-in: the OAuth client IDs (web, Android, iOS), comma-separated.
+    // Empty = "Continue with Google" answers 501 until it is set.
+    GOOGLE_CLIENT_IDS: z.string().default(''),
+    // Emails (codes, notices) are sent from one Gmail account through Gmail SMTP: free,
+    // about 500 emails a day, to ANY address. SMTP_PASS is a Google "App password"
+    // (16 letters), never the real Gmail password. Empty = emails printed in the terminal.
+    SMTP_USER: z.string().trim().default(''),
+    SMTP_PASS: z
+      .string()
+      .default('')
+      .transform((v) => v.replace(/\s/g, '')), // Google shows it as "abcd efgh ijkl mnop"
+    EMAIL_FROM_NAME: z.string().default('TransitPro'),
+    // Web dashboard address, used for the buttons in emails
+    WEB_URL: z.string().url().default('http://localhost:5173'),
+    // Photos (parcel contents, proof of delivery) are stored on Cloudinary. Console > Dashboard / Settings > API Keys.
+    // Empty = photos are saved in server/uploads/ (development only).
+    CLOUDINARY_CLOUD_NAME: z.string().trim().default(''),
+    CLOUDINARY_API_KEY: z.string().trim().default(''),
+    CLOUDINARY_API_SECRET: z.string().trim().default(''),
+    // Mobile Money (MTN, Orange) through Notch Pay. Test keys start with pk_test / sk_test / hsk_test.
+    // Empty = Mobile Money answers 503 and only cash works.
+    NOTCHPAY_PUBLIC_KEY: z.string().trim().default(''),
+    NOTCHPAY_PRIVATE_KEY: z.string().trim().default(''),
+    NOTCHPAY_HASH_KEY: z.string().trim().default(''), // checks that a webhook really comes from Notch Pay
+    // Minutes a Mobile Money payment may stay PENDING before we give up (the phone prompt expires)
+    PAYMENT_TIMEOUT_MINUTES: z.coerce.number().int().min(2).max(60).default(15),
+    // Smallest payout TransitPro sends to an agency (FCFA): fewer, bigger transfers = fewer fees
+    PAYOUT_MINIMUM: z.coerce.number().int().min(100).max(10_000_000).default(5000),
+    // Optional paid "Verified" badge for agencies (FCFA, for BADGE_MONTHS months). 100 % TransitPro's revenue.
+    BADGE_PRICE: z.coerce.number().int().min(100).max(10_000_000).default(25000),
+    BADGE_MONTHS: z.coerce.number().int().min(1).max(36).default(12),
+    // TransitPro's own Mobile Money account, where the master admin withdraws the platform's money
+    TRANSITPRO_PAYOUT_NAME: z.string().trim().default(''),
+    TRANSITPRO_PAYOUT_PHONE: z.string().trim().default(''),
+    TRANSITPRO_PAYOUT_CHANNEL: z.enum(['cm.mtn', 'cm.orange', '']).default(''),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   })
   .refine((e) => e.NODE_ENV !== 'production' || !/localhost/.test(e.CORS_ORIGINS), {
     message: 'In production CORS_ORIGINS must list the real website, not localhost',
     path: ['CORS_ORIGINS'],
+  })
+  // Online, codes must really be emailed, never printed in the logs
+  // Online, never with sandbox keys, and never live keys while developing
+  .refine((e) => !e.NOTCHPAY_PUBLIC_KEY || (e.NODE_ENV === 'production') !== /test/.test(e.NOTCHPAY_PUBLIC_KEY), {
+    message: 'Use Notch Pay TEST keys while developing and LIVE keys only in production',
+    path: ['NOTCHPAY_PUBLIC_KEY'],
+  })
+  .refine((e) => e.NODE_ENV !== 'production' || (e.SMTP_USER.length > 0 && e.SMTP_PASS.length > 0), {
+    message: 'In production SMTP_USER and SMTP_PASS are required (codes are sent by email)',
+    path: ['SMTP_USER'],
   });
 
 const parsed = schema.safeParse(process.env);

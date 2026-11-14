@@ -11,7 +11,7 @@
     <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#1E4FD8"/></marker>
   <marker id="hollow" viewBox="0 0 16 16" refX="15" refY="8" markerWidth="16" markerHeight="16" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
     <path d="M1 1 L15 8 L1 15 Z" fill="#fff" stroke="#334155" stroke-width="1.4"/></marker>
-  <marker id="diamond" viewBox="0 0 20 12" refX="1" refY="6" markerWidth="20" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+  <marker id="diamond" viewBox="0 0 20 12" refX="19" refY="6" markerWidth="20" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
     <path d="M1 6 L10 1 L19 6 L10 11 Z" fill="#334155"/></marker>
 </defs>
 <rect width="1560" height="1110" fill="#FFFFFF"/>

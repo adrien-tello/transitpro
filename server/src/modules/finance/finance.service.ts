@@ -1,40 +1,60 @@
-import type { PaymentMethod, PaymentPurpose, Prisma } from '@prisma/client';
-import { notImplemented } from '../../lib/http-error';
+import type { Prisma } from '@prisma/client';
+import { badRequest, notImplemented } from '../../lib/http-error';
+import * as payouts from '../payouts/payouts.service';
 
-// Owner: Sweet (Finance & Reporting). Structure only, not built yet.
+// Owner: Sweet (Finance & Reporting).
 //
 // Other modules NEVER write Payment / Escrow / Expense rows themselves. They call
 // these functions. That is how a sale in Booking or Parcels "posts to Finance".
 // Each function takes the caller's transaction client (tx) so the payment is saved
 // in the same database transaction as the ticket or parcel.
+//
+// holdInEscrow, releaseEscrowForParcel and refundEscrowForParcel were built by the Lead for
+// the Parcels module (Nov 2026). Sweet: keep their signatures, extend them freely.
 
 export type Tx = Prisma.TransactionClient;
 
-export interface RecordPaymentInput {
-  agencyId: string;
-  payerId?: string;
-  purpose: PaymentPurpose;
-  method: PaymentMethod;
-  amount: number;
-  platformFee: number;
-}
+// Taking money (cash or Mobile Money) is in modules/payments/payments.service.ts:
+//   payments.create(tx, {...}) inside the module's transaction, then payments.start(id) after it.
 
-// Cash = SUCCEEDED at once. MoMo / OM = PENDING until the provider webhook confirms.
-export async function recordPayment(_tx: Tx, _input: RecordPaymentInput): Promise<unknown> {
-  throw notImplemented('Record a payment');
-}
-
-// Cash on delivery: money held by the platform until the receiver confirms
+// Cash on delivery: the receiver's money is held by the platform until the receiver
+// confirms with the delivery code (release) or refuses the parcel (refund).
 export async function holdInEscrow(
-  _tx: Tx,
-  _input: { paymentId: string; parcelId: string; amount: number; beneficiaryPhone: string },
-): Promise<unknown> {
-  throw notImplemented('Hold money in escrow');
+  tx: Tx,
+  input: { paymentId: string; parcelId: string; amount: number; beneficiaryPhone: string },
+) {
+  return tx.escrow.create({ data: { ...input, status: 'HELD' } });
 }
 
-// Called by Parcels when the receiver's code is correct
-export async function releaseEscrowForParcel(_tx: Tx, _parcelId: string): Promise<unknown> {
-  throw notImplemented('Release escrow');
+// Called by Parcels when the receiver's code is correct: the money goes to the sender.
+//   paid by Mobile Money → TransitPro holds it: a transfer to the sender's number is queued (Payouts sends it)
+//   paid in cash         → the cash is at the branch: the sender collects it at the counter
+export async function releaseEscrowForParcel(tx: Tx, parcelId: string) {
+  const escrow = await tx.escrow.findUnique({
+    where: { parcelId },
+    include: { payment: { select: { method: true } }, parcel: { select: { agencyId: true, senderName: true } } },
+  });
+  if (!escrow) return null; // no cash on delivery for this parcel
+  if (escrow.status !== 'HELD') throw badRequest('The cash-on-delivery money is not held any more');
+  const released = await tx.escrow.update({ where: { id: escrow.id }, data: { status: 'RELEASED', releasedAt: new Date() } });
+  if (escrow.payment.method !== 'CASH') {
+    await payouts.queueCodToSender(tx, {
+      escrowId: escrow.id,
+      agencyId: escrow.parcel.agencyId,
+      amount: escrow.amount,
+      phone: escrow.beneficiaryPhone,
+      senderName: escrow.parcel.senderName,
+    });
+  }
+  return released;
+}
+
+// Called by Parcels when the receiver refuses: the money goes back to the receiver
+export async function refundEscrowForParcel(tx: Tx, parcelId: string) {
+  const escrow = await tx.escrow.findUnique({ where: { parcelId } });
+  if (!escrow || escrow.status !== 'HELD') return null;
+  await tx.payment.update({ where: { id: escrow.paymentId }, data: { status: 'REFUNDED' } });
+  return tx.escrow.update({ where: { id: escrow.id }, data: { status: 'REFUNDED' } });
 }
 
 // Called by Fleet (fuel, repairs) and HR (salaries)

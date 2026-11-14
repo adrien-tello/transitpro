@@ -14,9 +14,13 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
     return res.status(err.status).json({ error: { code: err.code, message: err.message, details: err.details } });
   }
   if (err instanceof ZodError) {
-    return res
-      .status(400)
-      .json({ error: { code: 'VALIDATION_ERROR', message: 'Some fields are invalid', details: err.flatten().fieldErrors } });
+    // details = { "email": ["..."], "agency.name": ["..."] }: one entry per field, nested fields joined with "."
+    const details: Record<string, string[]> = {};
+    for (const issue of err.issues) {
+      const key = issue.path.join('.') || '_';
+      (details[key] ??= []).push(issue.message);
+    }
+    return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Some fields are invalid', details } });
   }
   // express.json(): broken JSON or a body over the size limit
   const bodyError = err as { type?: string };

@@ -10,10 +10,21 @@ function tooMany(_req: Request, res: Response) {
   res.status(429).json({ error: { code: 'TOO_MANY_REQUESTS', message: 'Too many requests, slow down and try again later' } });
 }
 
-// Whole API: 300 requests per 15 minutes per IP (stops scraping and floods)
+// Whole API: 300 requests per 15 minutes per IP (stops scraping and floods).
+// The live-updates stream has its own limit (below): its reconnections must not eat the normal API budget.
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 300,
+  skip: (req) => req.path === '/api/events',
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  handler: tooMany,
+});
+
+// Live-updates stream: 60 connections per 15 minutes per IP (a few tabs reconnecting after cuts)
+export const eventsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   handler: tooMany,
@@ -44,6 +55,10 @@ export function originCheck(req: Request, _res: Response, next: NextFunction) {
 // so this also blocks form-based CSRF and keeps parsing predictable.
 export function requireJson(req: Request, _res: Response, next: NextFunction) {
   if (!WRITE_METHODS.has(req.method)) return next();
+  // Photo uploads send the image itself; the uploads route checks the type and the bytes
+  if (req.method === 'POST' && req.path === '/api/uploads') return next();
+  // Agency documents: same, the documents route checks the type (image or PDF) and the bytes
+  if (req.method === 'PUT' && /^\/api\/agencies\/me\/documents\/[A-Z_]+$/.test(req.path)) return next();
   const hasBody = Number(req.headers['content-length'] ?? 0) > 0 || req.headers['transfer-encoding'] !== undefined;
   if (hasBody && !req.is('application/json')) {
     return next(new HttpError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Send the body as JSON (Content-Type: application/json)'));

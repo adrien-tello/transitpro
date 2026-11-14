@@ -1,61 +1,132 @@
-import { Router } from 'express';
+import { Router, type Request } from 'express';
+import { z } from 'zod';
 import { validate } from '../../middleware/validate';
 import { agencyIdOf, employeeIdOf, requireAuth, requireRole } from '../../middleware/auth';
-import { codeParam, deliverSchema, idParam, refuseSchema, registerParcelSchema, scanSchema } from './parcels.schemas';
+import {
+  codPaymentSchema,
+  codeParam,
+  feePaymentSchema,
+  deliverSchema,
+  idParam,
+  listQuery,
+  refuseSchema,
+  registerParcelSchema,
+  scanSchema,
+} from './parcels.schemas';
 import * as parcels from './parcels.service';
+import { publish } from '../../lib/realtime';
 
-// Owner: Lead (Fanyi Charllson). Routes are wired; parcels.service.ts is not built yet.
-// This file shows the route style every module copies: validate -> role check -> call service -> { data }.
+// Owner: Lead (Fanyi Charllson). Parcels & Courier.
+// Route style every module copies: validate -> role check -> call service -> { data }.
+// The service checks the finer rules (right branch, right holder, right status).
 export const parcelsRouter = Router();
 
-const staff = (req: Parameters<typeof agencyIdOf>[0]) => ({ agencyId: agencyIdOf(req), employeeId: employeeIdOf(req) });
+const staff = (req: Request) => ({ agencyId: agencyIdOf(req), employeeId: employeeIdOf(req) });
+const id = (req: Request) => String(req.params.id);
 
-// Public: anyone with the tracking code (customer app, SMS link)
+// Public: anyone with the tracking code (customer app, tracking link). No personal data.
 parcelsRouter.get('/track/:code', validate({ params: codeParam }), async (req, res) => {
   res.json({ data: await parcels.track(String(req.params.code)) });
 });
 
 parcelsRouter.use(requireAuth);
 
-// Counter agent registers, weighs, photographs and seals the parcel
-parcelsRouter.post(
-  '/',
-  requireRole('COUNTER_AGENT', 'BRANCH_MANAGER'),
-  validate({ body: registerParcelSchema }),
-  async (req, res) => {
-    res.status(201).json({ data: await parcels.registerParcel(req.body, staff(req)) });
-  },
-);
-
-parcelsRouter.get('/:id', requireRole('COUNTER_AGENT', 'BRANCH_MANAGER'), validate({ params: idParam }), async (req, res) => {
-  res.json({ data: await parcels.getForAgency(String(req.params.id), agencyIdOf(req)) });
+// Every successful change (register, scan, payment, delivery, refusal, hold released) is pushed to the agency's
+// dashboards at once: lists, counters and the parcel page refresh by themselves.
+parcelsRouter.use((req, res, next) => {
+  if (req.method !== 'GET') {
+    const code = req.path.split('/')[1] || null; // "/TP-DOU-XXXXX/scan" → the parcel; "/" (register) → null
+    res.on('finish', () => {
+      if (res.statusCode < 400 && req.user?.agencyId) // the team too: a cash sale is paid at once, its overview numbers move with this message
+        publish({ agencyId: req.user.agencyId, team: true }, { type: 'parcel.changed', trackingCode: code });
+    });
+  }
+  next();
 });
 
-// Driver, agent or manager scans the QR label at each handover
+// Counter agent registers, weighs, photographs and seals the parcel; the answer holds the delivery code ONCE
+parcelsRouter.post('/', requireRole('COUNTER_AGENT', 'BRANCH_MANAGER'), validate({ body: registerParcelSchema }), async (req, res) => {
+  res.status(201).json({ data: await parcels.registerParcel(req.body, staff(req)) });
+});
+
+// Web list (my branch's parcels; the owner sees all)
+parcelsRouter.get('/', requireRole('COUNTER_AGENT', 'BRANCH_MANAGER'), validate({ query: listQuery }), async (req, res) => {
+  res.json({ data: await parcels.list(req.query as unknown as z.infer<typeof listQuery>, staff(req)) });
+});
+
+// Web dashboard: counters, the last 7 days and alerts (before /:id, or "stats" would be read as a tracking code)
+parcelsRouter.get('/stats', requireRole('COUNTER_AGENT', 'BRANCH_MANAGER'), async (req, res) => {
+  res.json({ data: await parcels.stats(staff(req)) });
+});
+
+// Staff app: parcels I am responsible for (driver, courier)
+parcelsRouter.get('/mine', requireRole('DRIVER', 'COURIER', 'COUNTER_AGENT', 'BRANCH_MANAGER'), async (req, res) => {
+  res.json({ data: await parcels.mine(staff(req)) });
+});
+
+// :id = database id or tracking code (what the QR label contains)
+// Counter staff see any parcel of the agency; a driver / courier only the parcels they hold right now
+parcelsRouter.get('/:id', requireRole('COUNTER_AGENT', 'BRANCH_MANAGER', 'DRIVER', 'COURIER'), validate({ params: idParam }), async (req, res) => {
+  const role = req.user!.role;
+  res.json({ data: role === 'DRIVER' || role === 'COURIER' ? await parcels.getForHolder(id(req), staff(req)) : await parcels.getForAgency(id(req), agencyIdOf(req)) });
+});
+
+// One handover = one scan: LOADED (tripId) · DEPARTED · ARRIVED (weightKg) · HANDED_TO_COURIER (courierId)
 parcelsRouter.post(
   '/:id/scan',
   requireRole('COUNTER_AGENT', 'DRIVER', 'BRANCH_MANAGER'),
   validate({ params: idParam, body: scanSchema }),
   async (req, res) => {
-    res.json({ data: await parcels.scan(String(req.params.id), req.body, staff(req)) });
+    res.json({ data: await parcels.scan(id(req), req.body, staff(req)) });
   },
 );
 
-// Courier (home delivery) or counter agent (pickup at branch) enters the receiver's code
+// Receiver pays the cash on delivery before taking the parcel: the money is held in escrow
+parcelsRouter.post(
+  '/:id/cod-payment',
+  requireRole('COURIER', 'COUNTER_AGENT', 'BRANCH_MANAGER'),
+  validate({ params: idParam, body: codPaymentSchema }),
+  async (req, res) => {
+    res.json({ data: await parcels.payCashOnDelivery(id(req), req.body, staff(req)) });
+  },
+);
+
+// The fee payment failed (Mobile Money refused, no answer...): take it again, cash or another number
+parcelsRouter.post(
+  '/:id/fee-payment',
+  requireRole('COUNTER_AGENT', 'BRANCH_MANAGER'),
+  validate({ params: idParam, body: feePaymentSchema }),
+  async (req, res) => {
+    res.json({ data: await parcels.payFee(id(req), req.body, staff(req)) });
+  },
+);
+
+// Courier (home delivery: code + photo + GPS) or counter agent (pickup: code) enters the receiver's code
 parcelsRouter.post(
   '/:id/deliver',
-  requireRole('COURIER', 'COUNTER_AGENT'),
+  requireRole('COURIER', 'COUNTER_AGENT', 'BRANCH_MANAGER'),
   validate({ params: idParam, body: deliverSchema }),
   async (req, res) => {
-    res.json({ data: await parcels.deliver(String(req.params.id), req.body, staff(req)) });
+    res.json({ data: await parcels.deliver(id(req), req.body, staff(req)) });
   },
 );
 
+// Receiver refuses (seal broken, contents differ): claim opened, COD money refunded
 parcelsRouter.post(
   '/:id/refuse',
-  requireRole('COURIER', 'COUNTER_AGENT'),
+  requireRole('COURIER', 'COUNTER_AGENT', 'BRANCH_MANAGER'),
   validate({ params: idParam, body: refuseSchema }),
   async (req, res) => {
-    res.json({ data: await parcels.refuse(String(req.params.id), req.body.reason, staff(req)) });
+    res.json({ data: await parcels.refuse(id(req), req.body.reason, staff(req)) });
+  },
+);
+
+// Branch manager checked a parcel ON HOLD (weight difference, 5 wrong codes): back at the branch, new code
+parcelsRouter.post(
+  '/:id/release-hold',
+  requireRole('BRANCH_MANAGER'),
+  validate({ params: idParam, body: z.object({ note: z.string().trim().min(5).max(500) }) }),
+  async (req, res) => {
+    res.json({ data: await parcels.releaseHold(id(req), req.body.note, staff(req)) });
   },
 );

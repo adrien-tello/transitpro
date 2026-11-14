@@ -9,6 +9,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
+    "email:test": "tsx src/scripts/send-test-email.ts",
     "db:check": "tsx src/scripts/check-db.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -23,9 +24,11 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-rate-limit": "^8.7.3",
+    "google-auth-library": "^10.9.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
+    "nodemailer": "^7.0.13",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -35,6 +38,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^22.18.0",
+    "@types/nodemailer": "^8.0.2",
     "prisma": "^6.19.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
@@ -42,6 +46,7 @@
   "allowScripts": {
     "prisma": true,
     "@prisma/engines": true,
-    "esbuild": true
+    "esbuild": true,
+    "@prisma/client@6.19.3": true
   }
 }

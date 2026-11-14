@@ -1,0 +1,198 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2320" height="830" viewBox="0 0 2320 830" font-family="Inter, 'Segoe UI', Arial, sans-serif">
+<defs>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap');</style>
+  <marker id="open" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L11 6 L1 11" fill="none" stroke="#334155" stroke-width="1.5" stroke-linejoin="round"/></marker>
+  <marker id="openblue" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L11 6 L1 11" fill="none" stroke="#1E4FD8" stroke-width="1.5" stroke-linejoin="round"/></marker>
+  <marker id="tri" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#334155"/></marker>
+  <marker id="triblue" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#1E4FD8"/></marker>
+  <marker id="hollow" viewBox="0 0 16 16" refX="15" refY="8" markerWidth="16" markerHeight="16" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L15 8 L1 15 Z" fill="#fff" stroke="#334155" stroke-width="1.4"/></marker>
+  <marker id="diamond" viewBox="0 0 20 12" refX="19" refY="6" markerWidth="20" markerHeight="12" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 6 L10 1 L19 6 L10 11 Z" fill="#334155"/></marker>
+</defs>
+<rect width="2320" height="830" fill="#FFFFFF"/>
+<rect x="40" y="30" width="6" height="44" rx="2" fill="#1E4FD8"/>
+<text x="60.0" y="54.0" font-size="30" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">TransitPro: Enumerations</text>
+<text x="60.0" y="84.0" font-size="17" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">The fixed lists of values used by the classes of the unified class diagram</text>
+<text x="2280.0" y="52.0" font-size="17" font-weight="600" fill="#0F172A" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">TransitPro · whole system</text>
+<text x="2280.0" y="76.0" font-size="15" font-weight="400" fill="#64748B" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">Fanyi Charllson, Project Lead · v1.1 · November 2026</text>
+<line x1="40" y1="104" x2="2280" y2="104" stroke="#E2E8F0" stroke-width="1.2"/>
+<text x="40.0" y="153.0" font-size="17" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Auth &amp; Agencies</text>
+<rect x="40.0" y="169.0" width="170.9" height="320.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M40.75,227 V175 Q40.75,169.75 46,169.75 H204.88 Q210.13,169.75 210.13,175 V227 Z" fill="#EEF3FE"/>
+<text x="125.4" y="190.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="125.4" y="214.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">Role</text>
+<line x1="40" y1="227" x2="210.88" y2="227" stroke="#334155" stroke-width="1.2"/>
+<text x="54.0" y="250.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">CUSTOMER</text>
+<text x="54.0" y="275.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">COUNTER_AGENT</text>
+<text x="54.0" y="300.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">DRIVER</text>
+<text x="54.0" y="325.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">COURIER</text>
+<text x="54.0" y="350.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">BRANCH_MANAGER</text>
+<text x="54.0" y="375.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">FLEET_MANAGER</text>
+<text x="54.0" y="400.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">HR_OFFICER</text>
+<text x="54.0" y="425.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">ACCOUNTANT</text>
+<text x="54.0" y="450.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">AGENCY_OWNER</text>
+<text x="54.0" y="475.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">PLATFORM_ADMIN</text>
+<rect x="230.9" y="169.0" width="161.6" height="170.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M231.63,227 V175 Q231.63,169.75 236.88,169.75 H386.48 Q391.73,169.75 391.73,175 V227 Z" fill="#EEF3FE"/>
+<text x="311.7" y="190.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="311.7" y="214.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">AgencyStatus</text>
+<line x1="230.88" y1="227" x2="392.48" y2="227" stroke="#334155" stroke-width="1.2"/>
+<text x="244.9" y="250.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">PENDING</text>
+<text x="244.9" y="275.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">APPROVED</text>
+<text x="244.9" y="300.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">REJECTED</text>
+<text x="244.9" y="325.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">SUSPENDED</text>
+<rect x="412.5" y="169.0" width="200.6" height="195.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M413.23,227 V175 Q413.23,169.75 418.48,169.75 H607.12 Q612.37,169.75 612.37,175 V227 Z" fill="#EEF3FE"/>
+<text x="512.8" y="190.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="512.8" y="214.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">DocumentType</text>
+<line x1="412.48" y1="227" x2="613.12" y2="227" stroke="#334155" stroke-width="1.2"/>
+<text x="426.5" y="250.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">RCCM</text>
+<text x="426.5" y="275.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">NIU</text>
+<text x="426.5" y="300.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">OWNER_CNI_FRONT</text>
+<text x="426.5" y="325.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">OWNER_CNI_BACK</text>
+<text x="426.5" y="350.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">TRANSPORT_LICENCE</text>
+<text x="673.1" y="153.0" font-size="17" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Fleet</text>
+<rect x="673.1" y="169.0" width="170.9" height="145.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M673.87,227 V175 Q673.87,169.75 679.12,169.75 H838.0 Q843.25,169.75 843.25,175 V227 Z" fill="#F2F0FD"/>
+<text x="758.6" y="190.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="758.6" y="214.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">BusStatus</text>
+<line x1="673.12" y1="227" x2="844.0" y2="227" stroke="#334155" stroke-width="1.2"/>
+<text x="687.1" y="250.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">ACTIVE</text>
+<text x="687.1" y="275.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">IN_MAINTENANCE</text>
+<text x="687.1" y="300.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">OUT_OF_SERVICE</text>
+<rect x="864.0" y="169.0" width="118.4" height="120.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M864.75,227 V175 Q864.75,169.75 870.0,169.75 H976.4 Q981.65,169.75 981.65,175 V227 Z" fill="#F2F0FD"/>
+<text x="923.2" y="190.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="923.2" y="214.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">BusClass</text>
+<line x1="864.0" y1="227" x2="982.4" y2="227" stroke="#334155" stroke-width="1.2"/>
+<text x="878.0" y="250.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">CLASSIC</text>
+<text x="878.0" y="275.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">VIP</text>
+<rect x="1002.4" y="169.0" width="200.6" height="170.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M1003.15,227 V175 Q1003.15,169.75 1008.4,169.75 H1197.04 Q1202.29,169.75 1202.29,175 V227 Z" fill="#F2F0FD"/>
+<text x="1102.7" y="190.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="1102.7" y="214.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">MaintenanceType</text>
+<line x1="1002.4" y1="227" x2="1203.04" y2="227" stroke="#334155" stroke-width="1.2"/>
+<text x="1016.4" y="250.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">SCHEDULED_SERVICE</text>
+<text x="1016.4" y="275.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">REPAIR</text>
+<text x="1016.4" y="300.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">BREAKDOWN</text>
+<text x="1016.4" y="325.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">INSPECTION</text>
+<text x="1263.0" y="153.0" font-size="17" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Booking</text>
+<rect x="1263.0" y="169.0" width="140.0" height="195.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M1263.79,227 V175 Q1263.79,169.75 1269.04,169.75 H1397.04 Q1402.29,169.75 1402.29,175 V227 Z" fill="#FFF6E5"/>
+<text x="1333.0" y="190.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="1333.0" y="214.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">TripStatus</text>
+<line x1="1263.04" y1="227" x2="1403.04" y2="227" stroke="#334155" stroke-width="1.2"/>
+<text x="1277.0" y="250.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">SCHEDULED</text>
+<text x="1277.0" y="275.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">BOARDING</text>
+<text x="1277.0" y="300.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">DEPARTED</text>
+<text x="1277.0" y="325.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">ARRIVED</text>
+<text x="1277.0" y="350.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">CANCELLED</text>
+<rect x="1423.0" y="169.0" width="161.6" height="195.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M1423.79,227 V175 Q1423.79,169.75 1429.04,169.75 H1578.6399999999999 Q1583.8899999999999,169.75 1583.8899999999999,175 V227 Z" fill="#FFF6E5"/>
+<text x="1503.8" y="190.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="1503.8" y="214.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">TicketStatus</text>
+<line x1="1423.04" y1="227" x2="1584.6399999999999" y2="227" stroke="#334155" stroke-width="1.2"/>
+<text x="1437.0" y="250.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">RESERVED</text>
+<text x="1437.0" y="275.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">PAID</text>
+<text x="1437.0" y="300.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">BOARDED</text>
+<text x="1437.0" y="325.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">CANCELLED</text>
+<text x="1437.0" y="350.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">REFUNDED</text>
+<text x="1644.6" y="153.0" font-size="17" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Parcels</text>
+<rect x="1644.6" y="169.0" width="190.7" height="295.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M1645.3899999999999,227 V175 Q1645.3899999999999,169.75 1650.6399999999999,169.75 H1829.36 Q1834.61,169.75 1834.61,175 V227 Z" fill="#FDF1F1"/>
+<text x="1740.0" y="190.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="1740.0" y="214.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">ParcelStatus</text>
+<line x1="1644.6399999999999" y1="227" x2="1835.36" y2="227" stroke="#334155" stroke-width="1.2"/>
+<text x="1658.6" y="250.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">REGISTERED</text>
+<text x="1658.6" y="275.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">LOADED</text>
+<text x="1658.6" y="300.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">IN_TRANSIT</text>
+<text x="1658.6" y="325.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">ARRIVED</text>
+<text x="1658.6" y="350.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">OUT_FOR_DELIVERY</text>
+<text x="1658.6" y="375.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">DELIVERED</text>
+<text x="1658.6" y="400.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">ON_HOLD</text>
+<text x="1658.6" y="425.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">REFUSED</text>
+<text x="1658.6" y="450.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">RETURNED</text>
+<rect x="1855.4" y="169.0" width="200.6" height="295.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M1856.11,227 V175 Q1856.11,169.75 1861.36,169.75 H2050.0 Q2055.25,169.75 2055.25,175 V227 Z" fill="#FDF1F1"/>
+<text x="1955.7" y="190.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="1955.7" y="214.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">ParcelEventType</text>
+<line x1="1855.36" y1="227" x2="2056.0" y2="227" stroke="#334155" stroke-width="1.2"/>
+<text x="1869.4" y="250.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">REGISTERED</text>
+<text x="1869.4" y="275.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">LOADED</text>
+<text x="1869.4" y="300.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">DEPARTED</text>
+<text x="1869.4" y="325.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">ARRIVED</text>
+<text x="1869.4" y="350.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">HANDED_TO_COURIER</text>
+<text x="1869.4" y="375.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">DELIVERY_ATTEMPT</text>
+<text x="1869.4" y="400.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">DELIVERED</text>
+<text x="1869.4" y="425.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">REFUSED</text>
+<text x="1869.4" y="450.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">HELD</text>
+<rect x="2076.0" y="169.0" width="200.6" height="170.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M2076.75,227 V175 Q2076.75,169.75 2082.0,169.75 H2270.64 Q2275.89,169.75 2275.89,175 V227 Z" fill="#FDF1F1"/>
+<text x="2176.3" y="190.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="2176.3" y="214.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">ClaimStatus</text>
+<line x1="2076.0" y1="227" x2="2276.64" y2="227" stroke="#334155" stroke-width="1.2"/>
+<text x="2090.0" y="250.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">OPEN</text>
+<text x="2090.0" y="275.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">INVESTIGATING</text>
+<text x="2090.0" y="300.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">RESOLVED_PAID</text>
+<text x="2090.0" y="325.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">RESOLVED_REJECTED</text>
+<text x="40.0" y="547.0" font-size="17" font-weight="700" fill="#0F172A" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">Finance</text>
+<rect x="40.0" y="563.0" width="183.2" height="170.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M40.75,621 V569 Q40.75,563.75 46,563.75 H217.2 Q222.45,563.75 222.45,569 V621 Z" fill="#EAF6F6"/>
+<text x="131.6" y="584.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="131.6" y="608.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">PaymentPurpose</text>
+<line x1="40" y1="621" x2="223.2" y2="621" stroke="#334155" stroke-width="1.2"/>
+<text x="54.0" y="644.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">TICKET</text>
+<text x="54.0" y="669.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">PARCEL_FEE</text>
+<text x="54.0" y="694.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">COD_COLLECTION</text>
+<text x="54.0" y="719.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">SUBSCRIPTION</text>
+<rect x="243.2" y="563.0" width="172.4" height="145.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M243.95,621 V569 Q243.95,563.75 249.2,563.75 H409.6 Q414.85,563.75 414.85,569 V621 Z" fill="#EAF6F6"/>
+<text x="329.4" y="584.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="329.4" y="608.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">PaymentMethod</text>
+<line x1="243.2" y1="621" x2="415.6" y2="621" stroke="#334155" stroke-width="1.2"/>
+<text x="257.2" y="644.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">MTN_MOMO</text>
+<text x="257.2" y="669.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">ORANGE_MONEY</text>
+<text x="257.2" y="694.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">CASH</text>
+<rect x="435.6" y="563.0" width="172.4" height="170.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M436.35,621 V569 Q436.35,563.75 441.6,563.75 H602.0 Q607.25,563.75 607.25,569 V621 Z" fill="#EAF6F6"/>
+<text x="521.8" y="584.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="521.8" y="608.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">PaymentStatus</text>
+<line x1="435.6" y1="621" x2="608.0" y2="621" stroke="#334155" stroke-width="1.2"/>
+<text x="449.6" y="644.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">PENDING</text>
+<text x="449.6" y="669.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">SUCCEEDED</text>
+<text x="449.6" y="694.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">FAILED</text>
+<text x="449.6" y="719.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">REFUNDED</text>
+<rect x="628.0" y="563.0" width="161.6" height="145.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M628.75,621 V569 Q628.75,563.75 634.0,563.75 H783.6 Q788.85,563.75 788.85,569 V621 Z" fill="#EAF6F6"/>
+<text x="708.8" y="584.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="708.8" y="608.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">EscrowStatus</text>
+<line x1="628.0" y1="621" x2="789.6" y2="621" stroke="#334155" stroke-width="1.2"/>
+<text x="642.0" y="644.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">HELD</text>
+<text x="642.0" y="669.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">RELEASED</text>
+<text x="642.0" y="694.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">REFUNDED</text>
+<rect x="809.6" y="563.0" width="194.0" height="170.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M810.35,621 V569 Q810.35,563.75 815.6,563.75 H997.6 Q1002.85,563.75 1002.85,569 V621 Z" fill="#EAF6F6"/>
+<text x="906.6" y="584.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="906.6" y="608.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">ExpenseCategory</text>
+<line x1="809.6" y1="621" x2="1003.6" y2="621" stroke="#334155" stroke-width="1.2"/>
+<text x="823.6" y="644.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">FUEL</text>
+<text x="823.6" y="669.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">MAINTENANCE</text>
+<text x="823.6" y="694.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">SALARY</text>
+<text x="823.6" y="719.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">OTHER</text>
+<rect x="1023.6" y="563.0" width="204.8" height="145.0" rx="6" fill="#fff" stroke="#334155" stroke-width="1.5"/>
+<path d="M1024.35,621 V569 Q1024.35,563.75 1029.6,563.75 H1222.4 Q1227.65,563.75 1227.65,569 V621 Z" fill="#EAF6F6"/>
+<text x="1126.0" y="584.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-style="italic">«enumeration»</text>
+<text x="1126.0" y="608.0" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif">RemittanceStatus</text>
+<line x1="1023.6" y1="621" x2="1228.4" y2="621" stroke="#334155" stroke-width="1.2"/>
+<text x="1037.6" y="644.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">OPEN</text>
+<text x="1037.6" y="669.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">SETTLED</text>
+<text x="1037.6" y="694.5" font-size="16" font-weight="400" fill="#1E293B" text-anchor="start" font-family="'JetBrains Mono', Consolas, monospace">SHORT</text>
+<line x1="40" y1="790" x2="2280" y2="790" stroke="#E2E8F0" stroke-width="1.2"/>
+<text x="40.0" y="815.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="start" font-family="Inter, 'Segoe UI', Arial, sans-serif">TransitPro · Large System Environment · Functional Requirements Document</text>
+<text x="2280.0" y="815.0" font-size="13" font-weight="400" fill="#64748B" text-anchor="end" font-family="Inter, 'Segoe UI', Arial, sans-serif">Companion page of the unified class diagram · Source: server/prisma/schema.prisma</text>
+</svg>

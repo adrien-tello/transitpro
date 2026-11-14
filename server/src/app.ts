@@ -5,7 +5,7 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { env } from './config/env';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
-import { globalLimiter, noStore, originCheck, requireJson } from './middleware/security';
+import { eventsLimiter, globalLimiter, noStore, originCheck, requireJson } from './middleware/security';
 import { authRouter } from './modules/auth/auth.routes';
 import { agenciesRouter } from './modules/agencies/agencies.routes';
 import { bookingRouter } from './modules/booking/booking.routes';
@@ -13,6 +13,11 @@ import { fleetRouter } from './modules/fleet/fleet.routes';
 import { parcelsRouter } from './modules/parcels/parcels.routes';
 import { hrRouter } from './modules/hr/hr.routes';
 import { financeRouter } from './modules/finance/finance.routes';
+import { paymentsRouter } from './modules/payments/payments.routes';
+import { uploadsRouter } from './modules/uploads/uploads.routes';
+import { payoutsRouter } from './modules/payouts/payouts.routes';
+import { requireAuth } from './middleware/auth';
+import { stream } from './lib/realtime';
 
 export const app = express();
 
@@ -28,7 +33,16 @@ app.use(globalLimiter);
 app.use(originCheck);
 app.use(requireJson);
 app.use(cookieParser());
-app.use(express.json({ limit: '100kb', strict: true }));
+// rawBody keeps the exact bytes: a webhook signature is computed on them, not on re-built JSON
+app.use(
+  express.json({
+    limit: '100kb',
+    strict: true,
+    verify: (req, _res, buf) => {
+      (req as express.Request).rawBody = buf;
+    },
+  }),
+);
 app.use(noStore);
 // Never log cookies or bodies: they contain sessions and personal data
 app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
@@ -45,6 +59,11 @@ app.use('/api/fleet', fleetRouter);
 app.use('/api/parcels', parcelsRouter);
 app.use('/api/hr', hrRouter);
 app.use('/api/finance', financeRouter);
+app.use('/api/payments', paymentsRouter);
+app.use('/api/uploads', uploadsRouter);
+app.use('/api/payouts', payoutsRouter);
+// Instant updates (Server-Sent Events): one open connection per dashboard tab
+app.get('/api/events', eventsLimiter, requireAuth, stream);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
