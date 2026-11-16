@@ -4,12 +4,10 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
-import { useQueryClient } from '@tanstack/react-query';
 import type { Me } from '@contracts/api-types';
-import { authKeys, useLogout } from '@/modules/auth/auth.queries';
+import { useLogout } from '@/modules/auth/auth.queries';
 import { pickTodayTrip, useDriverTrips, useMyParcels } from '../staff.queries';
 import { useStaffStats } from '../staff.screens.queries';
-import { STAFF_PREVIEW_ON } from '../use-staff-me';
 import { StaffColors, StaffSpace } from '../staff.theme';
 import { initials } from '../staff.format';
 import { StaffIcon, type StaffIconName } from './StaffIcon';
@@ -34,7 +32,6 @@ function useBranchName(me: Me): string | undefined {
 
 export function ProfileScreen({ me }: { me: Me }) {
   const router = useRouter();
-  const qc = useQueryClient();
   const logout = useLogout();
   const stats = useStaffStats(me.role);
   const branch = useBranchName(me);
@@ -44,12 +41,6 @@ export function ProfileScreen({ me }: { me: Me }) {
 
   function doLogout() {
     setConfirmLogout(false);
-    if (STAFF_PREVIEW_ON) {
-      // Preview has no server session: just forget the preview user.
-      qc.setQueryData(authKeys.me, null);
-      qc.clear();
-      return;
-    }
     logout.mutate();
   }
 
