@@ -45,7 +45,7 @@ export const useLiveLocation = create<LiveLocation>((set, get) => ({
         set({ failed: true });
       }
     }
-    sendOnce();
+    void sendOnce();
     timer = setInterval(sendOnce, EVERY_MS);
   },
 

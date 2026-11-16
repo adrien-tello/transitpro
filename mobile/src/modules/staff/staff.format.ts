@@ -17,7 +17,13 @@ export function formatTime(iso: string): string {
 
 // 8500 → "8,500" (FCFA, integer)
 export function formatMoney(n: number): string {
-  return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const digits = String(Math.abs(Math.round(n)));
+  let out = '';
+  for (let i = 0; i < digits.length; i++) {
+    if (i > 0 && (digits.length - i) % 3 === 0) out += ',';
+    out += digits[i];
+  }
+  return n < 0 ? `-${out}` : out;
 }
 
 export function greeting(d: Date = new Date()): string {

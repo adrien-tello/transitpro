@@ -218,7 +218,7 @@ function DeliverView({
         <View style={styles.pad}>
           {!openForDelivery && (
             <View style={[styles.card, styles.cardWarning]}>
-              <Text style={styles.bold}>This parcel is {parcel.status.toLowerCase().replace(/_/g, ' ')}.</Text>
+              <Text style={styles.bold}>This parcel is {parcel.status.toLowerCase().replaceAll('_', ' ')}.</Text>
               <Text style={styles.body}>It cannot be delivered now. Call your branch if this is wrong.</Text>
             </View>
           )}
@@ -348,7 +348,7 @@ function DeliverView({
         onClose={() => setCameraOpen(false)}
         onTaken={(uri) => {
           setCameraOpen(false);
-          sendPhoto(uri);
+          void sendPhoto(uri);
         }}
       />
     </KeyboardAvoidingView>

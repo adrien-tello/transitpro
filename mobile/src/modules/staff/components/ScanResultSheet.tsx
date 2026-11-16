@@ -220,7 +220,7 @@ export function ParcelLoadSheet({
         />
       ) : (
         <View style={[styles.card, styles.cardWarning]}>
-          <Text style={styles.refusalText}>This parcel is {parcel?.status.toLowerCase().replace(/_/g, ' ')}: nothing to load.</Text>
+          <Text style={styles.refusalText}>This parcel is {parcel?.status.toLowerCase().replaceAll('_', ' ')}: nothing to load.</Text>
         </View>
       )}
       <OutlineButton label="Scan another parcel" onPress={onScanAnother} disabled={loading} />
