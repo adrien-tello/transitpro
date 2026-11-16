@@ -15,7 +15,11 @@ export async function api<T>(path: string, options: { method?: string; body?: un
   const res = await fetch(`${API_URL}${path}`, {
     method: options.method ?? 'GET',
     credentials: 'include',
-    headers: options.body ? { 'Content-Type': 'application/json' } : undefined,
+    headers: {
+      // Bypasses ngrok's free-tier "Visit Site" interstitial page
+      'ngrok-skip-browser-warning': 'true',
+      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+    },
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
   const json = await res.json().catch(() => ({}));

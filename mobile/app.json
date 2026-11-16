@@ -8,9 +8,22 @@
     "userInterfaceStyle": "light",
     "plugins": [
       "expo-router",
-      ["expo-camera", { "cameraPermission": "TransitPro scans ticket and parcel QR codes." }],
-      ["expo-location", { "locationWhenInUsePermission": "TransitPro shares the bus position during a trip and proves where a parcel was delivered." }]
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "TransitPro scans ticket and parcel QR codes."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "TransitPro shares the bus position during a trip and proves where a parcel was delivered."
+        }
+      ],
+      "expo-web-browser"
     ],
-    "experiments": { "typedRoutes": true }
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

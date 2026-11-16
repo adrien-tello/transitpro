@@ -57,7 +57,8 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     return (
       <View style={styles.splash}>
         <View style={styles.splashLogo}>
-          <Text style={styles.splashEmoji}>🚌</Text>
+          <Text style={styles.logoT}>T</Text>
+          <View style={styles.logoDot} />
         </View>
         <Text style={styles.splashName}>TransitPro</Text>
         <ActivityIndicator color={Colors.primary} style={{ marginTop: 24 }} />
@@ -106,7 +107,16 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 8,
   },
-  splashEmoji: { fontSize: 44 },
+  logoT: { fontSize: 48, fontWeight: '900', color: Colors.white, marginTop: -4 },
+  logoDot: {
+    position: 'absolute',
+    bottom: 10,
+    right: 12,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: Colors.orange,
+  },
   splashName: {
     fontSize: 28,
     fontWeight: '800',

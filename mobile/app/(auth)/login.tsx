@@ -13,7 +13,7 @@ import Svg, { Path, Line } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/theme/colors';
-import { useLogin } from '@/modules/auth/auth.queries';
+import { useLogin, useGoogleAuth } from '@/modules/auth/auth.queries';
 
 function isValidEmail(s: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
@@ -22,6 +22,7 @@ function isValidEmail(s: string) {
 export default function LoginScreen() {
   const router = useRouter();
   const { mutate: login, isPending, error } = useLogin();
+  const { promptAsync: promptGoogle, isPending: googlePending, error: googleError } = useGoogleAuth();
   const [email, setEmail] = useState('marie.ekane@gmail.com');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
@@ -38,9 +39,9 @@ export default function LoginScreen() {
 
   function handleLogin() {
     if (!validate()) return;
-    login({ email: email.trim().toLowerCase(), password }, {
-      onSuccess: () => router.replace('/(customer)/(tabs)/' as never),
-    });
+    // AuthGate in _layout.tsx reads `me` and routes to the right group by role.
+    // We just need the mutation to succeed; the gate does the navigation.
+    login({ email: email.trim().toLowerCase(), password });
   }
 
   return (
@@ -76,10 +77,16 @@ export default function LoginScreen() {
         {/* Form area */}
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           {/* Google button */}
-          <TouchableOpacity style={styles.googleBtn} activeOpacity={0.85}>
+          <TouchableOpacity
+            style={[styles.googleBtn, googlePending && { opacity: 0.7 }]}
+            activeOpacity={0.85}
+            onPress={() => promptGoogle()}
+            disabled={googlePending}
+          >
             <Text style={styles.googleG}>G</Text>
-            <Text style={styles.googleLabel}>Continue with Google</Text>
+            <Text style={styles.googleLabel}>{googlePending ? 'Signing in…' : 'Continue with Google'}</Text>
           </TouchableOpacity>
+          {googleError ? <Text style={styles.serverError}>{googleError.message}</Text> : null}
 
           {/* Divider */}
           <View style={styles.divider}>
@@ -135,7 +142,7 @@ export default function LoginScreen() {
           {fieldErrors.password ? <Text style={styles.fieldError}>{fieldErrors.password}</Text> : null}
 
           {/* Forgot password */}
-          <TouchableOpacity style={styles.forgotRow}>
+          <TouchableOpacity style={styles.forgotRow} onPress={() => router.push('/(auth)/forgot-password' as never)}>
             <Text style={styles.forgotText}>Forgot password?</Text>
           </TouchableOpacity>
 

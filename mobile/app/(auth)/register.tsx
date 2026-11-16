@@ -13,13 +13,14 @@ import Svg, { Path, Line } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/theme/colors';
-import { useRegister } from '@/modules/auth/auth.queries';
+import { useRegister, useGoogleAuth } from '@/modules/auth/auth.queries';
 
 function isValidEmail(s: string) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim()); }
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { mutate: register, isPending, error } = useRegister();
+  const { promptAsync: promptGoogle, isPending: googlePending, error: googleError } = useGoogleAuth();
   const [fullName, setFullName] = useState('Marie Ekane');
   const [email, setEmail] = useState('marie.ekane@gmail.com');
   const [phone, setPhone] = useState('+237 6 77 18 18 90');
@@ -43,10 +44,7 @@ export default function RegisterScreen() {
 
   function handleSubmit() {
     if (!validate()) return;
-    register(
-      { fullName: fullName.trim(), email: email.trim().toLowerCase(), phone: phone.trim(), password },
-      { onSuccess: () => router.replace('/(customer)/(tabs)/' as never) },
-    );
+    register({ fullName: fullName.trim(), email: email.trim().toLowerCase(), phone: phone.trim(), password });
   }
 
   return (
@@ -68,10 +66,16 @@ export default function RegisterScreen() {
           <Text style={styles.subtitle}>It takes less than a minute.</Text>
 
           {/* Google button */}
-          <TouchableOpacity style={styles.googleBtn} activeOpacity={0.85}>
+          <TouchableOpacity
+            style={[styles.googleBtn, googlePending && { opacity: 0.7 }]}
+            activeOpacity={0.85}
+            onPress={() => promptGoogle()}
+            disabled={googlePending}
+          >
             <Text style={styles.googleG}>G</Text>
-            <Text style={styles.googleLabel}>Sign up with Google</Text>
+            <Text style={styles.googleLabel}>{googlePending ? 'Signing up…' : 'Sign up with Google'}</Text>
           </TouchableOpacity>
+          {googleError ? <Text style={styles.serverError}>{googleError.message}</Text> : null}
 
           {/* Divider */}
           <View style={styles.divider}>
