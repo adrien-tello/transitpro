@@ -14,6 +14,20 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/theme/colors';
 import { useLogin, useGoogleAuth } from '@/modules/auth/auth.queries';
+import { Icon } from '@/components/ui';
+
+// Real four-color Google "G" (same mark as the web app's sign-in button), replacing the
+// plain blue letter that stood in for it before.
+function GoogleLogo() {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 48 48">
+      <Path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />
+      <Path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
+      <Path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z" />
+      <Path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z" />
+    </Svg>
+  );
+}
 
 function isValidEmail(s: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
@@ -83,7 +97,7 @@ export default function LoginScreen() {
             onPress={() => promptGoogle()}
             disabled={googlePending}
           >
-            <Text style={styles.googleG}>G</Text>
+            <GoogleLogo />
             <Text style={styles.googleLabel}>{googlePending ? 'Signing in…' : 'Continue with Google'}</Text>
           </TouchableOpacity>
           {googleError ? <Text style={styles.serverError}>{googleError.message}</Text> : null}
@@ -153,7 +167,8 @@ export default function LoginScreen() {
             activeOpacity={0.9}
             disabled={isPending}
           >
-            <Text style={styles.loginBtnText}>Log in  →</Text>
+            <Text style={styles.loginBtnText}>{isPending ? 'Signing in…' : 'Log in'}</Text>
+            {!isPending && <Icon name="arrowRight" size={18} color={Colors.white} />}
           </TouchableOpacity>
 
           {/* Register link */}
@@ -248,7 +263,6 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 20,
   },
-  googleG: { fontSize: 18, fontWeight: '700', color: '#4285F4' },
   googleLabel: { fontSize: 15, fontWeight: '500', color: Colors.ink },
 
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
@@ -286,9 +300,11 @@ const styles = StyleSheet.create({
   loginBtn: {
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.navy,
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
     marginBottom: 24,
   },
   loginBtnText: { fontSize: 16, fontWeight: '700', color: Colors.white },

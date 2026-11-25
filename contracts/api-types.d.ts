@@ -203,6 +203,68 @@ export interface Ticket {
   payment: { method: PaymentMethod; status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'REFUNDED' };
 }
 
+// ─────────────── 1b. Booking · Staff app (driver) · Joy ───────────────
+// Added for the staff mobile redesign (driver "Today" / "Trips" screens). Not yet in docs/API.md
+// as a built endpoint — see the 🧱 rows added there. Mobile falls back to contracts/mocks on 501,
+// same convention as every other not-yet-built endpoint in this file.
+
+// GET /booking/trips/mine (DRIVER)   Screen: Staff · Driver Today, Trips (live map)
+export interface DriverTripStop {
+  label: string; // "Departure" | "Stop" | "Arrival"
+  city: string;
+  at: string | null; // ISO, null until the bus reaches it
+}
+export interface DriverTripView {
+  tripId: string;
+  code: string; // "TR-0802"
+  busPlate: string;
+  busClass: BusClass;
+  status: 'SCHEDULED' | 'BOARDING' | 'DEPARTED' | 'ARRIVED' | 'BROKEN_DOWN';
+  originCity: string;
+  destinationCity: string;
+  departureAt: string;
+  arrivalEta: string;
+  passengersBoarded: number;
+  passengersTotal: number;
+  parcelsLoaded: number;
+  parcelsTotal: number;
+  stops: DriverTripStop[];
+  currentStopIndex: number; // drives the live map progress bar
+  nextStopEtaMinutes: number | null;
+  speedKmh: number | null;
+}
+
+// GET /booking/trips/mine/schedule (DRIVER)   Screen: Staff · Driver "My trips" (Next days, Last trips)
+// Added with the staff app redesign (2026-11-24) — see docs/API.md.
+export interface DriverScheduleTrip {
+  tripId: string;
+  code: string; // "TR-0809"
+  busPlate: string;
+  seats: number; // bus capacity
+  originCity: string;
+  destinationCity: string;
+  departureAt: string; // ISO
+  delayMinutes: number | null; // done trips only: arrival delay, 0 or null = on time
+}
+export interface DriverSchedule {
+  upcoming: DriverScheduleTrip[]; // after today's trip, soonest first
+  done: DriverScheduleTrip[]; // most recent first
+}
+
+// GET /booking/trips/:tripId/passengers (DRIVER, COUNTER_AGENT)   Screen: Staff · Passengers list
+export interface DriverPassengerRow {
+  ticketCode: string;
+  seatNumber: number;
+  passengerName: string;
+  boardedAt: string | null; // null = missing
+}
+
+// POST /booking/tickets/:code/board { tripId }   Screen: Staff · Scan tickets
+export interface BoardResult {
+  ticket: Ticket;
+  alreadyBoarded: { at: string; by: string } | null; // set instead of boarding again
+}
+
 // ─────────────── 4. HR · Joy ───────────────
 
 // GET /hr/employees → Paginated<EmployeeRow>      Screen: Web · Staff
@@ -300,6 +362,16 @@ export interface FinanceSummary {
   parcelRevenue: number;
   cashToRemit: number;
   changeVsLastWeekPercent: number; // +12
+}
+
+// GET /parcels/mine/cash-collected (COURIER)   Screen: Staff · Cash "Collected today"
+// Added with the staff app redesign — see docs/API.md.
+export interface CashCollectedRow {
+  id: string;
+  payerName: string;
+  trackingCode: string;
+  amount: number;
+  at: string; // ISO
 }
 
 // GET /finance/remittances                        Screen: Courier "Cash to remit", Web · Finance
@@ -419,6 +491,28 @@ export interface ParcelRegistered {
   parcel: ParcelDetail;
   // Shown ONCE, printed on the sender's receipt only (never on the label). Only its hash is stored.
   deliveryCode: string;
+}
+
+// GET /parcels/mine/stops (COURIER)   Screen: Staff · Courier Today ("Next up" + "Later today")
+// Ordered by etaAt, soonest first — stops[0] is "Next up", the rest are "Later today".
+export interface CourierStop {
+  parcel: ParcelListItem;
+  stopIndex: number; // "Stop 6 of 9"
+  stopsTotal: number;
+  etaAt: string; // ISO
+  distanceKm: number | null;
+  etaMinutes: number | null; // minutes of driving from the courier's current position
+}
+
+// GET /parcels/mine/stats (COURIER)   Screen: Staff · Courier Today (stat tiles), Profile
+export interface CourierStats {
+  deliveredToday: number;
+  stopsToday: number;
+  refusedToday: number;
+  cashToRemitToday: number;
+  deliveredThisMonth: number;
+  firstTryPercent: number; // delivered on the first attempt, this month
+  refusedThisMonth: number;
 }
 
 // POST /parcels/:id/release-hold   (branch manager after checking a parcel ON_HOLD) → new code for the receipt

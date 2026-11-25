@@ -117,6 +117,11 @@ Web dashboard after login: if `me.agency.status` is `PENDING`, show the "waiting
 | GET/POST | `/booking/routes` | BRANCH_MANAGER | Routes | Web · Trips & booking | 🧱 |
 | GET/POST | `/booking/trips` | BRANCH_MANAGER | List / schedule trips. **Rejects** a bus not ACTIVE or a driver with an expired licence | Web · Trips, Dashboard departures | 🧱 |
 | PATCH | `/booking/trips/:id/status` | BRANCH_MANAGER, DRIVER | BOARDING → DEPARTED → ARRIVED | Driver Today "Start trip" | 🧱 |
+| GET | `/booking/trips/mine` | DRIVER | Today's (or next) trip: stops, passengers boarded, parcels on board | `DriverTripView` | Staff · Driver Today, Trips | 🧱 |
+| GET | `/booking/trips/mine/schedule` | DRIVER | The driver's other trips: upcoming (after today's) and the last ones done, with delay | `DriverSchedule` | Staff · Driver My trips | 🧱 |
+| GET | `/booking/trips/:id/passengers` | DRIVER, COUNTER_AGENT | Seat list with boarding time, missing first | `DriverPassengerRow[]` | Staff · Passengers list | 🧱 |
+
+*Rows added with the staff app redesign (2026-11-19): `/booking/trips/mine`, `/booking/trips/:id/passengers`, and (2026-11-24) `/booking/trips/mine/schedule`. Contract types are in `contracts/api-types.d.ts`; Joy still needs to build the server side — mobile renders them with the mock fallback until then.*
 
 ## 2. Fleet & Maintenance · Sweet
 
@@ -151,6 +156,11 @@ Every action below answers the full `ParcelDetail` (contracts), so the screen re
 | POST | `/parcels/:id/deliver` | COURIER, COUNTER_AGENT | `otp` (4 digits). Courier also `photoUrl, lat, lng` | `ParcelDetail` (DELIVERED, escrow released) | Courier delivery, counter pickup | ✅ |
 | POST | `/parcels/:id/refuse` | COURIER, COUNTER_AGENT | `reason` | `ParcelDetail` (REFUSED, claim, COD refunded) | Courier delivery, counter | ✅ |
 | POST | `/parcels/:id/release-hold` | BRANCH_MANAGER (destination) | `note`: after checking a parcel ON_HOLD | `ParcelHoldReleased` = parcel + **new `deliveryCode`** | Web · Parcel detail | ✅ |
+| GET | `/parcels/mine/stops` | COURIER | Today's deliveries ordered by ETA, with distance/time to each | `CourierStop[]` | Staff · Courier Today | 🧱 |
+| GET | `/parcels/mine/stats` | COURIER | Delivered/refused/cash today + this month's first-try rate | `CourierStats` | Staff · Courier Today, Profile | 🧱 |
+| GET | `/parcels/mine/cash-collected` | COURIER | Cash on delivery collected today, itemized | `CashCollectedRow[]` | Staff · Cash | 🧱 |
+
+*Rows added with the staff app redesign (2026-11-19): `/parcels/mine/stops`, `/parcels/mine/stats`, `/parcels/mine/cash-collected`. Contract types are in `contracts/api-types.d.ts`; Fanyi still needs to build the server side — mobile renders them with the mock fallback until then.*
 
 **The journey and its rules** (the server refuses anything out of order with a clear message)
 

@@ -32,9 +32,6 @@ export const agenciesRouter = Router();
 agenciesRouter.get('/', async () => {
   throw notImplemented('List verified agencies (search, sort by rating)');
 });
-agenciesRouter.get('/:slug', async () => {
-  throw notImplemented('Agency profile with rating breakdown and today\'s departures');
-});
 
 // Owner signs up the agency. The owner is logged in at once; the dashboard shows
 // "waiting for verification" until a PLATFORM_ADMIN approves the agency.
@@ -163,3 +160,9 @@ agenciesRouter.post(
     publish({ team: true, agencyId: a.id }, { type: 'agency.status', agencyId: a.id, name: a.name, status: a.status });
   },
 );
+
+// Public (customer app): agency profile page. Must come last — /:slug is a catch-all that would
+// shadow every specific route defined above if placed earlier.
+agenciesRouter.get('/:slug', async () => {
+  throw notImplemented("Agency profile with rating breakdown and today's departures");
+});

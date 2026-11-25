@@ -64,6 +64,11 @@ export const Colors = {
   info: '#0EA5E9',
   infoLight: '#E0F2FE',
 
+  // ── Staff app additions (driver / courier screens) ───────────────────────────
+  orangeLight: '#FDF0DB',   // cream icon tiles (scan tickets, "before departure")
+  dangerBg: '#FEE2E2',      // "already boarded" banner, breakdown pill
+  overlaySoft: 'rgba(13,17,23,0.35)',
+
   // ── Misc ────────────────────────────────────────────────────────────────────
   white: '#FFFFFF',
   black: '#000000',

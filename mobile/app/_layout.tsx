@@ -38,10 +38,11 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     const inAuth = segments[0] === '(auth)';
     const inCustomer = segments[0] === '(customer)';
     const inStaff = segments[0] === '(staff)';
+    const inInvite = segments[0] === 'invite'; // public: GET/POST /hr/invites/:token need no session
 
     if (me === null) {
-      // Not logged in (null = 401 returned) → go to login
-      if (!inAuth) router.replace('/(auth)/login');
+      // Not logged in (null = 401 returned) → go to login, except the public invite link
+      if (!inAuth && !inInvite) router.replace('/(auth)/login');
     } else if (me !== null && me !== undefined) {
       // me === undefined means query still loading, handled by isLoading above
       if (me.role === 'CUSTOMER') {
