@@ -10,6 +10,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Colors, FontSize, FontWeight } from '@/theme';
+import { Icon } from './Icon';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -56,9 +57,9 @@ export function Input({
         {secureTextEntry ? (
           <TouchableOpacity
             style={styles.iconRight}
-            onPress={() => setSecure(s => !s)}
+            onPress={() => setSecure((s) => !s)}
           >
-            <Text style={styles.eyeIcon}>{secure ? '👁' : '🙈'}</Text>
+            <Icon name={secure ? 'eye' : 'eyeOff'} size={20} color={Colors.inkDisabled} />
           </TouchableOpacity>
         ) : rightIcon ? (
           <View style={styles.iconRight}>{rightIcon}</View>
@@ -120,8 +121,5 @@ const styles = StyleSheet.create({
     fontSize: FontSize.xs,
     color: Colors.inkDisabled,
     marginTop: 4,
-  },
-  eyeIcon: {
-    fontSize: 16,
   },
 });

@@ -2,19 +2,17 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Colors } from '@/theme/colors';
+import { Icon } from '@/components/ui';
 
-// SVG-free icon set matching the design exactly (home, ticket, box/parcel, person)
-function HomeIcon({ active }: { active: boolean }) {
-  return <Text style={[styles.icon, { color: active ? Colors.navy : Colors.white }]}>⌂</Text>;
-}
-function TripsIcon({ active }: { active: boolean }) {
-  return <Text style={[styles.icon, { color: active ? Colors.navy : Colors.white }]}>🎫</Text>;
-}
-function ParcelsIcon({ active }: { active: boolean }) {
-  return <Text style={[styles.icon, { color: active ? Colors.navy : Colors.white }]}>⬡</Text>;
-}
-function ProfileIcon({ active }: { active: boolean }) {
-  return <Text style={[styles.icon, { color: active ? Colors.navy : Colors.white }]}>👤</Text>;
+// Customer tab bar — dark navy pill, active tab highlighted in orange.
+function TabIcon({ name, active }: { name: 'home' | 'ticket' | 'parcelBox' | 'user'; active: boolean }) {
+  return (
+    <Icon
+      name={name}
+      size={22}
+      color={active ? Colors.orange : 'rgba(255,255,255,0.65)'}
+    />
+  );
 }
 
 export default function CustomerTabsLayout() {
@@ -24,8 +22,8 @@ export default function CustomerTabsLayout() {
         headerShown: false,
         tabBarStyle: styles.tabBar,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: Colors.navy,
-        tabBarInactiveTintColor: Colors.white,
+        tabBarActiveTintColor: Colors.orange,
+        tabBarInactiveTintColor: 'rgba(255,255,255,0.65)',
         tabBarLabelStyle: styles.tabLabel,
         tabBarItemStyle: styles.tabItem,
       }}
@@ -34,30 +32,28 @@ export default function CustomerTabsLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ focused }) => <HomeIcon active={focused} />,
-          tabBarBackground: () => null,
-          tabBarItemStyle: styles.tabItem,
+          tabBarIcon: ({ focused }) => <TabIcon name="home" active={focused} />,
         }}
       />
       <Tabs.Screen
         name="trips"
         options={{
           title: 'Trips',
-          tabBarIcon: ({ focused }) => <TripsIcon active={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="ticket" active={focused} />,
         }}
       />
       <Tabs.Screen
         name="parcels"
         options={{
           title: 'Parcels',
-          tabBarIcon: ({ focused }) => <ParcelsIcon active={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="parcelBox" active={focused} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ focused }) => <ProfileIcon active={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="user" active={focused} />,
         }}
       />
     </Tabs>
@@ -86,7 +82,6 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     marginHorizontal: 4,
   },
-  icon: { fontSize: 20 },
   tabLabel: {
     fontSize: 11,
     fontWeight: '600',

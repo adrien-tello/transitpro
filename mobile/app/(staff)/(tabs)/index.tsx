@@ -2,6 +2,7 @@ import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Typography } from '@/theme';
+import { Icon } from '@/components/ui';
 import { useMe } from '@/modules/auth/auth.queries';
 import { DriverToday } from '@/modules/staff/DriverToday';
 import { CourierToday } from '@/modules/staff/CourierToday';
@@ -25,7 +26,7 @@ export default function StaffTodayScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.center}>
-        <Text style={{ fontSize: 48 }}>🚌</Text>
+        <Icon name="bus" size={48} color={Colors.inkMuted} />
         <Text style={[Typography.h3, { marginTop: 16 }]}>Staff app</Text>
         <Text style={[Typography.bodySm, { marginTop: 8, textAlign: 'center' }]}>
           Today screens for your role are not in this redesign yet.{'\n'}Use the web dashboard for now.

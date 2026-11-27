@@ -11,12 +11,13 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Icon, type IconName } from '@/components/ui';
 import { Colors, FontSize, FontWeight, Typography } from '@/theme';
 import { useLogout } from '@/modules/auth/auth.queries';
 import { meCustomer } from '@contracts/mocks';
 
 interface MenuItem {
-  icon: string;
+  icon: IconName;
   label: string;
   onPress: () => void;
   danger?: boolean;
@@ -29,25 +30,33 @@ function MenuRow({ item }: { item: MenuItem }) {
       onPress={item.onPress}
       activeOpacity={0.8}
     >
-      <Text style={styles.menuIcon}>{item.icon}</Text>
+      <View style={styles.menuIconWrap}>
+        <Icon
+          name={item.icon}
+          size={19}
+          color={item.danger ? Colors.error : Colors.inkSecondary}
+        />
+      </View>
       <Text style={[styles.menuLabel, item.danger && styles.menuLabelDanger]}>
         {item.label}
       </Text>
-      {!item.danger ? <Text style={styles.menuChevron}>›</Text> : null}
+      {!item.danger && (
+        <Icon name="chevronRight" size={16} color={Colors.inkMuted} />
+      )}
     </TouchableOpacity>
   );
 }
 
 function UserInitials({ name }: { name: string }) {
-  const initials = name
+  const ini = name
     .split(' ')
-    .map(n => n[0])
+    .map((n) => n[0])
     .slice(0, 2)
     .join('')
     .toUpperCase();
   return (
     <View style={styles.avatarCircle}>
-      <Text style={styles.avatarInitials}>{initials}</Text>
+      <Text style={styles.avatarInitials}>{ini}</Text>
     </View>
   );
 }
@@ -55,8 +64,6 @@ function UserInitials({ name }: { name: string }) {
 export default function ProfileScreen() {
   const router = useRouter();
   const { mutate: logout, isPending } = useLogout();
-
-  // Use mock data — will be replaced when auth/me returns real data
   const user = meCustomer;
 
   function handleLogout() {
@@ -65,44 +72,43 @@ export default function ProfileScreen() {
       {
         text: 'Log out',
         style: 'destructive',
-        onPress: () => {
+        onPress: () =>
           logout(undefined, {
             onSuccess: () => router.replace('/(auth)/login'),
-            onError: () => router.replace('/(auth)/login'), // Always redirect
-          });
-        },
+            onError: () => router.replace('/(auth)/login'),
+          }),
       },
     ]);
   }
 
   const menuItems: MenuItem[] = [
     {
-      icon: '🎫',
+      icon: 'ticket',
       label: 'My Tickets',
       onPress: () => router.push('/(customer)/(tabs)/trips'),
     },
     {
-      icon: '📦',
+      icon: 'parcelBox',
       label: 'My Parcels',
       onPress: () => router.push('/(customer)/(tabs)/parcels'),
     },
     {
-      icon: '🔔',
+      icon: 'bell',
       label: 'Notifications',
       onPress: () => {},
     },
     {
-      icon: '🔒',
+      icon: 'lock',
       label: 'Change Password',
       onPress: () => {},
     },
     {
-      icon: '❓',
+      icon: 'help',
       label: 'Help & Support',
       onPress: () => {},
     },
     {
-      icon: 'ℹ️',
+      icon: 'info',
       label: 'About TransitPro',
       onPress: () => {},
     },
@@ -111,10 +117,8 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false}>
-
-        {/* Header */}
         <View style={styles.header}>
-          <Text style={[Typography.h3]}>Profile</Text>
+          <Text style={Typography.h3}>Profile</Text>
         </View>
 
         {/* User card */}
@@ -135,12 +139,13 @@ export default function ProfileScreen() {
           {menuItems.map((item, i) => (
             <View key={item.label}>
               <MenuRow item={item} />
-              {i < menuItems.length - 1 ? <View style={styles.menuDivider} /> : null}
+              {i < menuItems.length - 1 ? (
+                <View style={styles.menuDivider} />
+              ) : null}
             </View>
           ))}
         </Card>
 
-        {/* Logout */}
         <Button
           title="Log out"
           onPress={handleLogout}
@@ -158,11 +163,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
 
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
+  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
 
   userCard: {
     alignItems: 'center',
@@ -198,16 +199,8 @@ const styles = StyleSheet.create({
     color: Colors.ink,
     textAlign: 'center',
   },
-  userEmail: {
-    fontSize: FontSize.sm,
-    color: Colors.inkSecondary,
-    marginTop: 4,
-  },
-  userPhone: {
-    fontSize: FontSize.sm,
-    color: Colors.inkSecondary,
-    marginTop: 2,
-  },
+  userEmail: { fontSize: FontSize.sm, color: Colors.inkSecondary, marginTop: 4 },
+  userPhone: { fontSize: FontSize.sm, color: Colors.inkSecondary, marginTop: 2 },
   roleBadge: {
     marginTop: 12,
     backgroundColor: Colors.primaryLight,
@@ -223,34 +216,27 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 
-  menuCard: {
-    marginHorizontal: 20,
-    marginBottom: 24,
-  },
+  menuCard: { marginHorizontal: 20, marginBottom: 24 },
   menuRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
+    gap: 14,
+    paddingVertical: 14,
     paddingHorizontal: 20,
   },
   menuRowDanger: { backgroundColor: Colors.errorLight },
-  menuIcon: { fontSize: 20, width: 32 },
-  menuLabel: {
-    flex: 1,
-    fontSize: FontSize.base,
-    color: Colors.ink,
-    marginLeft: 4,
+  menuIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: Colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  menuLabel: { flex: 1, fontSize: FontSize.base, color: Colors.ink },
   menuLabelDanger: { color: Colors.error },
-  menuChevron: { fontSize: 20, color: Colors.inkDisabled },
-  menuDivider: {
-    height: 1,
-    backgroundColor: Colors.border,
-    marginLeft: 56,
-  },
+  menuDivider: { height: 1, backgroundColor: Colors.border, marginLeft: 68 },
 
-  logoutBtn: {
-    marginHorizontal: 20,
-  },
+  logoutBtn: { marginHorizontal: 20 },
   bottomPad: { height: 32 },
 });

@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Icon } from '@/components/ui';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/theme/colors';
@@ -140,7 +141,7 @@ export default function PayScreen() {
 
             {/* PIN notice */}
             <View style={styles.pinNotice}>
-              <Text style={styles.pinNoticeIcon}>🔒</Text>
+              <Icon name="lock" size={16} color={Colors.inkSecondary} />
               <Text style={styles.pinNoticeText}>
                 You will confirm on your phone with your MoMo PIN. TransitPro never asks for your PIN.
               </Text>
@@ -218,7 +219,6 @@ const styles = StyleSheet.create({
   radioSelected: { borderColor: Colors.primary, backgroundColor: Colors.primary },
 
   pinNotice: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginTop: 12, backgroundColor: Colors.surfaceAlt, borderRadius: 10, padding: 12 },
-  pinNoticeIcon: { fontSize: 16 },
   pinNoticeText: { flex: 1, fontSize: 13, color: Colors.inkSecondary, lineHeight: 18 },
 
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },

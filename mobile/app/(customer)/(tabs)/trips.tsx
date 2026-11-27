@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AgencyAvatar } from '@/components/ui/AgencyAvatar';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
+import { Icon } from '@/components/ui';
 import { Colors, FontSize, FontWeight, Typography } from '@/theme';
 import { useMyTickets } from '@/modules/booking/booking.queries';
 import type { Ticket } from '@contracts/api-types';
@@ -91,7 +92,7 @@ export default function TripsScreen() {
         </View>
       ) : !tickets?.length ? (
         <View style={styles.center}>
-          <Text style={styles.emptyIcon}>🎫</Text>
+          <Icon name="ticket" size={48} color={Colors.inkMuted} />
           <Text style={styles.emptyTitle}>No trips yet</Text>
           <Text style={styles.emptySubtitle}>
             Your booked tickets will appear here.
@@ -129,7 +130,6 @@ const styles = StyleSheet.create({
 
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
   errorText: { color: Colors.error, fontSize: FontSize.base },
-  emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyTitle: { fontSize: FontSize.md, fontWeight: FontWeight.semibold, color: Colors.ink },
+  emptyTitle: { fontSize: FontSize.md, fontWeight: FontWeight.semibold, color: Colors.ink, marginTop: 12 },
   emptySubtitle: { fontSize: FontSize.sm, color: Colors.inkSecondary, marginTop: 4, textAlign: 'center' },
 });
